@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { QuizApi } from "../hooks/useQuiz";
-import { isRestartCommand } from "../utils/commands";
+import { categoryLabels } from "../data/questions";
+import { isMenuCommand, isRestartCommand } from "../utils/commands";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
 
 function getVerdict(accuracy: number): string {
-  if (accuracy === 100) return "Flawless — a true Vim wizard. 🧙";
+  if (accuracy === 100) return "Flawless — a true terminal wizard. 🧙";
   if (accuracy >= 85) return "Excellent — a few keystrokes shy of mastery.";
   if (accuracy >= 70) return "Solid work. Polish the rough edges.";
   if (accuracy >= 50) return "Getting there. Repetition is your friend.";
@@ -32,9 +33,10 @@ function StatRow({ label, value, tone }: { label: string; value: string; tone?: 
   );
 }
 
-export function ResultPage({ quiz }: { quiz: QuizApi }) {
+export function ResultPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }) {
   const { attempts, score, answered, accuracy, distinctSeen, totalQuestions, restart } = quiz;
   const missed = latestMissed(attempts);
+  const label = categoryLabels[quiz.current.category];
 
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -58,7 +60,11 @@ export function ResultPage({ quiz }: { quiz: QuizApi }) {
         restart();
         return;
       }
-      setNotice(`unknown command: ${cmd} — type restart to play again`);
+      if (isMenuCommand(cmd)) {
+        onMenu();
+        return;
+      }
+      setNotice(`unknown command: ${cmd} — type restart, r, or menu`);
     }
     setValue("");
   };
@@ -74,7 +80,7 @@ export function ResultPage({ quiz }: { quiz: QuizApi }) {
       >
         <div className="max-w-3xl">
           <p className="text-sm uppercase tracking-[0.3em] text-term-amber">
-            — session complete —
+            — {label} session complete —
           </p>
 
           <div className="mt-6 space-y-2">
@@ -130,12 +136,17 @@ export function ResultPage({ quiz }: { quiz: QuizApi }) {
         value={value}
         onChange={setValue}
         onSubmit={handleSubmit}
-        placeholder='type "restart" to play again'
-        hint={notice ?? "restart · r · again"}
+        placeholder='type "restart" or "menu"'
+        hint={notice ?? "restart · r · again · menu: another practice"}
         actions={
-          <Button variant="primary" onClick={restart}>
-            ↻ restart
-          </Button>
+          <>
+            <Button variant="ghost" onClick={onMenu}>
+              ⌂ menu
+            </Button>
+            <Button variant="primary" onClick={restart}>
+              ↻ restart
+            </Button>
+          </>
         }
       />
     </div>

@@ -19,12 +19,16 @@ npm run preview    # preview the production build
 
 ## How it works
 
+- **Choose your practice** — the boot menu lists every available category
+  (vim, tmux, …) with question counts; pick by number, name, or click. Categories
+  without questions yet show as *coming soon*.
 - **Infinite randomized session** — questions are shuffled, and when the deck
   runs out it reshuffles and keeps going. There are no fixed rounds.
 - Each task appears as plain terminal text (e.g. *Save the current file*);
   type the exact command (`:w`) at the `❯` prompt and press Enter.
-- **Exit anytime** — type `:quit`, `exit`, or `bye` at the prompt to end the
-  session and see your results.
+- **Exit anytime, switch anytime** — type `:quit` (or `exit`, `bye`) to end the
+  session and see results; type `:menu` (or `switch`) to jump back to the
+  practice picker mid-session and start another category.
 - Answers are validated exactly (whitespace-tolerant). Ctrl combos are
   case-insensitive (`ctrl+r` = `Ctrl+r`), and some questions accept aliases
   (`:x` for `:wq`, `esc` for `Esc`, `42G` for `:42`).
@@ -35,31 +39,31 @@ npm run preview    # preview the production build
 - The results screen shows session stats, a verdict, and a review list of every
   question you missed — type `restart` (or click the button) to play again.
 
-The dataset currently contains **163 Vim questions** covering modes, file ops,
-movement, editing, search & replace, visual mode, windows & tabs, settings,
-text objects, macros, marks & jump lists, filters and command-line one-liners,
-buffers, and formatting tricks.
+The dataset currently contains **163 Vim questions** (modes, movement, editing,
+search & replace, visual mode, windows & tabs, text objects, macros, marks,
+filters, buffers, formatting) and **50 tmux questions** (sessions, panes,
+windows, copy mode & buffers, configuration).
 
 ## Project structure
 
 ```
 src/
-  data/questions.ts      # question types, category registry, Vim dataset
+  data/questions.ts      # question types, datasets, questionSets registry
   hooks/useQuiz.ts       # infinite-session quiz state machine
   utils/validate.ts      # answer normalization + exact-match validation
-  utils/commands.ts      # reserved session commands (:quit, restart)
-  components/            # presentational UI (Button, AnswerInput, StatusBar, …)
-  pages/                 # QuizPage (terminal session) + ResultPage (summary)
-  App.tsx                # full-page terminal shell + page wiring
+  utils/commands.ts      # reserved session commands (:quit, :menu, restart)
+  components/            # presentational UI (Button, InputBar, BootBanner, …)
+  pages/                 # CategoryPage (picker) + QuizPage + ResultPage
+  App.tsx                # full-page terminal shell + category routing
   index.css              # Tailwind v4 theme tokens + CRT/terminal styling
 ```
 
-## Adding a new category (Shell, Git, Tmux, Docker, …)
+## Adding a new category (Shell, Git, Docker, …)
 
 1. Add the tool name to the `Category` union in `src/data/questions.ts`.
-2. Add a label to `categoryLabels`.
-3. Export a `shellQuestions: QuizQuestion[]` (or similar) array in the same file.
-4. Pass it to `useQuiz({ questions: shellQuestions })` in `src/App.tsx`.
+2. Export a `shellQuestions: QuizQuestion[]` (or similar) array in the same file.
+3. Add an entry to the `questionSets` registry with a label and description.
+4. The category picker picks it up automatically — no other wiring needed.
 
 Each `QuizQuestion` is `{ id, category, prompt, answer, explanation, aliases? }`.
 Keep prompts phrased as a task ("Save the current file") — they render directly

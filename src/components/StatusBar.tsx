@@ -27,8 +27,8 @@ export function StatusBar({ quiz }: { quiz: QuizApi }) {
         )}
       </span>
       <span className="ml-auto hidden md:inline">
-        enter: submit / next · <span className="text-term-amber">:quit</span>: end
-        session
+        enter: submit / next · <span className="text-term-amber">:quit</span> end ·{" "}
+        <span className="text-term-amber">:menu</span> switch
       </span>
     </div>
   );

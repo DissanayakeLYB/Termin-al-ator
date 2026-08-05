@@ -10,25 +10,28 @@ export function normalizeAnswer(input: string): string {
 }
 
 /**
- * Normalizes a Ctrl key combo so "Ctrl+R", "ctrl+r", "CTRL-R" and
- * "ctrl + r" all compare equal. Vim's Ctrl combos are not case-sensitive.
+ * Normalizes a key combo so "Ctrl+r", "CTRL-R", "ctrl + r", "Ctrl+b d",
+ * "Ctrl+b+d" and "ctrl b d" all compare equal. Key combos are not
+ * case-sensitive, and separators (+ / - / space) are interchangeable.
  */
 function normalizeKeyCombo(input: string): string {
-  return input.toLowerCase().replace(/\s+/g, "").replace(/-/g, "+");
+  return input.toLowerCase().split(/[\s\-+]+/).filter(Boolean).join("");
 }
 
 /**
  * Validates a submitted answer against a question. Matching is exact after
- * normalization (Vim commands are case-sensitive), with two relaxations:
+ * normalization (commands are case-sensitive), with two relaxations:
  * - optional explicit `aliases` (e.g. ":x" for ":wq", "esc" for "Esc")
- * - Ctrl key combos match case-insensitively and tolerate "-" vs "+"
+ * - Ctrl key combos match case-insensitively with interchangeable separators
  */
 export function isCorrect(submitted: string, question: QuizQuestion): boolean {
   const normalized = normalizeAnswer(submitted);
-  if (normalized === question.answer) return true;
-  if ((question.aliases ?? []).some((alias) => normalized === alias)) return true;
-  if (/^ctrl\+/i.test(question.answer)) {
-    return normalizeKeyCombo(normalized) === normalizeKeyCombo(question.answer);
+  const candidates = [question.answer, ...(question.aliases ?? [])];
+  for (const candidate of candidates) {
+    if (normalized === candidate) return true;
+    if (/^ctrl\+/i.test(candidate) && normalizeKeyCombo(normalized) === normalizeKeyCombo(candidate)) {
+      return true;
+    }
   }
   return false;
 }

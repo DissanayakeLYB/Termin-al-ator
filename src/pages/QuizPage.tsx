@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { categoryLabels } from "../data/questions";
 import type { Attempt, QuizApi } from "../hooks/useQuiz";
-import { isExitCommand } from "../utils/commands";
+import { isExitCommand, isMenuCommand } from "../utils/commands";
+import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { Feedback } from "../components/Feedback";
 import { InputBar } from "../components/InputBar";
@@ -32,7 +33,7 @@ function HistoryLine({ attempt, index }: { attempt: Attempt; index: number }) {
   );
 }
 
-export function QuizPage({ quiz }: { quiz: QuizApi }) {
+export function QuizPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }) {
   const {
     current,
     taskNumber,
@@ -79,6 +80,10 @@ export function QuizPage({ quiz }: { quiz: QuizApi }) {
       quiz.quit();
       return;
     }
+    if (isMenuCommand(input)) {
+      onMenu();
+      return;
+    }
     if (!input.trim()) return;
     const accepted = submit(input);
     if (accepted !== null) {
@@ -102,20 +107,12 @@ export function QuizPage({ quiz }: { quiz: QuizApi }) {
       >
         <div className="max-w-3xl">
           {/* Boot banner */}
-          <div className="border-b border-term-edge/60 pb-4">
-            <p className="text-lg font-bold tracking-tight sm:text-xl">
-              <span className="text-term-green">termin</span>
-              <span className="text-term-amber">(al)</span>
-              <span className="text-term-bright">ator</span>
-              <span className="text-term-dim"> · vim trainer</span>
-            </p>
-            <p className="mt-1.5 text-xs leading-relaxed text-term-dim sm:text-sm">
-              {totalQuestions} questions · randomized · no fixed rounds — keep going
-              until you're done, and type{" "}
-              <span className="text-term-amber">:quit</span> to end the session
-              anytime.
-            </p>
-          </div>
+          <BootBanner tag={`${categoryLabels[current.category]} trainer`}>
+            {totalQuestions} questions · randomized · no fixed rounds — keep going
+            until you're done. Type <span className="text-term-amber">:quit</span>{" "}
+            to end the session, or <span className="text-term-amber">:menu</span>{" "}
+            to switch practice.
+          </BootBanner>
 
           {/* History of answered tasks */}
           {attempts.length > 0 && (
@@ -164,8 +161,8 @@ export function QuizPage({ quiz }: { quiz: QuizApi }) {
         readOnly={result !== null}
         hint={
           <span className="sm:hidden">
-            enter: submit / next · type <span className="text-term-amber">:quit</span>{" "}
-            to end the session
+            enter: submit / next · <span className="text-term-amber">:quit</span> end ·{" "}
+            <span className="text-term-amber">:menu</span> switch
           </span>
         }
         actions={

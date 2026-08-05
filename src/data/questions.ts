@@ -1,14 +1,15 @@
 /**
  * Question dataset for the termin(al)ator trainer.
  *
- * To add a new tool category (Shell, Git, Tmux, …):
+ * To add a new tool category (Shell, Git, Docker, …):
  *   1. Add its name to the `Category` union.
- *   2. Add a label to `categoryLabels`.
- *   3. Export a `xxxQuestions: QuizQuestion[]` array for it.
- *   4. Pass it to `useQuiz({ questions: xxxQuestions })` in `src/App.tsx`.
+ *   2. Export a `xxxQuestions: QuizQuestion[]` array for it.
+ *   3. Add an entry to the `questionSets` registry (label + description).
+ *   4. The category picker (CategoryPage) picks it up automatically.
  *
  * Sessions are infinite: the deck reshuffles when exhausted, so questions
- * repeat. The user ends the session whenever they want by typing `:quit`.
+ * repeat. The user ends the session (`:quit`) or switches practice
+ * (`:menu`) whenever they want.
  */
 
 export type Category =
@@ -34,16 +35,6 @@ export interface QuizQuestion {
   aliases?: string[];
 }
 
-export const categoryLabels: Record<Category, string> = {
-  vim: "vim",
-  shell: "shell",
-  git: "git",
-  tmux: "tmux",
-  docker: "docker",
-  regex: "regex",
-  ssh: "ssh",
-  kubernetes: "k8s",
-};
 
 export const vimQuestions: QuizQuestion[] = [
   // ── Starting & modes ──────────────────────────────────────────────────────
@@ -1310,3 +1301,485 @@ export const vimQuestions: QuizQuestion[] = [
       "`:so $MYVIMRC` (source) applies your vimrc changes immediately — no restart needed.",
   },
 ];
+
+export const tmuxQuestions: QuizQuestion[] = [
+  // ── Sessions ──────────────────────────────────────────────────────────────
+  {
+    id: "tmux-new-session",
+    category: "tmux",
+    prompt: "Start a new tmux session named `work`.",
+    answer: "tmux new -s work",
+    aliases: ["tmux new-session -s work"],
+    explanation:
+      "`-s` names the session, so you can find and attach to it later with `tmux attach -t work`.",
+  },
+  {
+    id: "tmux-new-detached",
+    category: "tmux",
+    prompt: "Start a new session named `work` without attaching to it.",
+    answer: "tmux new -d -s work",
+    aliases: ["tmux new-session -d -s work"],
+    explanation:
+      "`-d` detaches immediately — perfect for starting background work and attaching later.",
+  },
+  {
+    id: "tmux-list",
+    category: "tmux",
+    prompt: "List all running tmux sessions.",
+    answer: "tmux ls",
+    aliases: ["tmux list-sessions"],
+    explanation: "`tmux ls` is the short form of `tmux list-sessions`.",
+  },
+  {
+    id: "tmux-attach-last",
+    category: "tmux",
+    prompt: "Attach to the most recently used session.",
+    answer: "tmux attach",
+    aliases: ["tmux a", "tmux attach-session"],
+    explanation:
+      "`tmux attach` (or `tmux a`) rejoins the most recently used session.",
+  },
+  {
+    id: "tmux-attach-named",
+    category: "tmux",
+    prompt: "Attach to the session named `work`.",
+    answer: "tmux attach -t work",
+    aliases: ["tmux a -t work"],
+    explanation: "`-t` targets the session by name — `tmux attach -t work`.",
+  },
+  {
+    id: "tmux-detach",
+    category: "tmux",
+    prompt: "Leave the current session, keeping it running in the background.",
+    answer: "Ctrl+b d",
+    explanation:
+      "`Ctrl+b d` detaches — the session keeps running. Rejoin anytime with `tmux attach`.",
+  },
+  {
+    id: "tmux-kill-session",
+    category: "tmux",
+    prompt: "Kill the session named `work` entirely.",
+    answer: "tmux kill-session -t work",
+    explanation:
+      "`tmux kill-session -t work` ends that session and everything running inside it.",
+  },
+  {
+    id: "tmux-kill-server",
+    category: "tmux",
+    prompt: "Kill every tmux session at once.",
+    answer: "tmux kill-server",
+    explanation:
+      "`tmux kill-server` stops the server and all sessions with it — a nuke, not a scalpel.",
+  },
+  {
+    id: "tmux-rename-session",
+    category: "tmux",
+    prompt: "Rename the current session to `dev`.",
+    answer: "Ctrl+b $",
+    explanation:
+      "`Ctrl+b $` prompts for a new session name — `$` rhymes with 'session'.",
+  },
+  {
+    id: "tmux-rename-session-cli",
+    category: "tmux",
+    prompt: "Rename the session `work` to `dev` from the shell.",
+    answer: "tmux rename-session -t work dev",
+    explanation: "`-t` says which session, the last argument is the new name.",
+  },
+  {
+    id: "tmux-attach-or-create",
+    category: "tmux",
+    prompt: "Attach to `work` if it exists, or create it if it doesn't.",
+    answer: "tmux new -A -s work",
+    aliases: ["tmux new-session -A -s work"],
+    explanation:
+      "`-A` attaches if the session already exists and creates it otherwise — idempotent tmux.",
+  },
+  {
+    id: "tmux-session-chooser",
+    category: "tmux",
+    prompt: "Open the interactive chooser to browse and switch sessions.",
+    answer: "Ctrl+b s",
+    explanation: "`Ctrl+b s` lists all sessions in a picker — arrows to navigate, Enter to jump.",
+  },
+
+  // ── Panes ─────────────────────────────────────────────────────────────────
+  {
+    id: "tmux-split-side",
+    category: "tmux",
+    prompt: "Split the current pane into two, side by side.",
+    answer: "Ctrl+b %",
+    explanation:
+      "`%` splits with a vertical divider (left | right). Think of the `%` sign's two circles.",
+  },
+  {
+    id: "tmux-split-stack",
+    category: "tmux",
+    prompt: "Split the current pane into two, one above the other.",
+    answer: "Ctrl+b \"",
+    explanation:
+      "The double-quote splits with a horizontal divider (top / bottom).",
+  },
+  {
+    id: "tmux-pane-next",
+    category: "tmux",
+    prompt: "Move to the next pane.",
+    answer: "Ctrl+b o",
+    explanation: "`Ctrl+b o` cycles focus to the next pane. Keep pressing to keep moving.",
+  },
+  {
+    id: "tmux-pane-last",
+    category: "tmux",
+    prompt: "Jump back to the previously active pane.",
+    answer: "Ctrl+b ;",
+    explanation:
+      "`Ctrl+b ;` toggles between the last two panes — handy when switching back and forth.",
+  },
+  {
+    id: "tmux-pane-numbers",
+    category: "tmux",
+    prompt: "Show pane numbers so you can jump straight to one.",
+    answer: "Ctrl+b q",
+    explanation:
+      "`Ctrl+b q` flashes a number on each pane; press the number to jump there.",
+  },
+  {
+    id: "tmux-pane-zoom",
+    category: "tmux",
+    prompt: "Zoom the current pane to fill the whole window (toggle).",
+    answer: "Ctrl+b z",
+    explanation:
+      "`Ctrl+b z` maximizes the pane; press it again to restore the split.",
+  },
+  {
+    id: "tmux-pane-close",
+    category: "tmux",
+    prompt: "Close the current pane.",
+    answer: "Ctrl+b x",
+    aliases: ["Ctrl+d"],
+    explanation:
+      "`Ctrl+b x` asks for confirmation, then closes the pane. `Ctrl+d` in the pane's shell also works.",
+  },
+  {
+    id: "tmux-pane-break",
+    category: "tmux",
+    prompt: "Break the current pane out into its own window.",
+    answer: "Ctrl+b !",
+    explanation: "`!` pulls the current pane into a brand-new window — great for refocusing.",
+  },
+  {
+    id: "tmux-pane-swap-prev",
+    category: "tmux",
+    prompt: "Swap the current pane with the previous one.",
+    answer: "Ctrl+b {",
+    explanation: "`Ctrl+b {` moves the current pane one slot left (or up) — reorganizing splits.",
+  },
+  {
+    id: "tmux-pane-swap-next",
+    category: "tmux",
+    prompt: "Swap the current pane with the next one.",
+    answer: "Ctrl+b }",
+    explanation: "`Ctrl+b }` moves the current pane one slot right (or down) — the mirror of `{`.",
+  },
+  {
+    id: "tmux-pane-resize",
+    category: "tmux",
+    prompt: "Resize the current pane 10 cells taller.",
+    answer: "resize-pane -U 10",
+    aliases: ["tmux resize-pane -U 10"],
+    explanation:
+      "`resize-pane -U 10` grows the pane up by 10 lines — type it at the `Ctrl+b :` command prompt.",
+  },
+  {
+    id: "tmux-layout-cycle",
+    category: "tmux",
+    prompt: "Cycle through the preset pane layouts.",
+    answer: "Ctrl+b Space",
+    explanation:
+      "`Space` cycles layouts like even-horizontal, even-vertical, and tiled.",
+  },
+
+  // ── Windows ───────────────────────────────────────────────────────────────
+  {
+    id: "tmux-window-new",
+    category: "tmux",
+    prompt: "Create a new window.",
+    answer: "Ctrl+b c",
+    explanation: "`c` for create — a fresh window appears, numbered after the last one.",
+  },
+  {
+    id: "tmux-window-next",
+    category: "tmux",
+    prompt: "Switch to the next window.",
+    answer: "Ctrl+b n",
+    explanation: "`n` for next — moves forward one window in the list.",
+  },
+  {
+    id: "tmux-window-prev",
+    category: "tmux",
+    prompt: "Switch to the previous window.",
+    answer: "Ctrl+b p",
+    explanation: "`p` for previous — moves backward one window.",
+  },
+  {
+    id: "tmux-window-number",
+    category: "tmux",
+    prompt: "Jump straight to window 3.",
+    answer: "Ctrl+b 3",
+    explanation:
+      "Windows are numbered 0–9 — `Ctrl+b 3` jumps to window 3 directly.",
+  },
+  {
+    id: "tmux-window-last",
+    category: "tmux",
+    prompt: "Switch to the window you visited most recently.",
+    answer: "Ctrl+b l",
+    explanation: "`l` for last — toggles between your current and previous window.",
+  },
+  {
+    id: "tmux-window-list",
+    category: "tmux",
+    prompt: "Open the interactive chooser to pick a window.",
+    answer: "Ctrl+b w",
+    explanation: "`Ctrl+b w` lists all windows; navigate and hit Enter to jump.",
+  },
+  {
+    id: "tmux-window-rename",
+    category: "tmux",
+    prompt: "Rename the current window to `logs`.",
+    answer: "Ctrl+b ,",
+    explanation: "`Ctrl+b ,` prompts for a new window name — commas are under your fingers.",
+  },
+  {
+    id: "tmux-window-kill",
+    category: "tmux",
+    prompt: "Kill the current window (and everything running in it).",
+    answer: "Ctrl+b &",
+    explanation: "`&` closes the whole window after a confirm prompt — every pane inside dies.",
+  },
+  {
+    id: "tmux-window-find",
+    category: "tmux",
+    prompt: "Find a window by searching for text in its title.",
+    answer: "Ctrl+b f",
+    explanation: "`f` prompts for a pattern and jumps to the first window whose title matches.",
+  },
+  {
+    id: "tmux-window-new-cli",
+    category: "tmux",
+    prompt: "Create a new window named `monitor` in session `work` from the shell.",
+    answer: "tmux new-window -n monitor -t work",
+    explanation:
+      "`-n` names the new window; `-t work` targets which session it belongs to.",
+  },
+
+  // ── Copy mode & buffers ───────────────────────────────────────────────────
+  {
+    id: "tmux-copy-mode",
+    category: "tmux",
+    prompt: "Enter copy mode so you can scroll through the pane history.",
+    answer: "Ctrl+b [",
+    explanation:
+      "`Ctrl+b [` freezes the pane for scrolling and selecting — the bracket points backward.",
+  },
+  {
+    id: "tmux-copy-scroll",
+    category: "tmux",
+    prompt: "Enter copy mode and jump up one page in the history.",
+    answer: "Ctrl+b PgUp",
+    aliases: ["Ctrl+b PageUp"],
+    explanation:
+      "`Ctrl+b PgUp` enters copy mode already scrolled up one page — the fastest way to look back.",
+  },
+  {
+    id: "tmux-copy-exit",
+    category: "tmux",
+    prompt: "Leave copy mode without copying anything.",
+    answer: "q",
+    explanation:
+      "`q` quits copy mode. Pressing Enter also exits (after copying the selection).",
+  },
+  {
+    id: "tmux-copy-select",
+    category: "tmux",
+    prompt: "In copy mode with default bindings, start the selection at the cursor.",
+    answer: "Space",
+    aliases: ["space", "SPACE"],
+    explanation:
+      "`Space` begins the selection in tmux's default (emacs-style) copy mode; vi-mode users press `v`.",
+  },
+  {
+    id: "tmux-copy-yank",
+    category: "tmux",
+    prompt: "In copy mode, copy the selected text.",
+    answer: "Enter",
+    aliases: ["enter", "ENTER"],
+    explanation:
+      "`Enter` yanks the selection into the tmux buffer. Vi-mode users press `y` instead.",
+  },
+  {
+    id: "tmux-paste-buffer",
+    category: "tmux",
+    prompt: "Paste the most recently copied text.",
+    answer: "Ctrl+b ]",
+    explanation:
+      "`Ctrl+b ]` pastes the latest buffer — the bracket points forward, into the pane.",
+  },
+  {
+    id: "tmux-choose-buffer",
+    category: "tmux",
+    prompt: "Open the buffer chooser to paste from any saved buffer.",
+    answer: "Ctrl+b =",
+    explanation: "`Ctrl+b =` shows all buffers; pick one and it's pasted into the current pane.",
+  },
+  {
+    id: "tmux-list-buffers",
+    category: "tmux",
+    prompt: "List all copy buffers from the shell.",
+    answer: "tmux list-buffers",
+    explanation: "`tmux list-buffers` shows every saved yank with its contents.",
+  },
+  {
+    id: "tmux-capture-pane",
+    category: "tmux",
+    prompt: "Dump the entire visible pane content to standard output.",
+    answer: "tmux capture-pane -p",
+    explanation:
+      "`-p` prints to stdout — pipe it into a file or grep to search what's on screen.",
+  },
+
+  // ── Customization & config ────────────────────────────────────────────────
+  {
+    id: "tmux-command-prompt",
+    category: "tmux",
+    prompt: "Open the tmux command prompt to type a tmux command.",
+    answer: "Ctrl+b :",
+    explanation:
+      "`Ctrl+b :` gives you a `:` prompt — the gateway to every tmux command.",
+  },
+  {
+    id: "tmux-help",
+    category: "tmux",
+    prompt: "Show all key bindings — tmux's built-in help.",
+    answer: "Ctrl+b ?",
+    explanation:
+      "`Ctrl+b ?` opens the key-bindings list. Press `q` to close it.",
+  },
+  {
+    id: "tmux-clock",
+    category: "tmux",
+    prompt: "Show a big clock in the current pane.",
+    answer: "Ctrl+b t",
+    explanation: "`Ctrl+b t` displays a full-pane clock. Press any key to dismiss it.",
+  },
+  {
+    id: "tmux-mouse",
+    category: "tmux",
+    prompt: "Enable mouse support for all sessions.",
+    answer: "tmux set -g mouse on",
+    explanation:
+      "`-g` sets it globally — you can resize panes and select text with the mouse.",
+  },
+  {
+    id: "tmux-prefix-change",
+    category: "tmux",
+    prompt: "Change the prefix key from Ctrl+b to Ctrl+a.",
+    answer: "tmux set -g prefix C-a",
+    explanation:
+      "`set -g prefix C-a` rebinds the prefix. Many users also unbind the old `C-b`.",
+  },
+  {
+    id: "tmux-reload-config",
+    category: "tmux",
+    prompt: "Reload your tmux configuration from `~/.tmux.conf`.",
+    answer: "source-file ~/.tmux.conf",
+    aliases: ["tmux source-file ~/.tmux.conf"],
+    explanation:
+      "Type `source-file ~/.tmux.conf` at the `Ctrl+b :` prompt to apply config changes live.",
+  },
+  {
+    id: "tmux-list-keys",
+    category: "tmux",
+    prompt: "List all key bindings from the shell.",
+    answer: "tmux list-keys",
+    explanation:
+      "`tmux list-keys` prints every binding — great for checking what you've remapped.",
+  },
+];
+
+/** A practice category with its dataset and blurb. */
+export interface QuestionSet {
+  category: Category;
+  label: string;
+  description: string;
+  questions: QuizQuestion[];
+}
+
+/**
+ * Registry of every practice category. Categories without questions yet are
+ * listed as "coming soon" in the picker.
+ */
+export const questionSets: Record<Category, QuestionSet> = {
+  vim: {
+    category: "vim",
+    label: "vim",
+    description: "the modal text editor — commands, motions, and text objects",
+    questions: vimQuestions,
+  },
+  tmux: {
+    category: "tmux",
+    label: "tmux",
+    description: "terminal multiplexer — sessions, panes, windows, buffers",
+    questions: tmuxQuestions,
+  },
+  shell: {
+    category: "shell",
+    label: "shell",
+    description: "pipes, redirection, and everyday commands",
+    questions: [],
+  },
+  git: {
+    category: "git",
+    label: "git",
+    description: "commits, branches, and the everyday workflow",
+    questions: [],
+  },
+  docker: {
+    category: "docker",
+    label: "docker",
+    description: "containers, images, and compose",
+    questions: [],
+  },
+  regex: {
+    category: "regex",
+    label: "regex",
+    description: "patterns for search and replace",
+    questions: [],
+  },
+  ssh: {
+    category: "ssh",
+    label: "ssh",
+    description: "remote shells, keys, and tunneling",
+    questions: [],
+  },
+  kubernetes: {
+    category: "kubernetes",
+    label: "k8s",
+    description: "pods, deployments, and cluster basics",
+    questions: [],
+  },
+};
+
+/** Categories with a ready question set — shown as selectable in the picker. */
+export const availableQuestionSets: QuestionSet[] = Object.values(questionSets).filter(
+  (set) => set.questions.length > 0
+);
+
+/** Categories still in progress — shown greyed out in the picker. */
+export const comingSoonSets: QuestionSet[] = Object.values(questionSets).filter(
+  (set) => set.questions.length === 0
+);
+
+export const categoryLabels: Record<Category, string> = Object.fromEntries(
+  Object.values(questionSets).map((set) => [set.category, set.label])
+) as Record<Category, string>;
