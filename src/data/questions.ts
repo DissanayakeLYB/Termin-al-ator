@@ -735,4 +735,578 @@ export const vimQuestions: QuizQuestion[] = [
     explanation:
       "`:!` runs a shell command and shows its output — `:!ls` lists the directory, then press Enter to return.",
   },
+
+  // ── Text objects & operator motions ───────────────────────────────────────
+  {
+    id: "vim-ciw",
+    category: "vim",
+    prompt: "Replace the whole word under the cursor with new text — no deleting first.",
+    answer: "ciw",
+    explanation:
+      "`ciw` = change inner word: delete the word under the cursor and enter insert mode. `caw` also swallows the surrounding whitespace.",
+  },
+  {
+    id: "vim-caw",
+    category: "vim",
+    prompt: "Replace the word under the cursor plus the whitespace around it.",
+    answer: "caw",
+    explanation:
+      "`caw` = change around word — it grabs the trailing space too, so you never leave double gaps when editing.",
+  },
+  {
+    id: "vim-ci-quote",
+    category: "vim",
+    prompt: "Replace the text inside the nearest double quotes, leaving the quotes themselves.",
+    answer: "ci\"",
+    explanation:
+      "`ci\"` = change inner quotes — perfect for retyping a string without ever touching the quotes.",
+  },
+  {
+    id: "vim-di-quote",
+    category: "vim",
+    prompt: "Delete the text inside the nearest double quotes, leaving the quotes.",
+    answer: "di\"",
+    explanation: "`di\"` deletes only what's between the quotes — the quotes stay put.",
+  },
+  {
+    id: "vim-ci-paren",
+    category: "vim",
+    prompt: "Replace everything inside the nearest parentheses, keeping the parens.",
+    answer: "ci(",
+    explanation:
+      "`ci(` changes the content of the parens without the parens. `ci{` and `ci[` target those brackets the same way.",
+  },
+  {
+    id: "vim-di-paren",
+    category: "vim",
+    prompt: "Delete everything inside the nearest parentheses, keeping the parens.",
+    answer: "di(",
+    explanation: "`di(` deletes the content; `da(` takes the parens along too — one key changes the whole meaning.",
+  },
+  {
+    id: "vim-da-paren",
+    category: "vim",
+    prompt: "Delete the nearest parentheses and everything inside them.",
+    answer: "da(",
+    explanation: "`da(` = delete around parens — the entire `( ... )` group goes, including the brackets.",
+  },
+  {
+    id: "vim-yiw",
+    category: "vim",
+    prompt: "Yank just the word under the cursor, nothing else.",
+    answer: "yiw",
+    explanation: "`yiw` copies only the word — the standard way to grab an identifier.",
+  },
+  {
+    id: "vim-yi-quote",
+    category: "vim",
+    prompt: "Yank the text inside the nearest double quotes.",
+    answer: "yi\"",
+    explanation: "`yi\"` copies what's between the quotes, quotes excluded.",
+  },
+  {
+    id: "vim-vip",
+    category: "vim",
+    prompt: "Select the entire paragraph the cursor is in.",
+    answer: "vip",
+    explanation:
+      "`vip` = visual inner paragraph. Follow it with `d`, `y`, or `gq` to act on the whole block.",
+  },
+  {
+    id: "vim-vib",
+    category: "vim",
+    prompt: "Select everything inside the nearest parentheses.",
+    answer: "vib",
+    explanation:
+      "`vib` selects between `( )` — swap the `b` for `{` or `[` to target other brackets. `vab` includes the brackets.",
+  },
+  {
+    id: "vim-vit",
+    category: "vim",
+    prompt: "Select the text inside the HTML tag under the cursor.",
+    answer: "vit",
+    explanation:
+      "`vit` = visual inner tag — selects `<div>CONTENT</div>`'s content only. `vat` includes the tags.",
+  },
+
+  // ── Finding characters (f / t motions) ────────────────────────────────────
+  {
+    id: "vim-find-char",
+    category: "vim",
+    prompt: "Jump forward to the next `,` on the current line.",
+    answer: "f,",
+    explanation: "`f,` = find comma. `F,` finds it backwards, and `;` repeats the last find.",
+  },
+  {
+    id: "vim-till-char",
+    category: "vim",
+    prompt: "Move to the character just before the next `)` on the current line.",
+    answer: "t)",
+    explanation:
+      "`t` = till: it stops before the target, `f` lands on it. Pair with `d`/`c`: `dt)` deletes up to the paren.",
+  },
+  {
+    id: "vim-find-repeat",
+    category: "vim",
+    prompt: "Repeat the last character find (`f`/`t`) in the same direction.",
+    answer: ";",
+    explanation: "`;` repeats the last f/t motion forward; `,` repeats it in reverse.",
+  },
+  {
+    id: "vim-find-repeat-back",
+    category: "vim",
+    prompt: "Repeat the last character find (`f`/`t`) in the opposite direction.",
+    answer: ",",
+    explanation: "`,` repeats the last f/t motion backwards — the mirror of `;`.",
+  },
+
+  // ── Registers & macros ────────────────────────────────────────────────────
+  {
+    id: "vim-macro-record",
+    category: "vim",
+    prompt: "Start recording a macro into register `a`.",
+    answer: "qa",
+    explanation:
+      "`qa` begins recording. Do your edit, press `q` again to stop, then `@a` to replay it anywhere.",
+  },
+  {
+    id: "vim-macro-stop",
+    category: "vim",
+    prompt: "Stop recording the macro you're currently recording.",
+    answer: "q",
+    explanation: "A second `q` ends the recording and stores it in the register you named.",
+  },
+  {
+    id: "vim-macro-play",
+    category: "vim",
+    prompt: "Play back the macro stored in register `a`.",
+    answer: "@a",
+    explanation:
+      "`@a` runs the macro once. `10@a` runs it ten times — that's how you edit a thousand lines in seconds.",
+  },
+  {
+    id: "vim-macro-replay",
+    category: "vim",
+    prompt: "Replay the most recently executed macro.",
+    answer: "@@",
+    explanation: "`@@` reruns the last macro without retyping its name.",
+  },
+
+  // ── Marks & jump lists ────────────────────────────────────────────────────
+  {
+    id: "vim-mark-set",
+    category: "vim",
+    prompt: "Set a mark named `a` at the current position.",
+    answer: "ma",
+    explanation:
+      "`ma` plants a hidden bookmark. Any lowercase letter works, and marks survive until you leave the file.",
+  },
+  {
+    id: "vim-mark-jump-line",
+    category: "vim",
+    prompt: "Jump to the line where mark `a` sits.",
+    answer: "'a",
+    explanation: "`'a` jumps to the start of the marked line — instant bookmarks across a long file.",
+  },
+  {
+    id: "vim-mark-jump-exact",
+    category: "vim",
+    prompt: "Jump to the exact line and column of mark `a`.",
+    answer: "`a",
+    explanation:
+      "The backtick version — `` `a `` — restores the marked column too, while `'a` only restores the line.",
+  },
+  {
+    id: "vim-insert-pos",
+    category: "vim",
+    prompt: "Return to the spot where you last inserted or edited text.",
+    answer: "gi",
+    explanation:
+      "`gi` jumps to your last edit position and enters insert mode — a favorite for resuming work.",
+  },
+  {
+    id: "vim-jump-back",
+    category: "vim",
+    prompt: "Jump back to your previous cursor position.",
+    answer: "Ctrl+o",
+    explanation:
+      "`Ctrl+o` walks the jump list backwards — a browser-style back button for cursor positions.",
+  },
+  {
+    id: "vim-jump-fwd",
+    category: "vim",
+    prompt: "Jump forward through the jump list again.",
+    answer: "Ctrl+i",
+    explanation: "`Ctrl+i` walks forward through the jump list — the mirror of `Ctrl+o`.",
+  },
+
+  // ── Numbers ───────────────────────────────────────────────────────────────
+  {
+    id: "vim-num-inc",
+    category: "vim",
+    prompt: "Increase the number under the cursor by one.",
+    answer: "Ctrl+a",
+    explanation: "`Ctrl+a` increments the number under the cursor: `42` becomes `43`. `5 Ctrl+a` adds five.",
+  },
+  {
+    id: "vim-num-dec",
+    category: "vim",
+    prompt: "Decrease the number under the cursor by one.",
+    answer: "Ctrl+x",
+    explanation: "`Ctrl+x` decrements the number under the cursor — handy for version bumps.",
+  },
+
+  // ── Filters & command-line tricks ─────────────────────────────────────────
+  {
+    id: "vim-filter-sort",
+    category: "vim",
+    prompt: "Sort the entire file by piping it through the `sort` shell command.",
+    answer: ":%!sort",
+    explanation:
+      "`:%!sort` sends the whole file through the `sort` command and replaces it with the output.",
+  },
+  {
+    id: "vim-format-json",
+    category: "vim",
+    prompt: "Pretty-print the JSON in the current buffer.",
+    answer: ":%!python -m json.tool",
+    explanation:
+      "`:%!python -m json.tool` pipes the file through Python's JSON formatter — instant, zero-plugin formatting.",
+  },
+  {
+    id: "vim-r-shell",
+    category: "vim",
+    prompt: "Insert the output of the shell command `date` below the cursor.",
+    answer: ":r !date",
+    explanation: "`:r !cmd` runs a shell command and reads its output into the buffer.",
+  },
+  {
+    id: "vim-r-file",
+    category: "vim",
+    prompt: "Insert the contents of `notes.txt` below the cursor.",
+    answer: ":r notes.txt",
+    explanation: "`:r notes.txt` (read) dumps that file in below the cursor line.",
+  },
+  {
+    id: "vim-delete-blank",
+    category: "vim",
+    prompt: "Delete every blank line in the file.",
+    answer: ":g/^$/d",
+    explanation: "`:g` runs a command on every matching line — here, delete all the empty ones.",
+  },
+  {
+    id: "vim-delete-matching",
+    category: "vim",
+    prompt: "Delete every line containing the word `debug`.",
+    answer: ":g/debug/d",
+    explanation: "`:g/debug/d` deletes all matching lines — the global command is a whole mini-language.",
+  },
+  {
+    id: "vim-keep-matching",
+    category: "vim",
+    prompt: "Delete every line that does NOT contain `debug`.",
+    answer: ":v/debug/d",
+    explanation:
+      "`:v` is the inverse of `:g` — it acts on lines that don't match. Great for filtering logs.",
+  },
+  {
+    id: "vim-reverse-lines",
+    category: "vim",
+    prompt: "Reverse the order of all lines in the file.",
+    answer: ":g/^/m0",
+    explanation:
+      "`:g/^/m0` moves every line to the top, flipping the file upside down — a party-trick one-liner.",
+  },
+  {
+    id: "vim-strip-trailing",
+    category: "vim",
+    prompt: "Remove trailing whitespace from every line.",
+    answer: ":%s/\\s\\+$//",
+    explanation:
+      "`:%s/\\s\\+$//` matches spaces at line ends and deletes them — a common pre-commit cleanup.",
+  },
+  {
+    id: "vim-add-comma",
+    category: "vim",
+    prompt: "Append a comma to the end of every line.",
+    answer: ":%s/$/,/",
+    explanation:
+      "Substituting against `$` (end of line) appends — every line now ends with a comma.",
+  },
+  {
+    id: "vim-put-range",
+    category: "vim",
+    prompt: "Insert the numbers 1 through 10 as ten separate lines.",
+    answer: ":put =range(1,10)",
+    explanation:
+      "`:put =expr` evaluates an expression and inserts the result — `range(1,10)` generates 1..10.",
+  },
+  {
+    id: "vim-sudo-save",
+    category: "vim",
+    prompt: "Save the current file with sudo privileges even when it's read-only.",
+    answer: ":w !sudo tee %",
+    explanation:
+      "`:w !sudo tee %` is the classic trick for writing a read-only file — the buffer is piped through sudo.",
+  },
+  {
+    id: "vim-sort-numeric",
+    category: "vim",
+    prompt: "Sort the file numerically instead of alphabetically.",
+    answer: ":sort n",
+    explanation: "`:sort n` sorts by number, so `10` correctly follows `2`. Add `!` for reverse order.",
+  },
+  {
+    id: "vim-sort-unique",
+    category: "vim",
+    prompt: "Sort the file and remove duplicate lines.",
+    answer: ":sort u",
+    explanation: "`:sort u` sorts and keeps only unique lines — dedup in a single command.",
+  },
+  {
+    id: "vim-repeat-subst",
+    category: "vim",
+    prompt: "Repeat the last substitution on the current line.",
+    answer: "&",
+    explanation: "`&` re-applies the last `:s/foo/bar` to the current line. `g&` redoes it across the whole file.",
+  },
+  {
+    id: "vim-repeat-subst-all",
+    category: "vim",
+    prompt: "Repeat the last substitution across the whole file.",
+    answer: "g&",
+    explanation: "`g&` replays the last substitution everywhere; plain `&` only does the current line.",
+  },
+
+  // ── Buffers & multiple files ──────────────────────────────────────────────
+  {
+    id: "vim-alternate-file",
+    category: "vim",
+    prompt: "Switch to the file you were editing before.",
+    answer: "Ctrl+^",
+    explanation:
+      "`Ctrl+^` toggles between the current buffer and the alternate file — usually the one you just left.",
+  },
+  {
+    id: "vim-e-alternate",
+    category: "vim",
+    prompt: "Open the previous file without leaving Vim.",
+    answer: ":e #",
+    explanation: "`:e #` edits the alternate buffer — `#` stands for the last file you had open.",
+  },
+  {
+    id: "vim-buffer-next",
+    category: "vim",
+    prompt: "Move to the next open buffer.",
+    answer: ":bn",
+    explanation:
+      "`:bn` (buffer next) cycles forward through open buffers. `:bp` goes back, `:b 3` jumps to number 3.",
+  },
+  {
+    id: "vim-buffer-delete",
+    category: "vim",
+    prompt: "Remove the current buffer from the buffer list.",
+    answer: ":bd",
+    explanation: "`:bd` unloads the current buffer — unlike `:q`, it doesn't close the window.",
+  },
+  {
+    id: "vim-quit-all",
+    category: "vim",
+    prompt: "Quit all windows at once.",
+    answer: ":qall",
+    explanation: "`:qall` (or `:qa`) closes every window and quits. Add `!` to force it.",
+  },
+  {
+    id: "vim-quit-all-force",
+    category: "vim",
+    prompt: "Quit all windows without saving any changes.",
+    answer: ":qall!",
+    explanation: "`:qall!` force-quits every window, discarding all unsaved changes.",
+  },
+  {
+    id: "vim-write-all",
+    category: "vim",
+    prompt: "Save all modified buffers.",
+    answer: ":wall",
+    explanation: "`:wall` writes every dirty buffer — handy after editing files across several windows.",
+  },
+
+  // ── Smart editing tricks ──────────────────────────────────────────────────
+  {
+    id: "vim-swap-chars",
+    category: "vim",
+    prompt: "Swap the character under the cursor with the one after it.",
+    answer: "xp",
+    explanation: "`xp` = delete (`x`) then paste (`p`) — the classic transpose-characters trick.",
+  },
+  {
+    id: "vim-swap-lines",
+    category: "vim",
+    prompt: "Swap the current line with the line below it.",
+    answer: "ddp",
+    explanation:
+      "`ddp` cuts the line and pastes it below — instant line swap. `ddkP` swaps the other way.",
+  },
+  {
+    id: "vim-delete-eol-short",
+    category: "vim",
+    prompt: "Delete from the cursor to the end of the line using the one-key shortcut.",
+    answer: "D",
+    explanation: "`D` is shorthand for `d$` — delete to end of line in a single keypress.",
+  },
+  {
+    id: "vim-delete-until-char",
+    category: "vim",
+    prompt: "Delete from the cursor up to, but not including, the next `;`.",
+    answer: "dt;",
+    explanation:
+      "`dt;` = delete till `;` — it stops just before the semicolon, keeping the statement intact.",
+  },
+  {
+    id: "vim-delete-thru-char",
+    category: "vim",
+    prompt: "Delete from the cursor through the next `)` including it.",
+    answer: "df)",
+    explanation: "`df)` deletes everything up to and including the `)` — the `f` lands right on it.",
+  },
+  {
+    id: "vim-replace-char",
+    category: "vim",
+    prompt: "Replace the character under the cursor with `x` without entering insert mode.",
+    answer: "rx",
+    explanation: "`r` replaces a single character — `rx` swaps it for `x` and stays in normal mode.",
+  },
+  {
+    id: "vim-reselect",
+    category: "vim",
+    prompt: "Re-select the last visual selection.",
+    answer: "gv",
+    explanation:
+      "`gv` brings back the previous visual selection — handy to re-apply an indent or re-yank.",
+  },
+  {
+    id: "vim-go-def",
+    category: "vim",
+    prompt: "Jump to the definition of the identifier under the cursor.",
+    answer: "gd",
+    explanation: "`gd` jumps to the local definition in this file; `gD` looks through the whole project.",
+  },
+  {
+    id: "vim-open-under",
+    category: "vim",
+    prompt: "Open the file whose name is under the cursor.",
+    answer: "gf",
+    explanation: "`gf` (goto file) opens the file named under the cursor — great for following imports.",
+  },
+  {
+    id: "vim-man-under",
+    category: "vim",
+    prompt: "Show the man page for the word under the cursor.",
+    answer: "K",
+    explanation: "`K` looks up the word under the cursor in the man pages — instant documentation.",
+  },
+
+  // ── Formatting & case ─────────────────────────────────────────────────────
+  {
+    id: "vim-upper-line",
+    category: "vim",
+    prompt: "Uppercase the entire current line.",
+    answer: "gUU",
+    explanation: "`gUU` uppercases the whole line; `guu` lowercases it back.",
+  },
+  {
+    id: "vim-lower-line",
+    category: "vim",
+    prompt: "Lowercase the entire current line.",
+    answer: "guu",
+    explanation: "`guu` lowercases the line — the mirror of `gUU`.",
+  },
+  {
+    id: "vim-upper-word",
+    category: "vim",
+    prompt: "Uppercase the word under the cursor.",
+    answer: "gUw",
+    explanation: "`gUw` uppercases from the cursor to the end of the word; `guw` lowercases.",
+  },
+  {
+    id: "vim-format-line",
+    category: "vim",
+    prompt: "Re-wrap the current line to fit the text width.",
+    answer: "gqq",
+    explanation: "`gqq` reformats the current line — re-wrapping it to the text width.",
+  },
+  {
+    id: "vim-format-para",
+    category: "vim",
+    prompt: "Re-wrap the whole paragraph under the cursor.",
+    answer: "gqap",
+    explanation: "`gqap` = format around paragraph — it re-wraps every line of the paragraph.",
+  },
+  {
+    id: "vim-indent-file",
+    category: "vim",
+    prompt: "Re-indent the entire file to match your indentation settings.",
+    answer: "gg=G",
+    explanation: "`gg=G` = go to top, auto-indent, go to bottom — reformats the whole file.",
+  },
+  {
+    id: "vim-indent-line-eq",
+    category: "vim",
+    prompt: "Auto-indent just the current line.",
+    answer: "==",
+    explanation: "`==` auto-indents the current line based on the code around it.",
+  },
+
+  // ── Settings & info ───────────────────────────────────────────────────────
+  {
+    id: "vim-highlight-on",
+    category: "vim",
+    prompt: "Highlight every match of your last search.",
+    answer: ":set hls",
+    explanation: "`:set hls` (hlsearch) highlights all matches — clear it later with `:nohlsearch`.",
+  },
+  {
+    id: "vim-spell",
+    category: "vim",
+    prompt: "Turn on spell checking.",
+    answer: ":set spell",
+    explanation: "`:set spell` underlines misspelled words; `]s` jumps to the next error, `zg` adds a word.",
+  },
+  {
+    id: "vim-file-status",
+    category: "vim",
+    prompt: "Show the file name, line count, and cursor position as a percentage.",
+    answer: "Ctrl+g",
+    explanation: "`Ctrl+g` prints a status line with the file, line, and position — `:f` does the same.",
+  },
+  {
+    id: "vim-char-code",
+    category: "vim",
+    prompt: "Show the numeric (ASCII/Unicode) value of the character under the cursor.",
+    answer: "ga",
+    explanation:
+      "`ga` shows the value of the character under the cursor — great for identifying that weird char.",
+  },
+  {
+    id: "vim-command-history",
+    category: "vim",
+    prompt: "Open a window listing your command history for reuse.",
+    answer: "q:",
+    explanation: "`q:` opens the command-line history window — pick a line and hit Enter to re-run it.",
+  },
+  {
+    id: "vim-search-history",
+    category: "vim",
+    prompt: "Open a window listing your search history.",
+    answer: "q/",
+    explanation: "`q/` opens the search history window — reuse or tweak a past pattern.",
+  },
+  {
+    id: "vim-source-vimrc",
+    category: "vim",
+    prompt: "Reload your vimrc settings without restarting Vim.",
+    answer: ":so $MYVIMRC",
+    explanation:
+      "`:so $MYVIMRC` (source) applies your vimrc changes immediately — no restart needed.",
+  },
 ];

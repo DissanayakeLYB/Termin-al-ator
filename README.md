@@ -35,9 +35,10 @@ npm run preview    # preview the production build
 - The results screen shows session stats, a verdict, and a review list of every
   question you missed — type `restart` (or click the button) to play again.
 
-The dataset currently contains **88 beginner–intermediate Vim questions**
-across modes, file ops, movement, editing, search & replace, visual mode,
-windows & tabs, and settings.
+The dataset currently contains **163 Vim questions** covering modes, file ops,
+movement, editing, search & replace, visual mode, windows & tabs, settings,
+text objects, macros, marks & jump lists, filters and command-line one-liners,
+buffers, and formatting tricks.
 
 ## Project structure
 
