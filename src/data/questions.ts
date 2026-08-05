@@ -1707,6 +1707,517 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
 ];
 
+export const gitQuestions: QuizQuestion[] = [
+  // ── Setup & basics ────────────────────────────────────────────────────────
+  {
+    id: "git-init",
+    category: "git",
+    prompt: "Create a new repository in the current directory.",
+    answer: "git init",
+    explanation:
+      "`git init` creates the hidden `.git` folder that makes this directory a repository.",
+  },
+  {
+    id: "git-clone",
+    category: "git",
+    prompt: "Copy the remote repository `https://github.com/user/repo.git` into the current folder.",
+    answer: "git clone https://github.com/user/repo.git",
+    explanation:
+      "`git clone` downloads the repo and its whole history into a new folder named `repo`.",
+  },
+  {
+    id: "git-status",
+    category: "git",
+    prompt: "Show the current state of the working tree and the staging area.",
+    answer: "git status",
+    explanation:
+      "`git status` tells you what changed, what's staged, and what's untracked — check it constantly.",
+  },
+  {
+    id: "git-add-all",
+    category: "git",
+    prompt: "Stage every change — new, modified, and deleted files — in one go.",
+    answer: "git add .",
+    aliases: ["git add -A", "git add --all"],
+    explanation:
+      "`git add .` stages everything in the current directory. `-A` also catches deletions above it.",
+  },
+  {
+    id: "git-add-file",
+    category: "git",
+    prompt: "Stage only the file `main.py`.",
+    answer: "git add main.py",
+    explanation:
+      "Naming the file stages just that one — git lets you stage changes piece by piece.",
+  },
+  {
+    id: "git-add-patch",
+    category: "git",
+    prompt: "Review each change and stage it interactively, hunk by hunk.",
+    answer: "git add -p",
+    explanation:
+      "`git add -p` walks through every hunk and asks whether to stage it — surgical staging.",
+  },
+  {
+    id: "git-commit-message",
+    category: "git",
+    prompt: "Commit the staged changes with the message `fix typo`.",
+    answer: "git commit -m \"fix typo\"",
+    explanation:
+      "`-m` supplies the message inline so git skips the editor. Quote the message.",
+  },
+  {
+    id: "git-commit-amend",
+    category: "git",
+    prompt: "Rewrite the most recent commit's message in your editor.",
+    answer: "git commit --amend",
+    explanation:
+      "`git commit --amend` replaces the last commit — great for fixing a typo'd message before pushing.",
+  },
+
+  // ── Diff & history ────────────────────────────────────────────────────────
+  {
+    id: "git-diff",
+    category: "git",
+    prompt: "Show the unstaged changes in your working tree.",
+    answer: "git diff",
+    explanation: "`git diff` compares the working tree against the staging area — what you haven't staged.",
+  },
+  {
+    id: "git-diff-staged",
+    category: "git",
+    prompt: "Show the changes you've staged, ready to be committed.",
+    answer: "git diff --staged",
+    aliases: ["git diff --cached"],
+    explanation:
+      "`git diff --staged` (or `--cached`) shows exactly what would go into the next commit.",
+  },
+  {
+    id: "git-show-commit",
+    category: "git",
+    prompt: "Show the full details and diff of commit `abc1234`.",
+    answer: "git show abc1234",
+    explanation:
+      "`git show <sha>` prints the commit message, metadata, and the changes it introduced.",
+  },
+  {
+    id: "git-log",
+    category: "git",
+    prompt: "List the commit history, newest first.",
+    answer: "git log",
+    explanation:
+      "`git log` shows each commit with its hash, author, date, and message.",
+  },
+  {
+    id: "git-log-oneline",
+    category: "git",
+    prompt: "List the commit history as one compact line per commit.",
+    answer: "git log --oneline",
+    explanation:
+      "`--oneline` collapses each commit to its short hash and message — the daily driver view.",
+  },
+  {
+    id: "git-log-graph",
+    category: "git",
+    prompt: "Show the commit history as an ASCII graph of branches and merges.",
+    answer: "git log --graph",
+    aliases: ["git log --graph --all"],
+    explanation:
+      "`--graph` draws the branch topology. `git log --graph --all` includes every branch, not just the current one.",
+  },
+  {
+    id: "git-log-p",
+    category: "git",
+    prompt: "Show the commit history with the full diff of every commit.",
+    answer: "git log -p",
+    explanation:
+      "`-p` (patch) shows each commit's changes right under its message — great for digging into history.",
+  },
+  {
+    id: "git-log-author",
+    category: "git",
+    prompt: "Find every commit written by the author `alice`.",
+    answer: "git log --author=alice",
+    explanation:
+      "`--author=` filters the log by author — useful for reviewing someone's contribution.",
+  },
+  {
+    id: "git-blame",
+    category: "git",
+    prompt: "Show which commit last touched each line of `main.py`.",
+    answer: "git blame main.py",
+    explanation:
+      "`git blame` annotates every line with the commit that last changed it — who wrote this line, and why.",
+  },
+  {
+    id: "git-grep",
+    category: "git",
+    prompt: "Search the tracked files for the word `TODO`.",
+    answer: "git grep TODO",
+    explanation:
+      "`git grep` searches only tracked files — it skips build artifacts and ignored files.",
+  },
+  {
+    id: "git-shortlog",
+    category: "git",
+    prompt: "Summarize how many commits each author contributed.",
+    answer: "git shortlog -sn",
+    explanation:
+      "`-s` prints just the count, `-n` sorts by number of commits — instant contribution stats.",
+  },
+
+  // ── Branches & merging ────────────────────────────────────────────────────
+  {
+    id: "git-branch-list",
+    category: "git",
+    prompt: "List all local branches.",
+    answer: "git branch",
+    explanation: "`git branch` lists branches and marks the current one with an asterisk.",
+  },
+  {
+    id: "git-branch-new",
+    category: "git",
+    prompt: "Create a new branch named `feature` without switching to it.",
+    answer: "git branch feature",
+    explanation:
+      "`git branch <name>` just creates the pointer — you switch to it separately.",
+  },
+  {
+    id: "git-checkout-new",
+    category: "git",
+    prompt: "Create a branch named `feature` and switch to it in one command.",
+    answer: "git checkout -b feature",
+    aliases: ["git switch -c feature"],
+    explanation:
+      "`-b` means branch — it creates and checks out. The newer `git switch -c` does the same.",
+  },
+  {
+    id: "git-switch-branch",
+    category: "git",
+    prompt: "Switch to the existing branch `main`.",
+    answer: "git checkout main",
+    aliases: ["git switch main"],
+    explanation:
+      "`git checkout main` (or the newer `git switch main`) moves you onto that branch.",
+  },
+  {
+    id: "git-branch-delete",
+    category: "git",
+    prompt: "Delete the fully merged branch `feature`.",
+    answer: "git branch -d feature",
+    explanation:
+      "`-d` deletes only merged branches — git protects you from losing unmerged work.",
+  },
+  {
+    id: "git-branch-delete-force",
+    category: "git",
+    prompt: "Force-delete the branch `feature` even though it isn't merged.",
+    answer: "git branch -D feature",
+    explanation:
+      "Uppercase `-D` overrides the safety check. Only use it when you truly want that work gone.",
+  },
+  {
+    id: "git-branch-rename",
+    category: "git",
+    prompt: "Rename the current branch to `topic`.",
+    answer: "git branch -m topic",
+    explanation:
+      "`-m` (move) renames the branch you're on — `git branch -m old new` works from anywhere.",
+  },
+  {
+    id: "git-merge",
+    category: "git",
+    prompt: "Merge the branch `feature` into the current branch.",
+    answer: "git merge feature",
+    explanation:
+      "`git merge feature` folds that branch's commits into your current branch.",
+  },
+  {
+    id: "git-merge-abort",
+    category: "git",
+    prompt: "Abort a merge that ran into conflicts.",
+    answer: "git merge --abort",
+    explanation:
+      "`git merge --abort` backs out of a conflicted merge and restores your pre-merge state.",
+  },
+  {
+    id: "git-rebase",
+    category: "git",
+    prompt: "Replay the current branch's commits on top of `main`.",
+    answer: "git rebase main",
+    explanation:
+      "Rebasing rewrites your commits so they sit on top of `main` — a linear, clean history.",
+  },
+  {
+    id: "git-rebase-interactive",
+    category: "git",
+    prompt: "Squash, reword, or reorder the last 3 commits interactively.",
+    answer: "git rebase -i HEAD~3",
+    explanation:
+      "`-i` opens an editor listing the last three commits — change `pick` to `squash` to fold them.",
+  },
+  {
+    id: "git-cherry-pick",
+    category: "git",
+    prompt: "Apply the changes of commit `abc1234` onto the current branch.",
+    answer: "git cherry-pick abc1234",
+    explanation:
+      "`git cherry-pick` copies a single commit's changes onto your branch — no merge needed.",
+  },
+  {
+    id: "git-revert",
+    category: "git",
+    prompt: "Undo commit `abc1234` by creating a new commit that reverses it.",
+    answer: "git revert abc1234",
+    explanation:
+      "`git revert` adds an inverse commit — history stays intact, which matters once you've pushed.",
+  },
+
+  // ── Undoing & recovery ────────────────────────────────────────────────────
+  {
+    id: "git-reset-soft",
+    category: "git",
+    prompt: "Move the branch pointer back one commit, keeping the changes staged.",
+    answer: "git reset --soft HEAD~1",
+    explanation:
+      "`--soft` only moves the pointer — your changes stay in the staging area, ready to recommit.",
+  },
+  {
+    id: "git-reset-hard",
+    category: "git",
+    prompt: "Throw away all uncommitted changes and reset to the last commit.",
+    answer: "git reset --hard HEAD",
+    explanation:
+      "`--hard` discards staged and unstaged changes alike. There's no undo for this one — use with care.",
+  },
+  {
+    id: "git-restore-file",
+    category: "git",
+    prompt: "Discard the unstaged changes to `main.py`, restoring it to the last commit.",
+    answer: "git checkout -- main.py",
+    aliases: ["git restore main.py"],
+    explanation:
+      "`git checkout -- <file>` (or `git restore <file>`) reverts that file's unstaged edits.",
+  },
+  {
+    id: "git-restore-staged",
+    category: "git",
+    prompt: "Unstage `main.py` but keep its changes in the working tree.",
+    answer: "git restore --staged main.py",
+    aliases: ["git reset HEAD main.py"],
+    explanation:
+      "`--staged` only removes the file from the index — the edits themselves are untouched.",
+  },
+  {
+    id: "git-reflog",
+    category: "git",
+    prompt: "See the history of where HEAD has been — the way to recover a lost commit.",
+    answer: "git reflog",
+    explanation:
+      "`git reflog` logs every move of HEAD, even after resets — your safety net for lost work.",
+  },
+  {
+    id: "git-clean-dry",
+    category: "git",
+    prompt: "Preview which untracked files would be deleted.",
+    answer: "git clean -n",
+    aliases: ["git clean --dry-run"],
+    explanation:
+      "`-n` (dry run) lists what `git clean` would remove without removing anything.",
+  },
+  {
+    id: "git-clean",
+    category: "git",
+    prompt: "Delete untracked files and directories.",
+    answer: "git clean -fd",
+    explanation:
+      "`-f` forces the delete, `-d` includes directories. Check with `git clean -n` first.",
+  },
+  {
+    id: "git-stash",
+    category: "git",
+    prompt: "Set aside all uncommitted changes without committing them.",
+    answer: "git stash",
+    explanation:
+      "`git stash` shelves your work-in-progress so you can switch branches cleanly.",
+  },
+  {
+    id: "git-stash-list",
+    category: "git",
+    prompt: "List all saved stashes.",
+    answer: "git stash list",
+    explanation: "`git stash list` shows every shelved change set, oldest first.",
+  },
+  {
+    id: "git-stash-pop",
+    category: "git",
+    prompt: "Restore the most recent stash and remove it from the stash list.",
+    answer: "git stash pop",
+    explanation: "`pop` applies the stash and drops it — one command, both halves of the round trip.",
+  },
+  {
+    id: "git-stash-apply",
+    category: "git",
+    prompt: "Restore the most recent stash but keep it in the stash list.",
+    answer: "git stash apply",
+    explanation:
+      "`apply` restores the changes without removing the stash — useful when you need them twice.",
+  },
+  {
+    id: "git-stash-drop",
+    category: "git",
+    prompt: "Delete the most recent stash.",
+    answer: "git stash drop",
+    explanation:
+      "`git stash drop` discards the newest stash. Name one explicitly (like `stash@{2}`) to drop another.",
+  },
+
+  // ── Remotes & publishing ──────────────────────────────────────────────────
+  {
+    id: "git-remote-list",
+    category: "git",
+    prompt: "List all configured remotes and their URLs.",
+    answer: "git remote -v",
+    explanation:
+      "`-v` (verbose) also prints each remote's fetch and push URLs — the default remote is `origin`.",
+  },
+  {
+    id: "git-remote-add",
+    category: "git",
+    prompt: "Add a remote named `origin` pointing at `https://github.com/user/repo.git`.",
+    answer: "git remote add origin https://github.com/user/repo.git",
+    explanation:
+      "`git remote add <name> <url>` registers a remote; `origin` is the conventional first one.",
+  },
+  {
+    id: "git-remote-remove",
+    category: "git",
+    prompt: "Remove the remote named `origin`.",
+    answer: "git remote remove origin",
+    explanation:
+      "`git remote remove origin` forgets the remote — it doesn't touch the repo on the server.",
+  },
+  {
+    id: "git-fetch",
+    category: "git",
+    prompt: "Download new commits from the remote without merging them.",
+    answer: "git fetch",
+    explanation:
+      "`git fetch` updates your remote-tracking branches; your working tree stays untouched.",
+  },
+  {
+    id: "git-pull",
+    category: "git",
+    prompt: "Fetch and merge the remote changes into your current branch.",
+    answer: "git pull",
+    explanation: "`git pull` is `git fetch` plus a merge — it brings your branch up to date.",
+  },
+  {
+    id: "git-pull-rebase",
+    category: "git",
+    prompt: "Fetch remote changes and rebase your local commits on top of them.",
+    answer: "git pull --rebase",
+    explanation:
+      "`--rebase` replays your unpushed commits on top of the incoming ones — a linear history.",
+  },
+  {
+    id: "git-push-upstream",
+    category: "git",
+    prompt: "Push the `main` branch to `origin` and remember it as the upstream.",
+    answer: "git push -u origin main",
+    explanation:
+      "`-u` sets the upstream, so later you can just type `git push` (or `git pull`) with no arguments.",
+  },
+  {
+    id: "git-push-tags",
+    category: "git",
+    prompt: "Push all tags to the remote.",
+    answer: "git push --tags",
+    explanation:
+      "`git push` doesn't send tags automatically — `--tags` pushes them all at once.",
+  },
+  {
+    id: "git-tag",
+    category: "git",
+    prompt: "Tag the current commit as `v1.0.0`.",
+    answer: "git tag v1.0.0",
+    explanation: "`git tag <name>` marks the current commit — a lightweight pointer, like a branch that never moves.",
+  },
+  {
+    id: "git-tag-annotated",
+    category: "git",
+    prompt: "Create an annotated tag `v1.0.0` with the message `release`.",
+    answer: "git tag -a v1.0.0 -m \"release\"",
+    explanation:
+      "`-a` adds a message and the tagger's name and date — the full-fidelity version of a tag.",
+  },
+
+  // ── Advanced workflows ────────────────────────────────────────────────────
+  {
+    id: "git-bisect-start",
+    category: "git",
+    prompt: "Start a binary search to find the commit that introduced a bug.",
+    answer: "git bisect start",
+    explanation:
+      "`git bisect start` begins the hunt — you'll mark commits good and bad until git narrows it down.",
+  },
+  {
+    id: "git-bisect-bad",
+    category: "git",
+    prompt: "Tell git the current commit is the one with the bug.",
+    answer: "git bisect bad",
+    explanation: "`git bisect bad` marks the broken end of the range.",
+  },
+  {
+    id: "git-bisect-good",
+    category: "git",
+    prompt: "Tell git the current commit is known to be fine.",
+    answer: "git bisect good",
+    explanation:
+      "`git bisect good` halves the search range; keep answering until git names the culprit commit.",
+  },
+  {
+    id: "git-config-name",
+    category: "git",
+    prompt: "Set your commit author name to `Alice` for every repository.",
+    answer: "git config --global user.name Alice",
+    explanation:
+      "`--global` writes to your user config, so the name applies everywhere. `--local` overrides per repo.",
+  },
+  {
+    id: "git-config-email",
+    category: "git",
+    prompt: "Set your commit email globally to `alice@example.com`.",
+    answer: "git config --global user.email alice@example.com",
+    explanation:
+      "Your email is recorded in every commit — commit before setting it and git may refuse.",
+  },
+  {
+    id: "git-config-list",
+    category: "git",
+    prompt: "Show all current git configuration.",
+    answer: "git config --list",
+    explanation:
+      "`git config --list` dumps the effective config across global and repo levels.",
+  },
+  {
+    id: "git-diff-branches",
+    category: "git",
+    prompt: "Show the difference between branch `main` and branch `feature`.",
+    answer: "git diff main feature",
+    explanation:
+      "`git diff <a> <b>` compares two branches — see what merging `feature` would change.",
+  },
+  {
+    id: "git-worktree",
+    category: "git",
+    prompt: "Create a linked worktree for branch `fix` in the folder `../fix`.",
+    answer: "git worktree add ../fix fix",
+    explanation:
+      "Worktrees let you check out a second branch in a separate folder of the same repo — no stashing.",
+  },
+];
+
 /** A practice category with its dataset and blurb. */
 export interface QuestionSet {
   category: Category;
@@ -1741,8 +2252,8 @@ export const questionSets: Record<Category, QuestionSet> = {
   git: {
     category: "git",
     label: "git",
-    description: "commits, branches, and the everyday workflow",
-    questions: [],
+    description: "staging, history, branches, and remotes",
+    questions: gitQuestions,
   },
   docker: {
     category: "docker",
