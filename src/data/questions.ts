@@ -2218,6 +2218,593 @@ export const gitQuestions: QuizQuestion[] = [
   },
 ];
 
+export const shellQuestions: QuizQuestion[] = [
+  // ── Files & navigation ────────────────────────────────────────────────────
+  {
+    id: "shell-pwd",
+    category: "shell",
+    prompt: "Print the full path of the current working directory.",
+    answer: "pwd",
+    explanation: "`pwd` (print working directory) tells you exactly where you are in the filesystem.",
+  },
+  {
+    id: "shell-ls",
+    category: "shell",
+    prompt: "List the files in the current directory.",
+    answer: "ls",
+    explanation: "`ls` lists the directory contents — the first command most people learn.",
+  },
+  {
+    id: "shell-ls-all",
+    category: "shell",
+    prompt: "List all files, including hidden ones that start with a dot.",
+    answer: "ls -a",
+    explanation: "`-a` (all) reveals hidden files like `.git` and `.bashrc`.",
+  },
+  {
+    id: "shell-ls-la",
+    category: "shell",
+    prompt: "List every file with full details — permissions, sizes, dates.",
+    answer: "ls -la",
+    explanation:
+      "`ls -la` combines `-a` and `-l` — the standard 'everything about this directory' view.",
+  },
+  {
+    id: "shell-cd-home",
+    category: "shell",
+    prompt: "Go to your home directory.",
+    answer: "cd ~",
+    aliases: ["cd"],
+    explanation: "`cd ~` (or bare `cd`) jumps home — the `~` is shorthand for your home path.",
+  },
+  {
+    id: "shell-cd-up",
+    category: "shell",
+    prompt: "Go up one directory level.",
+    answer: "cd ..",
+    explanation: "`..` is the parent directory, so `cd ..` moves one level up.",
+  },
+  {
+    id: "shell-cd-back",
+    category: "shell",
+    prompt: "Jump back to the directory you were just in.",
+    answer: "cd -",
+    explanation:
+      "`cd -` toggles between your current and previous directory — faster than typing paths.",
+  },
+  {
+    id: "shell-mkdir-p",
+    category: "shell",
+    prompt: "Create the nested path `a/b/c`, making any missing parents.",
+    answer: "mkdir -p a/b/c",
+    explanation: "`-p` (parents) creates every missing directory in the path in one go.",
+  },
+  {
+    id: "shell-touch",
+    category: "shell",
+    prompt: "Create a new empty file named `notes.txt`.",
+    answer: "touch notes.txt",
+    explanation:
+      "`touch` creates an empty file if it doesn't exist (and updates the timestamp if it does).",
+  },
+  {
+    id: "shell-cp",
+    category: "shell",
+    prompt: "Copy `notes.txt` to a new file named `backup.txt`.",
+    answer: "cp notes.txt backup.txt",
+    explanation: "`cp <source> <dest>` duplicates a file — `cp -r` does the same for directories.",
+  },
+  {
+    id: "shell-mv",
+    category: "shell",
+    prompt: "Rename `old.txt` to `new.txt`.",
+    answer: "mv old.txt new.txt",
+    explanation: "`mv` moves or renames — there's no separate rename command in the shell.",
+  },
+  {
+    id: "shell-rm",
+    category: "shell",
+    prompt: "Delete the file `temp.txt`.",
+    answer: "rm temp.txt",
+    explanation: "`rm` deletes files permanently — there's no trash bin, so use it deliberately.",
+  },
+  {
+    id: "shell-rm-rf",
+    category: "shell",
+    prompt: "Force-delete the directory `build` and everything inside it.",
+    answer: "rm -rf build",
+    explanation:
+      "`-r` recurses, `-f` skips confirmations. `rm -rf` is powerful — double-check before running.",
+  },
+  {
+    id: "shell-ln",
+    category: "shell",
+    prompt: "Create a symlink named `current` that points at the directory `data`.",
+    answer: "ln -s data current",
+    explanation:
+      "`ln -s <target> <link>` makes a shortcut — the link behaves like the real path.",
+  },
+
+  // ── Viewing & searching ───────────────────────────────────────────────────
+  {
+    id: "shell-cat",
+    category: "shell",
+    prompt: "Print the entire contents of `file.txt` to the terminal.",
+    answer: "cat file.txt",
+    explanation: "`cat` dumps a file to stdout — short files only, or the output scrolls away.",
+  },
+  {
+    id: "shell-less",
+    category: "shell",
+    prompt: "View `file.txt` one screen at a time, with scrolling.",
+    answer: "less file.txt",
+    explanation:
+      "`less` pages through long files — space to page, `/` to search, `q` to quit.",
+  },
+  {
+    id: "shell-head",
+    category: "shell",
+    prompt: "Show only the first 5 lines of `file.txt`.",
+    answer: "head -n 5 file.txt",
+    aliases: ["head -5 file.txt"],
+    explanation: "`head -n N` shows the top N lines — `head -5` is a shorthand that also works.",
+  },
+  {
+    id: "shell-tail",
+    category: "shell",
+    prompt: "Show only the last 10 lines of `file.txt`.",
+    answer: "tail -n 10 file.txt",
+    explanation: "`tail -n N` shows the bottom N lines — the default is the last 10.",
+  },
+  {
+    id: "shell-tail-f",
+    category: "shell",
+    prompt: "Follow `app.log` and print new lines as they're appended.",
+    answer: "tail -f app.log",
+    explanation:
+      "`tail -f` (follow) watches a growing file — the standard way to watch server logs live.",
+  },
+  {
+    id: "shell-grep",
+    category: "shell",
+    prompt: "Print the lines of `file.txt` that contain `error`.",
+    answer: "grep error file.txt",
+    explanation: "`grep <pattern> <file>` filters lines by a pattern — the workhorse of the shell.",
+  },
+  {
+    id: "shell-grep-i",
+    category: "shell",
+    prompt: "Search `file.txt` for `error`, ignoring case.",
+    answer: "grep -i error file.txt",
+    explanation: "`-i` makes the match case-insensitive, so `Error` and `ERROR` count too.",
+  },
+  {
+    id: "shell-grep-v",
+    category: "shell",
+    prompt: "Show the lines of `file.txt` that do NOT contain `debug`.",
+    answer: "grep -v debug file.txt",
+    explanation: "`-v` inverts the match — everything except lines with `debug`.",
+  },
+  {
+    id: "shell-grep-rn",
+    category: "shell",
+    prompt: "Search every file under `src` for `TODO`, printing file names and line numbers.",
+    answer: "grep -rn TODO src",
+    aliases: ["grep -r TODO src"],
+    explanation: "`-r` recurses into directories; `-n` adds line numbers for each hit.",
+  },
+  {
+    id: "shell-find-name",
+    category: "shell",
+    prompt: "Find every file matching `*.log` under the current directory.",
+    answer: "find . -name \"*.log\"",
+    explanation:
+      "`find` walks the tree — `-name` matches filenames. The quotes stop the shell from expanding the glob itself.",
+  },
+  {
+    id: "shell-find-type",
+    category: "shell",
+    prompt: "Find every directory under the current directory.",
+    answer: "find . -type d",
+    explanation: "`-type d` matches directories (`-type f` matches files) — useful for mapping a tree.",
+  },
+  {
+    id: "shell-wc-l",
+    category: "shell",
+    prompt: "Count how many lines `file.txt` has.",
+    answer: "wc -l file.txt",
+    explanation: "`wc -l` counts lines — `wc -w` counts words and `wc -c` counts bytes.",
+  },
+  {
+    id: "shell-sort-nr",
+    category: "shell",
+    prompt: "Sort `file.txt` numerically, largest first.",
+    answer: "sort -nr file.txt",
+    explanation: "`-n` sorts by number (so 10 beats 9), `-r` reverses to descending order.",
+  },
+
+  // ── Pipes, redirection & processes ────────────────────────────────────────
+  {
+    id: "shell-pipe-count",
+    category: "shell",
+    prompt: "Count how many files are in the current directory.",
+    answer: "ls | wc -l",
+    explanation:
+      "The pipe `|` feeds one command's output into the next — here, `ls` into `wc -l`.",
+  },
+  {
+    id: "shell-ps-grep",
+    category: "shell",
+    prompt: "Find the process that's running `nginx`.",
+    answer: "ps aux | grep nginx",
+    explanation:
+      "`ps aux` lists all processes; piping to `grep nginx` filters for the one you want.",
+  },
+  {
+    id: "shell-redirect-overwrite",
+    category: "shell",
+    prompt: "Write the output of `ls` into `listing.txt`, replacing whatever was there.",
+    answer: "ls > listing.txt",
+    explanation:
+      "`>` sends stdout into a file, overwriting it — `ls` prints nothing on screen anymore.",
+  },
+  {
+    id: "shell-redirect-append",
+    category: "shell",
+    prompt: "Add the output of `ls` to the end of `listing.txt` without overwriting it.",
+    answer: "ls >> listing.txt",
+    explanation: "`>>` appends instead of overwriting — the safe twin of `>`.",
+  },
+  {
+    id: "shell-redirect-both",
+    category: "shell",
+    prompt: "Capture both stdout and stderr of `ls` into `out.log`.",
+    answer: "ls > out.log 2>&1",
+    explanation:
+      "`2>&1` redirects the error stream (2) to wherever stdout (1) is going — both land in the file.",
+  },
+  {
+    id: "shell-redirect-null",
+    category: "shell",
+    prompt: "Run `ls missing.txt` silently, discarding its error message.",
+    answer: "ls missing.txt 2>/dev/null",
+    explanation:
+      "`2>/dev/null` throws stderr away — `/dev/null` is the shell's bottomless pit.",
+  },
+  {
+    id: "shell-tee",
+    category: "shell",
+    prompt: "Show `ls` output on screen AND save it to `listing.txt` at the same time.",
+    answer: "ls | tee listing.txt",
+    explanation:
+      "`tee` splits a stream — one copy to stdout, one to the file. Like a plumbing T-junction.",
+  },
+  {
+    id: "shell-xargs",
+    category: "shell",
+    prompt: "Print the names of every Python file under `.` that contains `TODO`.",
+    answer: "find . -name \"*.py\" | xargs grep -l TODO",
+    explanation:
+      "`xargs` converts stdin into arguments — each found file becomes an argument to `grep -l`.",
+  },
+  {
+    id: "shell-ps",
+    category: "shell",
+    prompt: "List every running process with its PID and CPU/memory usage.",
+    answer: "ps aux",
+    explanation: "`ps aux` is the classic all-processes snapshot — for a live updating view, run `top` instead.",
+  },
+  {
+    id: "shell-kill",
+    category: "shell",
+    prompt: "Send a termination request to the process with PID 1234.",
+    answer: "kill 1234",
+    explanation: "`kill` sends SIGTERM — a polite 'please stop' that lets the process clean up.",
+  },
+  {
+    id: "shell-kill-9",
+    category: "shell",
+    prompt: "Force-kill the process with PID 1234 immediately.",
+    answer: "kill -9 1234",
+    explanation: "`-9` sends SIGKILL, which the process cannot ignore — last resort for stuck programs.",
+  },
+  {
+    id: "shell-pkill",
+    category: "shell",
+    prompt: "Kill every process whose name matches `chrome`.",
+    answer: "pkill chrome",
+    explanation: "`pkill` kills by name instead of PID — no hunting for process numbers first.",
+  },
+  {
+    id: "shell-background",
+    category: "shell",
+    prompt: "Run `sleep 30` in the background so the prompt returns immediately.",
+    answer: "sleep 30 &",
+    explanation: "The trailing `&` starts a job in the background and gives you your prompt back.",
+  },
+  {
+    id: "shell-history",
+    category: "shell",
+    prompt: "Show your command history.",
+    answer: "history",
+    explanation: "`history` prints what you've typed — pipe it to `grep` to hunt for that one command.",
+  },
+  {
+    id: "shell-rerun-last",
+    category: "shell",
+    prompt: "Re-run the last command you typed.",
+    answer: "!!",
+    explanation: "`!!` expands to the previous command — the classic recovery after a failed `sudo`.",
+  },
+  {
+    id: "shell-exit-status",
+    category: "shell",
+    prompt: "Print the exit status of the last command (0 means success).",
+    answer: "echo $?",
+    explanation: "`$?` holds the last command's exit code — 0 for success, anything else for failure.",
+  },
+
+  // ── Interactive shortcuts ─────────────────────────────────────────────────
+  {
+    id: "shell-ctrl-c",
+    category: "shell",
+    prompt: "Interrupt the command currently running and get your prompt back.",
+    answer: "Ctrl+c",
+    explanation: "`Ctrl+c` sends SIGINT — the universal 'stop this' in the terminal.",
+  },
+  {
+    id: "shell-ctrl-d",
+    category: "shell",
+    prompt: "Send end-of-input to close the shell.",
+    answer: "Ctrl+d",
+    explanation:
+      "`Ctrl+d` sends EOF — at a bare prompt it exits the shell. It's also how you end stdin to a program.",
+  },
+  {
+    id: "shell-ctrl-z",
+    category: "shell",
+    prompt: "Suspend the running foreground job so you can resume it later.",
+    answer: "Ctrl+z",
+    explanation: "`Ctrl+z` pauses the job (SIGTSTP) — `fg` brings it back, `bg` resumes it in the background.",
+  },
+  {
+    id: "shell-ctrl-l",
+    category: "shell",
+    prompt: "Clear the terminal screen.",
+    answer: "Ctrl+l",
+    aliases: ["clear"],
+    explanation:
+      "`Ctrl+l` clears the screen without losing your scrollback — faster than typing `clear`.",
+  },
+  {
+    id: "shell-ctrl-r",
+    category: "shell",
+    prompt: "Search your command history interactively as you type.",
+    answer: "Ctrl+r",
+    explanation:
+      "`Ctrl+r` starts reverse search — type a fragment and press `Ctrl+r` again to cycle matches.",
+  },
+  {
+    id: "shell-ctrl-a",
+    category: "shell",
+    prompt: "Jump the cursor to the start of the line while editing a command.",
+    answer: "Ctrl+a",
+    explanation: "`Ctrl+a` moves to the line start; `Ctrl+e` moves to the end — the readline quick pair.",
+  },
+  {
+    id: "shell-ctrl-e",
+    category: "shell",
+    prompt: "Jump the cursor to the end of the line while editing a command.",
+    answer: "Ctrl+e",
+    explanation: "`Ctrl+e` moves to the line end — the partner of `Ctrl+a`.",
+  },
+  {
+    id: "shell-ctrl-u",
+    category: "shell",
+    prompt: "Delete everything before the cursor on the current line.",
+    answer: "Ctrl+u",
+    explanation: "`Ctrl+u` clears back to the prompt — handy when a long command goes wrong.",
+  },
+
+  // ── Permissions & ownership ───────────────────────────────────────────────
+  {
+    id: "shell-chmod-x",
+    category: "shell",
+    prompt: "Make `deploy.sh` executable.",
+    answer: "chmod +x deploy.sh",
+    explanation:
+      "`+x` adds execute permission — the step between 'writes a script' and 'can run it'.",
+  },
+  {
+    id: "shell-chmod-755",
+    category: "shell",
+    prompt: "Set `deploy.sh` to rwx for the owner and rx for everyone else.",
+    answer: "chmod 755 deploy.sh",
+    explanation:
+      "In `755`, each digit is owner/group/others: 7 = rwx, 5 = rx. The classic script permission.",
+  },
+  {
+    id: "shell-chown",
+    category: "shell",
+    prompt: "Give ownership of `file.txt` to the user `alice` and the group `dev`.",
+    answer: "chown alice:dev file.txt",
+    explanation: "`chown user:group <file>` sets both owner and group in one command.",
+  },
+  {
+    id: "shell-whoami",
+    category: "shell",
+    prompt: "Show the name of the current user.",
+    answer: "whoami",
+    explanation: "`whoami` prints your username — check it before blaming a permissions problem.",
+  },
+
+  // ── Environment & configuration ───────────────────────────────────────────
+  {
+    id: "shell-echo-path",
+    category: "shell",
+    prompt: "Print the value of the `PATH` variable.",
+    answer: "echo $PATH",
+    explanation:
+      "`$PATH` lists the directories the shell searches for commands — the `$` dereferences the variable.",
+  },
+  {
+    id: "shell-export",
+    category: "shell",
+    prompt: "Set the environment variable `EDITOR` to `vim` for this session.",
+    answer: "export EDITOR=vim",
+    explanation:
+      "`export` makes the variable visible to child processes; without it, only the shell sees it.",
+  },
+  {
+    id: "shell-source",
+    category: "shell",
+    prompt: "Apply the changes in `~/.bashrc` to the current shell without restarting.",
+    answer: "source ~/.bashrc",
+    aliases: [". ~/.bashrc"],
+    explanation:
+      "`source` (or the shorthand `.`) runs the file in the current shell — new aliases appear instantly.",
+  },
+  {
+    id: "shell-alias",
+    category: "shell",
+    prompt: "Create an alias `ll` that runs `ls -l`.",
+    answer: "alias ll='ls -l'",
+    explanation:
+      "`alias <name>='<command>'` gives you a shortcut — add it to `~/.bashrc` to keep it forever.",
+  },
+  {
+    id: "shell-type",
+    category: "shell",
+    prompt: "Show what kind of thing the shell considers `cd` to be.",
+    answer: "type cd",
+    explanation: "`type` reveals whether a name is a builtin, alias, function, or external binary.",
+  },
+  {
+    id: "shell-which",
+    category: "shell",
+    prompt: "Show the full path of the `git` executable that would run.",
+    answer: "which git",
+    aliases: ["command -v git"],
+    explanation: "`which` prints the resolved path of a command; `command -v` is the portable variant.",
+  },
+  {
+    id: "shell-man",
+    category: "shell",
+    prompt: "Open the manual page for `ls`.",
+    answer: "man ls",
+    explanation: "`man <cmd>` is the built-in documentation — `q` quits, `/` searches within the page.",
+  },
+
+  // ── Text processing ───────────────────────────────────────────────────────
+  {
+    id: "shell-cut",
+    category: "shell",
+    prompt: "Extract the second comma-separated field of every line in `data.csv`.",
+    answer: "cut -d, -f2 data.csv",
+    explanation: "`-d,` sets the delimiter to a comma and `-f2` picks the second field.",
+  },
+  {
+    id: "shell-awk",
+    category: "shell",
+    prompt: "Print the first word of every line of `file.txt`.",
+    answer: "awk '{print $1}' file.txt",
+    explanation:
+      "`awk` splits each line on whitespace; `$1` is the first field. Quoted so the shell passes it whole.",
+  },
+  {
+    id: "shell-sed",
+    category: "shell",
+    prompt: "Replace every `foo` with `bar` in `file.txt`, editing the file in place.",
+    answer: "sed -i 's/foo/bar/g' file.txt",
+    explanation:
+      "`-i` edits the file itself; `s/foo/bar/g` substitutes globally on each line.",
+  },
+  {
+    id: "shell-tr",
+    category: "shell",
+    prompt: "Convert every lowercase letter in `file.txt` to uppercase.",
+    answer: "tr 'a-z' 'A-Z' < file.txt",
+    explanation:
+      "`tr` translates character sets; `<` feeds the file in as stdin. Pipe the result onward as needed.",
+  },
+  {
+    id: "shell-diff-u",
+    category: "shell",
+    prompt: "Show the differences between `a.txt` and `b.txt` as a unified diff.",
+    answer: "diff -u a.txt b.txt",
+    explanation:
+      "`diff -u` is the unified format git and patch tools use — `+` lines are new, `-` lines removed.",
+  },
+
+  // ── Archives & system info ────────────────────────────────────────────────
+  {
+    id: "shell-tar-c",
+    category: "shell",
+    prompt: "Create `backup.tar.gz` from the `src` directory, gzip-compressed.",
+    answer: "tar -czf backup.tar.gz src",
+    explanation:
+      "`c` creates, `z` compresses with gzip, `f` names the file — the standard backup trio.",
+  },
+  {
+    id: "shell-tar-x",
+    category: "shell",
+    prompt: "Extract `backup.tar.gz` in the current directory.",
+    answer: "tar -xzf backup.tar.gz",
+    explanation: "`x` extracts — with `-z` it handles the gzip layer automatically.",
+  },
+  {
+    id: "shell-df",
+    category: "shell",
+    prompt: "Show disk space usage for every filesystem in human-readable form.",
+    answer: "df -h",
+    explanation: "`df -h` shows free space per disk; `-h` turns bytes into GB/MB.",
+  },
+  {
+    id: "shell-du",
+    category: "shell",
+    prompt: "Show the total size of the current directory, human-readable.",
+    answer: "du -sh .",
+    explanation: "`du` measures disk usage; `-s` summarizes and `-h` makes it readable.",
+  },
+  {
+    id: "shell-watch",
+    category: "shell",
+    prompt: "Re-run `ls` every 2 seconds to watch a directory change live.",
+    answer: "watch -n 2 ls",
+    explanation: "`watch` reruns a command on a timer — `-n 2` is the interval in seconds.",
+  },
+  {
+    id: "shell-curl",
+    category: "shell",
+    prompt: "Download `https://example.com/file.zip` to the current folder, keeping its filename.",
+    answer: "curl -O https://example.com/file.zip",
+    explanation:
+      "`-O` saves with the remote filename; without it curl prints the response to the screen.",
+  },
+  {
+    id: "shell-ping",
+    category: "shell",
+    prompt: "Check whether `google.com` is reachable.",
+    answer: "ping google.com",
+    explanation: "`ping` sends ICMP probes and reports latency — the quick reachability check.",
+  },
+  {
+    id: "shell-shebang",
+    category: "shell",
+    prompt: "Start a bash script with the shebang line that selects the interpreter.",
+    answer: "#!/bin/bash",
+    explanation:
+      "The shebang tells the kernel which interpreter to run — every bash script starts with this line.",
+  },
+  {
+    id: "shell-arg-first",
+    category: "shell",
+    prompt: "Reference the first argument passed to a script.",
+    answer: "$1",
+    explanation: "`$1` is the first argument, `$2` the second, `$@` all of them — the script's parameters.",
+  },
+];
+
 /** A practice category with its dataset and blurb. */
 export interface QuestionSet {
   category: Category;
@@ -2246,8 +2833,8 @@ export const questionSets: Record<Category, QuestionSet> = {
   shell: {
     category: "shell",
     label: "shell",
-    description: "pipes, redirection, and everyday commands",
-    questions: [],
+    description: "files, pipes, redirection, and processes",
+    questions: shellQuestions,
   },
   git: {
     category: "git",
