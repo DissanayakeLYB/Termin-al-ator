@@ -139,7 +139,7 @@ export function CategoryPage({ onSelect }: CategoryPageProps) {
             variant="primary"
             onClick={() => handleSelect(availableQuestionSets[0].category)}
           >
-            start {availableQuestionSets[0].label} →
+            start →
           </Button>
         }
       />
