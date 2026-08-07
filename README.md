@@ -49,8 +49,10 @@ aliases, internals, and submodules), and
 processes, interactive shortcuts, permissions, environment, text processing,
 and archives), **81 docker questions** (images & containers, container
 lifecycle, building & registries, Dockerfile instructions, compose, networks,
-volumes, and cleanup), and **51 regex questions** (anchors, character classes,
-quantifiers, groups & alternation, escapes, common patterns, and flags).
+volumes, and cleanup), **51 regex questions** (anchors, character classes,
+quantifiers, groups & alternation, escapes, common patterns, and flags), and
+**54 ssh questions** (connecting, keys & authentication, the agent, tunneling,
+file transfer, config & hardening).
 
 ## Project structure
 

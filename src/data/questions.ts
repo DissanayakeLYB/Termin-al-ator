@@ -4161,6 +4161,452 @@ export const regexQuestions: QuizQuestion[] = [
   },
 ];
 
+export const sshQuestions: QuizQuestion[] = [
+  {
+    id: "ssh-connect",
+    category: "ssh",
+    prompt: "Connect to the host `example.com` as user `alice`.",
+    answer: "ssh alice@example.com",
+    explanation:
+      "`ssh user@host` opens an encrypted shell. The `user@` prefix picks the login name; without it SSH uses your local username.",
+  },
+  {
+    id: "ssh-port",
+    category: "ssh",
+    prompt: "Connect to `example.com` as `alice` over port `2222`.",
+    answer: "ssh -p 2222 alice@example.com",
+    explanation:
+      "`-p` sets the port to connect to when the server doesn't listen on 22. Watch the case: ssh uses lowercase `-p`, scp uses uppercase `-P`.",
+  },
+  {
+    id: "ssh-l",
+    category: "ssh",
+    prompt: "Connect to `example.com`, logging in as user `bob`.",
+    answer: "ssh -l bob example.com",
+    explanation:
+      "`-l` is the flag form of the `user@` syntax — `ssh -l bob example.com` is equivalent to `ssh bob@example.com`.",
+    aliases: ["ssh bob@example.com"],
+  },
+  {
+    id: "ssh-command",
+    category: "ssh",
+    prompt: "Run the command `uptime` on `example.com` and print its output, without opening an interactive shell.",
+    answer: "ssh example.com uptime",
+    explanation:
+      "Anything after the host is run as a single remote command — SSH executes it and exits instead of giving you a shell.",
+  },
+  {
+    id: "ssh-verbose",
+    category: "ssh",
+    prompt: "Connect to `example.com` with verbose output to debug a failing connection.",
+    answer: "ssh -v alice@example.com",
+    explanation:
+      "`-v` prints connection debug info; adding more `v`s (`-vv`, `-vvv`) gives progressively more detail.",
+    aliases: ["ssh -vv alice@example.com", "ssh -vvv alice@example.com"],
+  },
+  {
+    id: "ssh-identity",
+    category: "ssh",
+    prompt: "Connect to `example.com` as `alice` using the private key at `~/.ssh/deploy`.",
+    answer: "ssh -i ~/.ssh/deploy alice@example.com",
+    explanation:
+      "`-i` points SSH at a specific private key instead of trying the default names like `id_ed25519`.",
+  },
+  {
+    id: "ssh-config-alias",
+    category: "ssh",
+    prompt: "Connect to the host defined as `myserver` in your SSH config file.",
+    answer: "ssh myserver",
+    explanation:
+      "SSH resolves bare names against `~/.ssh/config` `Host` blocks, so an alias turns a long command into a short one.",
+  },
+  {
+    id: "ssh-jump",
+    category: "ssh",
+    prompt: "Connect to `internal.example.com` as `alice`, hopping through the jump host `bastion.example.com`.",
+    answer: "ssh -J bastion.example.com alice@internal.example.com",
+    explanation:
+      "`-J` chains through a jump host when the target is only reachable from inside a network.",
+  },
+  {
+    id: "ssh-tty",
+    category: "ssh",
+    prompt: "Run `top` on `example.com` with a pseudo-terminal so its interactive UI works.",
+    answer: "ssh -t example.com top",
+    explanation:
+      "`-t` forces a pseudo-terminal — full-screen programs like `top` and `vim` need one even when you pass a command.",
+  },
+  {
+    id: "ssh-options",
+    category: "ssh",
+    prompt: "Connect to `example.com` and skip the host-key prompt for this session only, using a one-off option.",
+    answer: "ssh -o StrictHostKeyChecking=no alice@example.com",
+    explanation:
+      "`-o` sets any ssh option on the command line. `StrictHostKeyChecking=no` bypasses the host-key check for this connection.",
+  },
+  {
+    id: "ssh-keygen",
+    category: "ssh",
+    prompt: "Generate a new SSH key pair with the default settings.",
+    answer: "ssh-keygen",
+    explanation:
+      "`ssh-keygen` walks you through creating a private/public key pair, asking where to save it and whether to add a passphrase.",
+  },
+  {
+    id: "ssh-keygen-ed25519",
+    category: "ssh",
+    prompt: "Generate an SSH key pair using the modern `ed25519` algorithm.",
+    answer: "ssh-keygen -t ed25519",
+    explanation:
+      "`-t` selects the algorithm. Ed25519 is the modern recommendation: strong, fast, and short keys.",
+  },
+  {
+    id: "ssh-keygen-rsa",
+    category: "ssh",
+    prompt: "Generate an RSA SSH key pair with 4096-bit keys.",
+    answer: "ssh-keygen -t rsa -b 4096",
+    explanation:
+      "`-t` picks the algorithm and `-b` the key size — `rsa` with 4096 bits for maximum compatibility.",
+  },
+  {
+    id: "ssh-keygen-passphrase",
+    category: "ssh",
+    prompt: "Add or change the passphrase protecting your existing private key.",
+    answer: "ssh-keygen -p",
+    explanation:
+      "`-p` re-encrypts a private key with a new passphrase — or removes the passphrase if you leave it blank.",
+  },
+  {
+    id: "ssh-keygen-file",
+    category: "ssh",
+    prompt: "Generate an ed25519 key pair and save it as `~/.ssh/deploy` instead of the default name.",
+    answer: "ssh-keygen -t ed25519 -f ~/.ssh/deploy",
+    explanation:
+      "`-f` sets the output file. SSH writes the private key to `~/.ssh/deploy` and the public key to `~/.ssh/deploy.pub`.",
+  },
+  {
+    id: "ssh-keygen-comment",
+    category: "ssh",
+    prompt: "Generate an ed25519 key pair with the comment `deploy key` so you can tell it apart later.",
+    answer: "ssh-keygen -t ed25519 -C \"deploy key\"",
+    explanation:
+      "`-C` sets the comment stored in the public key — handy when you upload many keys to a server or GitHub.",
+  },
+  {
+    id: "ssh-keygen-pub",
+    category: "ssh",
+    prompt: "Print the public key that corresponds to your private key `~/.ssh/id_ed25519`.",
+    answer: "ssh-keygen -y -f ~/.ssh/id_ed25519",
+    explanation:
+      "`-y` derives and prints the public key from the private key — useful when you lost the `.pub` file.",
+  },
+  {
+    id: "ssh-keygen-fingerprint",
+    category: "ssh",
+    prompt: "Print the fingerprint of the public key `~/.ssh/id_ed25519.pub`.",
+    answer: "ssh-keygen -lf ~/.ssh/id_ed25519.pub",
+    explanation:
+      "`-l` prints the fingerprint — the short checksum you compare to confirm a key is what you expect.",
+  },
+  {
+    id: "ssh-copy-id",
+    category: "ssh",
+    prompt: "Install your public key on `example.com` so you can log in without a password.",
+    answer: "ssh-copy-id alice@example.com",
+    explanation:
+      "`ssh-copy-id` appends your public key to the server's `~/.ssh/authorized_keys` for that account.",
+  },
+  {
+    id: "ssh-authorized-keys",
+    category: "ssh",
+    prompt: "Name the file on the server where you append public keys allowed to log in.",
+    answer: "~/.ssh/authorized_keys",
+    explanation:
+      "Each line of `authorized_keys` in a user's home directory is a public key trusted to authenticate as that user.",
+  },
+  {
+    id: "ssh-known-hosts",
+    category: "ssh",
+    prompt: "Name the local file where SSH remembers the host keys of servers you've connected to.",
+    answer: "~/.ssh/known_hosts",
+    explanation:
+      "SSH stores each server's host key in `known_hosts` after first connect, so it can warn you if a key changes later.",
+  },
+  {
+    id: "ssh-keyscan",
+    category: "ssh",
+    prompt: "Fetch the public host key of `example.com` without opening a session.",
+    answer: "ssh-keyscan example.com",
+    explanation:
+      "`ssh-keyscan` probes a host and prints its host keys — useful for pre-populating `known_hosts` in scripts.",
+  },
+  {
+    id: "ssh-keygen-remove-host",
+    category: "ssh",
+    prompt: "Remove `example.com` from your known_hosts after its host key changed.",
+    answer: "ssh-keygen -R example.com",
+    explanation:
+      "`-R` deletes a host's entry from known_hosts — the fix for the scary \"REMOTE HOST IDENTIFICATION HAS CHANGED\" warning.",
+  },
+  {
+    id: "ssh-agent-start",
+    category: "ssh",
+    prompt: "Start the ssh-agent so you can load keys into it.",
+    answer: "eval $(ssh-agent)",
+    aliases: ["eval \"$(ssh-agent -s)\""],
+    explanation:
+      "`ssh-agent` prints environment variables that tell `ssh-add` where the agent lives; `eval` applies them to your current shell (macOS users often see `eval \"$(ssh-agent -s)\"`). On macOS this often already runs.",
+  },
+  {
+    id: "ssh-add",
+    category: "ssh",
+    prompt: "Load your default private key (`~/.ssh/id_ed25519` or `id_rsa`) into the agent.",
+    answer: "ssh-add",
+    explanation:
+      "`ssh-add` with no arguments adds your default identity files to the running agent, prompting for passphrases.",
+  },
+  {
+    id: "ssh-add-key",
+    category: "ssh",
+    prompt: "Load the private key `~/.ssh/deploy` into the agent.",
+    answer: "ssh-add ~/.ssh/deploy",
+    explanation:
+      "Pass a path to `ssh-add` to load a specific key instead of the defaults.",
+  },
+  {
+    id: "ssh-add-list",
+    category: "ssh",
+    prompt: "List all the keys currently loaded in your ssh-agent.",
+    answer: "ssh-add -l",
+    aliases: ["ssh-add -L"],
+    explanation:
+      "`-l` lists the fingerprints of every key the agent holds; `-L` prints the full public keys instead.",
+  },
+  {
+    id: "ssh-add-clear",
+    category: "ssh",
+    prompt: "Remove all keys from the ssh-agent.",
+    answer: "ssh-add -D",
+    explanation:
+      "`-D` deletes every key from the agent — the quick way to forget your credentials.",
+  },
+  {
+    id: "ssh-add-timeout",
+    category: "ssh",
+    prompt: "Load `~/.ssh/id_ed25519` into the agent, set to expire after 1 hour (3600 seconds).",
+    answer: "ssh-add -t 3600 ~/.ssh/id_ed25519",
+    explanation:
+      "`-t` sets a lifetime in seconds — after it elapses the agent forgets the key, a nice security default.",
+  },
+  {
+    id: "ssh-agent-forward",
+    category: "ssh",
+    prompt: "Connect to `example.com` and let the remote host use your local agent's keys (agent forwarding).",
+    answer: "ssh -A alice@example.com",
+    explanation:
+      "Uppercase `-A` forwards your agent to the remote host, so nested hops don't need your private key. Forward only to hosts you trust.",
+  },
+  {
+    id: "ssh-agent-disable",
+    category: "ssh",
+    prompt: "Connect to `example.com` with agent forwarding explicitly disabled.",
+    answer: "ssh -a alice@example.com",
+    explanation:
+      "Lowercase `-a` turns agent forwarding off — the safe default when you don't need it.",
+  },
+  {
+    id: "ssh-tunnel-local",
+    category: "ssh",
+    prompt: "Tunnel local port `8080` on your machine to port `80` on `example.com` (local forwarding).",
+    answer: "ssh -L 8080:localhost:80 alice@example.com",
+    explanation:
+      "`-L local:host:remote` forwards your local port through the SSH tunnel to the target. `localhost:80` is resolved on the remote side.",
+  },
+  {
+    id: "ssh-tunnel-remote",
+    category: "ssh",
+    prompt: "Expose your local port `3000` on `example.com`'s port `8080` so others can reach it (remote forwarding).",
+    answer: "ssh -R 8080:localhost:3000 alice@example.com",
+    explanation:
+      "`-R` reverses the tunnel: the remote machine listens on `8080` and forwards traffic back to your local `3000`.",
+  },
+  {
+    id: "ssh-tunnel-dynamic",
+    category: "ssh",
+    prompt: "Set up a SOCKS proxy on local port `1080` routed through `example.com` (dynamic forwarding).",
+    answer: "ssh -D 1080 alice@example.com",
+    explanation:
+      "`-D` creates a SOCKS5 proxy — point your browser at `localhost:1080` and all traffic rides the tunnel.",
+  },
+  {
+    id: "ssh-tunnel-noexec",
+    category: "ssh",
+    prompt: "Open a tunnel to `example.com` without starting a remote shell.",
+    answer: "ssh -N -L 8080:localhost:80 alice@example.com",
+    explanation:
+      "`-N` tells SSH not to execute a remote command — the connection exists purely for port forwarding.",
+  },
+  {
+    id: "ssh-tunnel-background",
+    category: "ssh",
+    prompt: "Open a tunnel to `example.com` and run it in the background so you keep your terminal.",
+    answer: "ssh -f -N -L 8080:localhost:80 alice@example.com",
+    explanation:
+      "`-f` backgrounds the connection after authentication, so the tunnel survives while your terminal stays free.",
+  },
+  {
+    id: "ssh-x11",
+    category: "ssh",
+    prompt: "Connect to `example.com` with X11 forwarding so remote GUI apps can display locally.",
+    answer: "ssh -X alice@example.com",
+    explanation:
+      "`-X` forwards the X11 display, letting graphical programs on the remote host render on your local screen.",
+  },
+  {
+    id: "ssh-escape-exit",
+    category: "ssh",
+    prompt: "Force-close a stuck SSH session by typing the escape sequence.",
+    answer: "~.",
+    explanation:
+      "Typing `~.` (tilde then dot) as the first characters at a prompt closes the SSH connection — the escape hatch when a session hangs.",
+  },
+  {
+    id: "scp-put",
+    category: "ssh",
+    prompt: "Copy the local file `notes.txt` to `alice@example.com`'s home directory.",
+    answer: "scp notes.txt alice@example.com:~/",
+    explanation:
+      "scp mirrors cp's syntax: source first, then `user@host:path`. The `~` refers to the remote user's home.",
+  },
+  {
+    id: "scp-get",
+    category: "ssh",
+    prompt: "Copy the remote file `/etc/nginx.conf` from `alice@example.com` into the current directory.",
+    answer: "scp alice@example.com:/etc/nginx.conf .",
+    explanation:
+      "To fetch, put the remote path first and a local destination last — `.` means the current directory.",
+  },
+  {
+    id: "scp-recursive",
+    category: "ssh",
+    prompt: "Copy the whole directory `public/` from your machine to `alice@example.com`, including subdirectories.",
+    answer: "scp -r public/ alice@example.com:~/",
+    explanation:
+      "`-r` makes scp recurse into directories — without it you can only copy individual files.",
+  },
+  {
+    id: "scp-port",
+    category: "ssh",
+    prompt: "Copy `backup.tar` to `alice@example.com` whose SSH server listens on port `2222`.",
+    answer: "scp -P 2222 backup.tar alice@example.com:~/",
+    explanation:
+      "Watch the case: scp uses uppercase `-P` for the port, while ssh uses lowercase `-p`. A classic gotcha.",
+  },
+  {
+    id: "sftp-session",
+    category: "ssh",
+    prompt: "Start an interactive sftp session with `alice@example.com`.",
+    answer: "sftp alice@example.com",
+    explanation:
+      "sftp is an interactive file-transfer shell built on SSH — type `help` for its commands (`get`, `put`, `ls`, `cd`).",
+  },
+  {
+    id: "sftp-get",
+    category: "ssh",
+    prompt: "Inside an sftp session, download the remote file `notes.txt`.",
+    answer: "get notes.txt",
+    explanation:
+      "In the sftp shell, `get` downloads a remote file to your current local directory; `put` does the reverse.",
+  },
+  {
+    id: "sftp-put",
+    category: "ssh",
+    prompt: "Inside an sftp session, upload your local file `report.pdf`.",
+    answer: "put report.pdf",
+    explanation:
+      "`put` uploads a local file to the remote working directory — the mirror image of `get`.",
+  },
+  {
+    id: "ssh-config-file",
+    category: "ssh",
+    prompt: "Name the per-user file where SSH host aliases and options are defined.",
+    answer: "~/.ssh/config",
+    explanation:
+      "SSH reads `~/.ssh/config` before every connection. `Host` blocks define aliases; options below them apply to matching hosts.",
+  },
+  {
+    id: "ssh-config-host",
+    category: "ssh",
+    prompt: "In `~/.ssh/config`, start a block that aliases `myserver` to `example.com`.",
+    answer: "Host myserver",
+    explanation:
+      "`Host` names the alias — from then on `ssh myserver` works. Options indented below it apply to that host.",
+    aliases: ["host myserver"],
+  },
+  {
+    id: "ssh-config-hostname",
+    category: "ssh",
+    prompt: "In the `myserver` block, set the real hostname to `example.com`.",
+    answer: "HostName example.com",
+    explanation:
+      "`HostName` is the actual address a `Host` alias points at — hostname or IP.",
+    aliases: ["hostname example.com"],
+  },
+  {
+    id: "ssh-config-user",
+    category: "ssh",
+    prompt: "In the `myserver` block, default the login user to `alice`.",
+    answer: "User alice",
+    explanation:
+      "`User` sets the login name for the block, so you don't type `alice@` every time.",
+    aliases: ["user alice"],
+  },
+  {
+    id: "ssh-config-port",
+    category: "ssh",
+    prompt: "In the `myserver` block, connect on port `2222` by default.",
+    answer: "Port 2222",
+    explanation:
+      "`Port` overrides the default 22 for that block — handy for servers on non-standard ports.",
+    aliases: ["port 2222"],
+  },
+  {
+    id: "ssh-config-identity",
+    category: "ssh",
+    prompt: "In the `myserver` block, always use the key `~/.ssh/deploy`.",
+    answer: "IdentityFile ~/.ssh/deploy",
+    explanation:
+      "`IdentityFile` points SSH at a specific private key for the block — the config equivalent of `-i`.",
+    aliases: ["identityfile ~/.ssh/deploy"],
+  },
+  {
+    id: "ssh-config-preview",
+    category: "ssh",
+    prompt: "Print the effective config SSH would use for `myserver`, without connecting.",
+    answer: "ssh -G myserver",
+    explanation:
+      "`-G` makes ssh dump the resolved configuration for a host and exit — great for debugging config blocks.",
+  },
+  {
+    id: "ssh-hardening-password",
+    category: "ssh",
+    prompt: "In `sshd_config`, disable password authentication so only keys work.",
+    answer: "PasswordAuthentication no",
+    explanation:
+      "Server-side setting in `/etc/ssh/sshd_config` — with it off, only key authentication is accepted. Restart sshd after editing.",
+    aliases: ["passwordauthentication no"],
+  },
+  {
+    id: "ssh-hardening-root",
+    category: "ssh",
+    prompt: "In `sshd_config`, forbid direct root logins over SSH.",
+    answer: "PermitRootLogin no",
+    explanation:
+      "Blocks root from logging in directly — you log in as a normal user and `sudo` instead.",
+    aliases: ["permitrootlogin no"],
+  },
+];
+
 /** A practice category with its dataset and blurb. */
 export interface QuestionSet {
   category: Category;
@@ -4214,7 +4660,7 @@ export const questionSets: Record<Category, QuestionSet> = {
     category: "ssh",
     label: "ssh",
     description: "remote shells, keys, and tunneling",
-    questions: [],
+    questions: sshQuestions,
   },
   kubernetes: {
     category: "kubernetes",
