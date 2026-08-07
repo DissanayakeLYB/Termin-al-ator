@@ -46,7 +46,9 @@ copy mode & buffers, configuration), **62 git questions** (staging, history,
 branches & merging, undoing & recovery, remotes, and advanced workflows), and
 **76 shell questions** (files & navigation, searching, pipes & redirection,
 processes, interactive shortcuts, permissions, environment, text processing,
-and archives).
+and archives), and **81 docker questions** (images & containers, container
+lifecycle, building & registries, Dockerfile instructions, compose, networks,
+volumes, and cleanup).
 
 ## Project structure
 
@@ -62,7 +64,7 @@ src/
   index.css              # Tailwind v4 theme tokens + CRT/terminal styling
 ```
 
-## Adding a new category (Shell, Git, Docker, …)
+## Adding a new category (Shell, Git, Docker, Regex, …)
 
 1. Add the tool name to the `Category` union in `src/data/questions.ts`.
 2. Export a `shellQuestions: QuizQuestion[]` (or similar) array in the same file.

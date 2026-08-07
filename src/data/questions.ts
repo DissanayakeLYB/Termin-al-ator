@@ -2805,6 +2805,648 @@ export const shellQuestions: QuizQuestion[] = [
   },
 ];
 
+export const dockerQuestions: QuizQuestion[] = [
+  // ── Images & containers ───────────────────────────────────────────────────
+  {
+    id: "docker-pull",
+    category: "docker",
+    prompt: "Download the ubuntu image from Docker Hub.",
+    answer: "docker pull ubuntu",
+    explanation:
+      "`docker pull` fetches an image from a registry — the default is Docker Hub. Tags default to `latest`.",
+  },
+  {
+    id: "docker-images",
+    category: "docker",
+    prompt: "List all images stored on your machine.",
+    answer: "docker images",
+    explanation: "`docker images` (alias `docker image ls`) shows every locally stored image with its tag and size.",
+    aliases: ["docker image ls"],
+  },
+  {
+    id: "docker-ps",
+    category: "docker",
+    prompt: "List all currently running containers.",
+    answer: "docker ps",
+    explanation: "`docker ps` lists running containers with their ID, image, and ports. Add `-a` to include stopped ones.",
+  },
+  {
+    id: "docker-ps-all",
+    category: "docker",
+    prompt: "List every container, including stopped ones.",
+    answer: "docker ps -a",
+    explanation: "`-a` shows the full history of containers on the machine, not just the ones currently running.",
+  },
+  {
+    id: "docker-run",
+    category: "docker",
+    prompt: "Start a container from the hello-world image.",
+    answer: "docker run hello-world",
+    explanation:
+      "`docker run` creates and starts a container from an image. hello-world prints a welcome message and exits.",
+  },
+  {
+    id: "docker-run-it",
+    category: "docker",
+    prompt: "Start an interactive bash session inside a ubuntu container.",
+    answer: "docker run -it ubuntu bash",
+    explanation:
+      "`-i` keeps stdin open, `-t` allocates a pseudo-terminal — together they give you an interactive shell. The trailing `bash` is the command to run.",
+  },
+  {
+    id: "docker-run-detached",
+    category: "docker",
+    prompt: "Run an nginx container in the background (detached).",
+    answer: "docker run -d nginx",
+    explanation:
+      "`-d` detaches: the container runs in the background and you get your prompt back immediately.",
+  },
+  {
+    id: "docker-run-rm",
+    category: "docker",
+    prompt: "Run a one-off container that removes itself automatically when it exits.",
+    answer: "docker run --rm alpine",
+    explanation:
+      "`--rm` deletes the container's filesystem when it exits — perfect for short-lived utility containers.",
+  },
+  {
+    id: "docker-run-port",
+    category: "docker",
+    prompt: "Publish container port 80 as host port 8080.",
+    answer: "docker run -p 8080:80 nginx",
+    explanation:
+      "`-p HOST:CONTAINER` maps the ports: traffic to localhost:8080 reaches the container's port 80.",
+  },
+  {
+    id: "docker-run-volume",
+    category: "docker",
+    prompt: "Mount the host directory ./data into the container at /app.",
+    answer: "docker run -v ./data:/app ubuntu",
+    explanation:
+      "`-v HOST:CONTAINER` bind-mounts a directory — files written in /app appear in ./data and survive container removal. The `./` matters: a bare name like `data:/app` would silently create a named volume instead.",
+  },
+  {
+    id: "docker-run-name",
+    category: "docker",
+    prompt: "Give the container a custom name, myapp, when starting it.",
+    answer: "docker run --name myapp nginx",
+    explanation:
+      "Without `--name`, Docker assigns a random name. A custom name makes every later command (`docker stop myapp`) readable.",
+  },
+  {
+    id: "docker-run-env",
+    category: "docker",
+    prompt: "Set the environment variable ENV=prod when starting a container.",
+    answer: "docker run -e ENV=prod nginx",
+    explanation:
+      "`-e` injects an environment variable. Most apps read their configuration from environment variables.",
+  },
+  {
+    id: "docker-stop",
+    category: "docker",
+    prompt: "Gracefully stop the running container myapp.",
+    answer: "docker stop myapp",
+    explanation:
+      "`docker stop` sends SIGTERM so the app can shut down cleanly, then SIGKILL after a timeout.",
+  },
+  {
+    id: "docker-start",
+    category: "docker",
+    prompt: "Start the previously stopped container myapp again.",
+    answer: "docker start myapp",
+    explanation:
+      "`docker start` restarts an existing container (as opposed to `docker run`, which creates a new one).",
+  },
+  {
+    id: "docker-restart",
+    category: "docker",
+    prompt: "Restart the container myapp.",
+    answer: "docker restart myapp",
+    explanation: "`docker restart` stops and starts the container — handy after a config change.",
+  },
+  {
+    id: "docker-rm",
+    category: "docker",
+    prompt: "Delete the stopped container myapp.",
+    answer: "docker rm myapp",
+    explanation:
+      "`docker rm` removes a stopped container. For a running one you need `-f` (force).",
+  },
+  {
+    id: "docker-rmi",
+    category: "docker",
+    prompt: "Delete the nginx image from your machine.",
+    answer: "docker rmi nginx",
+    explanation:
+      "`docker rmi` (remove image) frees disk space — it fails if a container still uses the image.",
+  },
+  {
+    id: "docker-rm-force",
+    category: "docker",
+    prompt: "Force-delete the running container myapp.",
+    answer: "docker rm -f myapp",
+    explanation: "`-f` kills and removes a running container in one step, bypassing the stopped-only rule.",
+  },
+
+  // ── Container lifecycle ───────────────────────────────────────────────────
+  {
+    id: "docker-exec",
+    category: "docker",
+    prompt: "Run the command ls inside the running container myapp.",
+    answer: "docker exec myapp ls",
+    explanation:
+      "`docker exec` runs a process inside an already-running container. It never works on stopped containers.",
+  },
+  {
+    id: "docker-exec-it",
+    category: "docker",
+    prompt: "Open an interactive shell inside the running container myapp.",
+    answer: "docker exec -it myapp bash",
+    explanation:
+      "The classic debugging move: `-it` plus a shell command drops you into a prompt inside the container.",
+  },
+  {
+    id: "docker-logs",
+    category: "docker",
+    prompt: "See the logs printed by container myapp so far.",
+    answer: "docker logs myapp",
+    explanation: "`docker logs` shows everything the container wrote to stdout/stderr — the first debugging step.",
+  },
+  {
+    id: "docker-logs-follow",
+    category: "docker",
+    prompt: "Watch the logs of myapp live as they stream in.",
+    answer: "docker logs -f myapp",
+    explanation: "`-f` (follow) tails the log output, like `tail -f` — exit with Ctrl+c without stopping the container.",
+  },
+  {
+    id: "docker-cp",
+    category: "docker",
+    prompt: "Copy notes.txt from container myapp into the current directory.",
+    answer: "docker cp myapp:/notes.txt .",
+    explanation:
+      "`docker cp CONTAINER:PATH DEST` copies files out of a container (and with the arguments flipped, back in).",
+  },
+  {
+    id: "docker-stats",
+    category: "docker",
+    prompt: "Watch live CPU and memory usage of all running containers.",
+    answer: "docker stats",
+    explanation:
+      "`docker stats` shows a live dashboard of resource usage — the container equivalent of `top`.",
+  },
+  {
+    id: "docker-top",
+    category: "docker",
+    prompt: "Show the processes running inside container myapp.",
+    answer: "docker top myapp",
+    explanation: "`docker top` lists the container's processes as seen from the host — great for finding PID leaks.",
+  },
+  {
+    id: "docker-port",
+    category: "docker",
+    prompt: "Show the host port mappings of container myapp.",
+    answer: "docker port myapp",
+    explanation: "`docker port` prints which host ports map to which container ports for the container.",
+  },
+  {
+    id: "docker-inspect",
+    category: "docker",
+    prompt: "Show detailed low-level configuration of container myapp.",
+    answer: "docker inspect myapp",
+    explanation:
+      "`docker inspect` dumps the full JSON metadata — IP address, mounts, env vars, and more.",
+  },
+  {
+    id: "docker-attach",
+    category: "docker",
+    prompt: "Re-attach your terminal to the main process of container myapp.",
+    answer: "docker attach myapp",
+    explanation:
+      "`docker attach` connects your terminal to the container's main process — unlike `exec`, which starts a new one.",
+  },
+  {
+    id: "docker-rename",
+    category: "docker",
+    prompt: "Rename the container myapp to web.",
+    answer: "docker rename myapp web",
+    explanation: "`docker rename` changes a container's name without touching anything else.",
+  },
+  {
+    id: "docker-commit",
+    category: "docker",
+    prompt: "Save the current state of container myapp as an image named myapp:v1.",
+    answer: "docker commit myapp myapp:v1",
+    explanation:
+      "`docker commit` snapshots a container's filesystem into an image. Prefer Dockerfiles in practice — but it's great for quick captures.",
+  },
+
+  // ── Building & registries ─────────────────────────────────────────────────
+  {
+    id: "docker-build",
+    category: "docker",
+    prompt: "Build an image from the Dockerfile in the current directory.",
+    answer: "docker build .",
+    explanation:
+      "`docker build` reads the Dockerfile in the build context (the `.`) and executes its instructions into layers.",
+  },
+  {
+    id: "docker-build-tag",
+    category: "docker",
+    prompt: "Build the current directory as an image tagged myapp:1.0.",
+    answer: "docker build -t myapp:1.0 .",
+    explanation: "`-t` tags the resulting image so you can reference and push it by name.",
+  },
+  {
+    id: "docker-tag",
+    category: "docker",
+    prompt: "Tag the image myapp:1.0 as registry.example.com/myapp:latest.",
+    answer: "docker tag myapp:1.0 registry.example.com/myapp:latest",
+    explanation:
+      "`docker tag` creates an alias for an existing image — required before pushing to a specific registry.",
+  },
+  {
+    id: "docker-push",
+    category: "docker",
+    prompt: "Upload the image myapp:1.0 to its registry.",
+    answer: "docker push myapp:1.0",
+    explanation: "`docker push` sends the image layers to the registry — you must be logged in first.",
+  },
+  {
+    id: "docker-history",
+    category: "docker",
+    prompt: "Show the layer history of the nginx image.",
+    answer: "docker history nginx",
+    explanation:
+      "`docker history` shows each build step and its size — useful for understanding and shrinking images.",
+  },
+  {
+    id: "docker-save",
+    category: "docker",
+    prompt: "Export the nginx image to a tar archive called nginx.tar.",
+    answer: "docker save -o nginx.tar nginx",
+    explanation:
+      "`docker save` exports an image (with its metadata) to a file — the way to back up or transfer images offline.",
+  },
+  {
+    id: "docker-load",
+    category: "docker",
+    prompt: "Import the image stored in nginx.tar.",
+    answer: "docker load -i nginx.tar",
+    explanation: "`docker load` is the counterpart to `docker save` — it reads an image back from a tar file.",
+  },
+  {
+    id: "docker-export",
+    category: "docker",
+    prompt: "Export the filesystem of container myapp as myapp.tar.",
+    answer: "docker export -o myapp.tar myapp",
+    explanation:
+      "`docker export` dumps a container's raw filesystem (no image metadata) — lighter than `save`, but not importable as a proper image without `import`.",
+  },
+  {
+    id: "docker-import",
+    category: "docker",
+    prompt: "Create an image from the filesystem tarball myapp.tar.",
+    answer: "docker import myapp.tar myapp:imported",
+    explanation: "`docker import` turns an exported filesystem back into an image with the tag you choose.",
+  },
+  {
+    id: "docker-search",
+    category: "docker",
+    prompt: "Search Docker Hub for images matching 'redis'.",
+    answer: "docker search redis",
+    explanation:
+      "`docker search` queries the registry — official images are marked OFFICIAL, and you can narrow with `--filter stars=N`.",
+  },
+
+  // ── Dockerfile instructions ───────────────────────────────────────────────
+  {
+    id: "dockerfile-from",
+    category: "docker",
+    prompt: "Start a Dockerfile by selecting the node:20 base image.",
+    answer: "FROM node:20",
+    explanation:
+      "`FROM` declares the base image every other instruction builds on — it must be the first instruction in the file.",
+  },
+  {
+    id: "dockerfile-run",
+    category: "docker",
+    prompt: "Install dependencies while the image is being built.",
+    answer: "RUN npm install",
+    explanation:
+      "`RUN` executes a command during the build and bakes the result into a new layer. It runs once, at build time.",
+  },
+  {
+    id: "dockerfile-cmd",
+    category: "docker",
+    prompt: "Set the default command a container runs on start.",
+    answer: "CMD [\"npm\", \"start\"]",
+    explanation:
+      "`CMD` is the default command — users can override it by passing a command to `docker run`. The exec form (array) is preferred.",
+  },
+  {
+    id: "dockerfile-entrypoint",
+    category: "docker",
+    prompt: "Set the fixed executable the container always runs.",
+    answer: "ENTRYPOINT [\"node\"]",
+    explanation:
+      "`ENTRYPOINT` defines the command that can't be overridden — anything passed on `docker run` becomes its arguments.",
+  },
+  {
+    id: "dockerfile-copy",
+    category: "docker",
+    prompt: "Copy the build context's contents into the image at /app.",
+    answer: "COPY . /app",
+    explanation: "`COPY` copies files from the build context into the image — preferred over `ADD` for plain file copies.",
+  },
+  {
+    id: "dockerfile-workdir",
+    category: "docker",
+    prompt: "Set the working directory for all following Dockerfile instructions.",
+    answer: "WORKDIR /app",
+    explanation: "`WORKDIR` changes the directory for RUN, CMD, and ENTRYPOINT — better than `RUN cd /app`.",
+  },
+  {
+    id: "dockerfile-expose",
+    category: "docker",
+    prompt: "Declare that the container listens on port 3000.",
+    answer: "EXPOSE 3000",
+    explanation:
+      "`EXPOSE` is documentation (and metadata for tools) — the port still needs `-p` at `docker run` time to be reachable from the host.",
+  },
+  {
+    id: "dockerfile-env",
+    category: "docker",
+    prompt: "Set NODE_ENV=production as an environment variable in the image.",
+    answer: "ENV NODE_ENV=production",
+    explanation:
+      "`ENV` sets environment variables at build time that persist into every container started from the image.",
+  },
+  {
+    id: "dockerfile-user",
+    category: "docker",
+    prompt: "Run the container as the non-root user node.",
+    answer: "USER node",
+    explanation:
+      "`USER` switches the user for RUN/CMD/ENTRYPOINT. Running as non-root is a key container security practice.",
+  },
+  {
+    id: "dockerfile-volume",
+    category: "docker",
+    prompt: "Declare a volume mount point at /data.",
+    answer: "VOLUME /data",
+    explanation:
+      "`VOLUME` creates an anonymous volume at that path, persisting writes even after the container is removed.",
+  },
+  {
+    id: "dockerfile-arg",
+    category: "docker",
+    prompt: "Declare a build-time variable named VERSION.",
+    answer: "ARG VERSION",
+    explanation:
+      "`ARG` defines a variable available only during the build — set it with `--build-arg` on `docker build`.",
+  },
+  {
+    id: "dockerfile-multistage",
+    category: "docker",
+    prompt: "Copy the built app from an earlier build stage named builder.",
+    answer: "COPY --from=builder /app/dist /app",
+    explanation:
+      "`COPY --from=STAGE` pulls artifacts from a previous stage — the pattern that lets you ship a small final image.",
+  },
+
+  // ── Compose ───────────────────────────────────────────────────────────────
+  {
+    id: "compose-up",
+    category: "docker",
+    prompt: "Start all services defined in docker-compose.yml (in the foreground).",
+    answer: "docker compose up",
+    explanation:
+      "`docker compose up` creates and starts every service and network defined in the compose file.",
+    aliases: ["docker-compose up"],
+  },
+  {
+    id: "compose-up-detached",
+    category: "docker",
+    prompt: "Start all compose services in the background.",
+    answer: "docker compose up -d",
+    explanation: "Adding `-d` detaches — services keep running after the command returns.",
+    aliases: ["docker-compose up -d"],
+  },
+  {
+    id: "compose-down",
+    category: "docker",
+    prompt: "Stop and remove all services and networks of the compose project.",
+    answer: "docker compose down",
+    explanation:
+      "`docker compose down` tears the stack down; add `-v` to also delete the project's named volumes.",
+    aliases: ["docker-compose down"],
+  },
+  {
+    id: "compose-ps",
+    category: "docker",
+    prompt: "List the services of the compose project and their status.",
+    answer: "docker compose ps",
+    explanation: "`docker compose ps` shows which services are running and their health — scoped to the project.",
+    aliases: ["docker-compose ps"],
+  },
+  {
+    id: "compose-logs",
+    category: "docker",
+    prompt: "Follow the logs of all compose services as they stream.",
+    answer: "docker compose logs -f",
+    explanation: "`-f` tails every service's output into one interleaved stream — Ctrl+c stops following without stopping the stack.",
+    aliases: ["docker-compose logs -f"],
+  },
+  {
+    id: "compose-build",
+    category: "docker",
+    prompt: "Build all images used by the compose file.",
+    answer: "docker compose build",
+    explanation: "`docker compose build` builds (or rebuilds) every service image defined in the file.",
+    aliases: ["docker-compose build"],
+  },
+  {
+    id: "compose-pull",
+    category: "docker",
+    prompt: "Pull all images referenced by the compose file.",
+    answer: "docker compose pull",
+    explanation: "`docker compose pull` pre-fetches every image the stack needs — great before deploying on a slow connection.",
+    aliases: ["docker-compose pull"],
+  },
+  {
+    id: "compose-config",
+    category: "docker",
+    prompt: "Validate the compose file and print the fully resolved config.",
+    answer: "docker compose config",
+    explanation:
+      "`docker compose config` validates the YAML and prints the merged result — the first thing to check when services don't start.",
+    aliases: ["docker-compose config"],
+  },
+  {
+    id: "compose-exec",
+    category: "docker",
+    prompt: "Open a shell in the web service of the compose project.",
+    answer: "docker compose exec web bash",
+    explanation:
+      "`docker compose exec SERVICE COMMAND` runs in a service by name — no need to look up container IDs.",
+    aliases: ["docker-compose exec web bash"],
+  },
+  {
+    id: "compose-restart",
+    category: "docker",
+    prompt: "Restart all services of the compose project.",
+    answer: "docker compose restart",
+    explanation: "`docker compose restart` cycles the services, keeping their containers and volumes intact.",
+    aliases: ["docker-compose restart"],
+  },
+
+  // ── Networks & volumes ────────────────────────────────────────────────────
+  {
+    id: "docker-network-ls",
+    category: "docker",
+    prompt: "List all Docker networks on the machine.",
+    answer: "docker network ls",
+    explanation:
+      "`docker network ls` lists networks — `bridge` (default), `host`, `none`, plus any user-defined ones.",
+  },
+  {
+    id: "docker-network-create",
+    category: "docker",
+    prompt: "Create a network named mynet.",
+    answer: "docker network create mynet",
+    explanation:
+      "User-defined networks give containers DNS-based name resolution — they can reach each other by name.",
+  },
+  {
+    id: "docker-network-connect",
+    category: "docker",
+    prompt: "Connect the running container myapp to the network mynet.",
+    answer: "docker network connect mynet myapp",
+    explanation: "`docker network connect` attaches a running container to an additional network on the fly.",
+  },
+  {
+    id: "docker-network-disconnect",
+    category: "docker",
+    prompt: "Disconnect container myapp from the network mynet.",
+    answer: "docker network disconnect mynet myapp",
+    explanation: "`docker network disconnect` removes the container from the network without stopping it.",
+  },
+  {
+    id: "docker-network-inspect",
+    category: "docker",
+    prompt: "Show detailed configuration of the network mynet.",
+    answer: "docker network inspect mynet",
+    explanation: "`docker network inspect` shows subnets, gateways, and which containers are attached.",
+  },
+  {
+    id: "docker-network-prune",
+    category: "docker",
+    prompt: "Delete all unused Docker networks.",
+    answer: "docker network prune",
+    explanation: "`docker network prune` removes networks no container is attached to — safe cleanup.",
+  },
+  {
+    id: "docker-volume-ls",
+    category: "docker",
+    prompt: "List all Docker volumes.",
+    answer: "docker volume ls",
+    explanation: "Volumes outlive containers — `docker volume ls` shows every named volume on the host.",
+  },
+  {
+    id: "docker-volume-create",
+    category: "docker",
+    prompt: "Create a named volume called data.",
+    answer: "docker volume create data",
+    explanation:
+      "Named volumes are the recommended way to persist data — create one, then mount it with `-v data:/path`.",
+  },
+  {
+    id: "docker-volume-inspect",
+    category: "docker",
+    prompt: "Show where the volume data lives on the host.",
+    answer: "docker volume inspect data",
+    explanation: "`docker volume inspect` reveals the mount point — the actual files are stored on the host.",
+  },
+  {
+    id: "docker-volume-rm",
+    category: "docker",
+    prompt: "Delete the volume data.",
+    answer: "docker volume rm data",
+    explanation: "`docker volume rm` deletes the volume and its data — it fails if a container still uses it.",
+  },
+  {
+    id: "docker-volume-prune",
+    category: "docker",
+    prompt: "Delete all volumes not used by any container.",
+    answer: "docker volume prune",
+    explanation:
+      "`docker volume prune` frees space from orphaned volumes — Docker prompts for confirmation by default.",
+  },
+
+  // ── System & cleanup ──────────────────────────────────────────────────────
+  {
+    id: "docker-system-df",
+    category: "docker",
+    prompt: "Show how much disk space images, containers, and volumes use.",
+    answer: "docker system df",
+    explanation: "`docker system df` is the disk-usage dashboard for everything Docker stores.",
+  },
+  {
+    id: "docker-system-prune",
+    category: "docker",
+    prompt: "Remove all unused containers, networks, images, and build cache.",
+    answer: "docker system prune -a",
+    explanation:
+      "`docker system prune -a` removes every unused resource — the nuclear cleanup. Without `-a` it only removes dangling (untagged) images; with `-a` it removes all unused images, tagged or not.",
+  },
+  {
+    id: "docker-container-prune",
+    category: "docker",
+    prompt: "Remove all stopped containers.",
+    answer: "docker container prune",
+    explanation: "`docker container prune` deletes every container in the exited state.",
+  },
+  {
+    id: "docker-image-prune",
+    category: "docker",
+    prompt: "Remove all dangling (untagged) images.",
+    answer: "docker image prune",
+    explanation:
+      "`docker image prune` clears `<none>` images left behind by rebuilds — safe, they can be rebuilt.",
+  },
+  {
+    id: "docker-builder-prune",
+    category: "docker",
+    prompt: "Clear the Docker build cache.",
+    answer: "docker builder prune",
+    explanation: "`docker builder prune` empties the BuildKit cache when builds start eating disk.",
+  },
+  {
+    id: "docker-version",
+    category: "docker",
+    prompt: "Show both the Docker client and server versions.",
+    answer: "docker version",
+    explanation:
+      "`docker version` prints client and daemon info — seeing both confirms the daemon is reachable.",
+  },
+  {
+    id: "docker-info",
+    category: "docker",
+    prompt: "Show system-wide Docker information.",
+    answer: "docker info",
+    explanation:
+      "`docker info` reports the engine's configuration, storage driver, and resource limits.",
+  },
+  {
+    id: "docker-login",
+    category: "docker",
+    prompt: "Log in to a container registry.",
+    answer: "docker login",
+    explanation: "`docker login` authenticates against a registry (Docker Hub by default) so you can push private images.",
+  },
+];
+
 /** A practice category with its dataset and blurb. */
 export interface QuestionSet {
   category: Category;
@@ -2846,7 +3488,7 @@ export const questionSets: Record<Category, QuestionSet> = {
     category: "docker",
     label: "docker",
     description: "containers, images, and compose",
-    questions: [],
+    questions: dockerQuestions,
   },
   regex: {
     category: "regex",
