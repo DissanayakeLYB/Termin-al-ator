@@ -2216,6 +2216,345 @@ export const gitQuestions: QuizQuestion[] = [
     explanation:
       "Worktrees let you check out a second branch in a separate folder of the same repo — no stashing.",
   },
+  {
+    id: "git-commit-am",
+    category: "git",
+    prompt: "Stage all tracked changes and commit them in one step with the message `typo`.",
+    answer: "git commit -am \"typo\"",
+    aliases: ["git commit -a -m \"typo\""],
+    explanation:
+      "`-a` stages tracked (modified/deleted) files automatically, `-m` takes the message — two steps in one.",
+  },
+  {
+    id: "git-commit-amend-noedit",
+    category: "git",
+    prompt: "Amend the last commit without changing its message.",
+    answer: "git commit --amend --no-edit",
+    explanation:
+      "`--amend` rewrites the last commit; `--no-edit` keeps the existing message when you only want to add changes.",
+  },
+  {
+    id: "git-fixup",
+    category: "git",
+    prompt: "Mark this change as a fixup for commit abc1234, to be squashed in later.",
+    answer: "git commit --fixup abc1234",
+    explanation:
+      "`--fixup` creates a commit tagged to fold into another one later — used with `rebase --autosquash`.",
+  },
+  {
+    id: "git-autosquash",
+    category: "git",
+    prompt: "Rebase onto main and automatically fold any fixup commits into their targets.",
+    answer: "git rebase -i --autosquash main",
+    explanation:
+      "`--autosquash` arranges the todo list so `--fixup` and `--squash` commits land right under their targets.",
+  },
+  {
+    id: "git-rebase-continue",
+    category: "git",
+    prompt: "Resume the rebase after resolving a conflict.",
+    answer: "git rebase --continue",
+    explanation:
+      "After fixing conflicts and staging them, `--continue` picks up where the rebase stopped.",
+  },
+  {
+    id: "git-rebase-abort",
+    category: "git",
+    prompt: "Abandon the current rebase entirely and return to the pre-rebase state.",
+    answer: "git rebase --abort",
+    explanation:
+      "`--abort` discards the rebase and restores your branch — the escape hatch when a rebase spirals.",
+  },
+  {
+    id: "git-add-updated",
+    category: "git",
+    prompt: "Stage the modifications and deletions of already-tracked files only.",
+    answer: "git add -u",
+    explanation:
+      "`-u` (update) stages changes to tracked files but not brand-new untracked ones — safer than `git add .`.",
+  },
+  {
+    id: "git-add-intent",
+    category: "git",
+    prompt: "Start tracking file.txt without staging its content yet.",
+    answer: "git add -N file.txt",
+    aliases: ["git add --intent-to-add file.txt"],
+    explanation:
+      "`-N` (intent-to-add) tells git about the file so `git diff` shows it, without adding its contents to the index.",
+  },
+  {
+    id: "git-diff-stat",
+    category: "git",
+    prompt: "Show a summary of changed files with line counts, not the full diff.",
+    answer: "git diff --stat",
+    explanation: "`--stat` prints a compact table of files changed with added/deleted counts — the quick overview.",
+  },
+  {
+    id: "git-restore-commit",
+    category: "git",
+    prompt: "Restore main.py to how it looked at HEAD~1, discarding current working changes.",
+    answer: "git checkout HEAD~1 -- main.py",
+    aliases: ["git restore --source=HEAD~1 main.py"],
+    explanation:
+      "`checkout <commit> -- <file>` overwrites the file with an earlier version — `restore --source` is the newer spelling.",
+  },
+  {
+    id: "git-rm-cached",
+    category: "git",
+    prompt: "Stop tracking secret.env but keep the file on disk.",
+    answer: "git rm --cached secret.env",
+    explanation:
+      "`--cached` removes the file from the index only — the working copy stays. The next commit drops it from the repo.",
+  },
+  {
+    id: "git-branch-remote",
+    category: "git",
+    prompt: "List only the remote-tracking branches (origin/*).",
+    answer: "git branch -r",
+    explanation: "`-r` shows remote-tracking branches — your local snapshot of what's on the remotes.",
+  },
+  {
+    id: "git-branch-all",
+    category: "git",
+    prompt: "List both local and remote-tracking branches.",
+    answer: "git branch -a",
+    explanation: "`-a` combines local and remote branches — the complete picture of every branch you know about.",
+  },
+  {
+    id: "git-branch-vv",
+    category: "git",
+    prompt: "List branches with the upstream branch each one tracks.",
+    answer: "git branch -vv",
+    explanation:
+      "`-vv` also shows each branch's upstream and ahead/behind counts — the double `v` for verbose tracking info.",
+  },
+  {
+    id: "git-branch-merged",
+    category: "git",
+    prompt: "List branches that are already merged into the current branch.",
+    answer: "git branch --merged",
+    explanation:
+      "`--merged` is the safe-to-delete list — run it before cleaning up finished feature branches.",
+  },
+  {
+    id: "git-checkout-previous",
+    category: "git",
+    prompt: "Switch back to the branch you were on before this one.",
+    answer: "git checkout -",
+    aliases: ["git switch -"],
+    explanation: "The `-` shorthand returns to the previous branch — same muscle memory as `cd -`.",
+  },
+  {
+    id: "git-push-delete",
+    category: "git",
+    prompt: "Delete the branch `fix` on the origin remote.",
+    answer: "git push origin --delete fix",
+    aliases: ["git push origin :fix"],
+    explanation:
+      "`push --delete` (or the older `:branch` syntax) removes a branch from the remote — the counterpart to a local `-d`.",
+  },
+  {
+    id: "git-log-follow",
+    category: "git",
+    prompt: "Show the history of file.txt, following the file across renames.",
+    answer: "git log --follow -- file.txt",
+    explanation:
+      "`--follow` tracks a single file's history through renames, so past commits under old names still show.",
+  },
+  {
+    id: "git-log-grep",
+    category: "git",
+    prompt: "Show only commits whose message contains the word `typo`.",
+    answer: "git log --grep=typo",
+    aliases: ["git log --grep=\"typo\""],
+    explanation: "`--grep` filters the log by commit message — handy when you remember the words, not the hashes.",
+  },
+  {
+    id: "git-log-pickaxe",
+    category: "git",
+    prompt: "Find commits that added or removed the string `deleteUser` anywhere.",
+    answer: "git log -S\"deleteUser\"",
+    aliases: ["git log -SdeleteUser"],
+    explanation:
+      "The `-S` pickaxe finds commits where the count of a string changed — the forensic way to hunt down where code appeared or vanished.",
+  },
+  {
+    id: "git-show-file",
+    category: "git",
+    prompt: "Print file.txt as it existed at HEAD~1, without checking it out.",
+    answer: "git show HEAD~1:file.txt",
+    explanation:
+      "`git show <commit>:<path>` prints a file's content at any commit — read-only archaeology, nothing changes.",
+  },
+  {
+    id: "git-log-stat",
+    category: "git",
+    prompt: "Show the log together with which files each commit changed.",
+    answer: "git log --stat",
+    explanation:
+      "`--stat` appends a compact diffstat to every commit in the log — a sense of each commit's footprint.",
+  },
+  {
+    id: "git-alias",
+    category: "git",
+    prompt: "Create a global alias `co` for the `checkout` command.",
+    answer: "git config --global alias.co checkout",
+    explanation:
+      "`alias.<name>` registers a shortcut — `co` now behaves like `checkout` in every repo on this machine.",
+  },
+  {
+    id: "git-default-branch",
+    category: "git",
+    prompt: "Make new repositories initialize on `main` instead of `master`.",
+    answer: "git config --global init.defaultBranch main",
+    explanation:
+      "`init.defaultBranch` sets the branch name for every future `git init` — a one-line fix for the master/main migration.",
+  },
+  {
+    id: "git-core-editor",
+    category: "git",
+    prompt: "Tell git to open VS Code when it needs you to type a commit message.",
+    answer: "git config --global core.editor \"code --wait\"",
+    aliases: ["git config --global core.editor code --wait"],
+    explanation:
+      "`core.editor` names the editor program; the `--wait` flag makes code block until the file is saved and closed.",
+  },
+  {
+    id: "git-config-get",
+    category: "git",
+    prompt: "Print the configured value of user.name.",
+    answer: "git config user.name",
+    explanation:
+      "`git config <key>` reads one value — leave off `--global` to see the local repo's setting, which takes precedence.",
+  },
+  {
+    id: "git-fetch-prune",
+    category: "git",
+    prompt: "Fetch from origin and delete remote-tracking branches that no longer exist upstream.",
+    answer: "git fetch --prune origin",
+    aliases: ["git fetch -p origin"],
+    explanation:
+      "`--prune` cleans stale origin/* refs — without it, deleted remote branches linger as ghosts in `git branch -r`.",
+  },
+  {
+    id: "git-pull-ffonly",
+    category: "git",
+    prompt: "Pull, but refuse to create a merge commit — fast-forward only.",
+    answer: "git pull --ff-only",
+    explanation:
+      "`--ff-only` errors out instead of merging when history has diverged — keeps linear history and flags the problem early.",
+  },
+  {
+    id: "git-push-force-lease",
+    category: "git",
+    prompt: "Force-push, but abort if the remote branch has moved since you last fetched.",
+    answer: "git push --force-with-lease",
+    explanation:
+      "`--force-with-lease` is the safe force: it checks the remote hasn't changed, so you can't silently clobber someone's commits.",
+  },
+  {
+    id: "git-remote-show",
+    category: "git",
+    prompt: "Show detailed information about the origin remote.",
+    answer: "git remote show origin",
+    explanation:
+      "`remote show` lists fetch/push URLs, tracked branches, and which local branches would be pushed or deleted.",
+  },
+  {
+    id: "git-remote-get-url",
+    category: "git",
+    prompt: "Print the URL that origin points at.",
+    answer: "git remote get-url origin",
+    explanation: "`get-url` is the script-friendly way to read a remote's address — no parsing of `git remote -v` needed.",
+  },
+  {
+    id: "git-stash-untracked",
+    category: "git",
+    prompt: "Stash your changes together with untracked files.",
+    answer: "git stash -u",
+    aliases: ["git stash --include-untracked"],
+    explanation: "By default `stash` skips untracked files — `-u` sweeps them in too, so the working tree is fully clean.",
+  },
+  {
+    id: "git-stash-show",
+    category: "git",
+    prompt: "Show the full diff of the most recent stash.",
+    answer: "git stash show -p",
+    explanation:
+      "`stash show` defaults to a bare stat; `-p` prints the actual diff — review before you pop.",
+  },
+  {
+    id: "git-reset-mixed",
+    category: "git",
+    prompt: "Undo the last commit but keep its changes in the working directory, unstaged.",
+    answer: "git reset --mixed HEAD~1",
+    explanation:
+      "`--mixed` (the default) resets the index to the target commit but leaves your working files alone — undo a commit, keep the edits.",
+  },
+  {
+    id: "git-ls-files",
+    category: "git",
+    prompt: "List every file git is currently tracking.",
+    answer: "git ls-files",
+    explanation:
+      "`ls-files` dumps the whole index — a quick answer to \"what does git actually track here?\".",
+  },
+  {
+    id: "git-rev-parse-branch",
+    category: "git",
+    prompt: "Print the name of the current branch (the short, symbolic form).",
+    answer: "git rev-parse --abbrev-ref HEAD",
+    explanation:
+      "`rev-parse --abbrev-ref HEAD` prints just the branch name — the go-to for scripts and prompts.",
+  },
+  {
+    id: "git-cat-file",
+    category: "git",
+    prompt: "Show the raw contents of the git object abc1234.",
+    answer: "git cat-file -p abc1234",
+    explanation:
+      "`cat-file -p` pretty-prints any object — a commit, tree, or blob — by hash. The plumbing behind `git show`.",
+  },
+  {
+    id: "git-archive",
+    category: "git",
+    prompt: "Package the repository at HEAD into a zip file called repo.zip.",
+    answer: "git archive -o repo.zip HEAD",
+    explanation:
+      "`git archive` exports a snapshot of the tree — a clean release tarball/zip without any .git metadata.",
+  },
+  {
+    id: "git-gc",
+    category: "git",
+    prompt: "Run garbage collection to compact the repository's objects.",
+    answer: "git gc",
+    explanation:
+      "`gc` packs loose objects and prunes unreachable ones — automatic in practice, but handy after heavy rewrite history.",
+  },
+  {
+    id: "git-describe",
+    category: "git",
+    prompt: "Print the most recent tag reachable from HEAD.",
+    answer: "git describe --tags",
+    explanation:
+      "`describe` names the nearest tag plus a count of commits since it (e.g. v1.0.0-3-gabc1234) — common for build versions.",
+  },
+  {
+    id: "git-submodule-add",
+    category: "git",
+    prompt: "Add https://github.com/user/lib.git as a submodule in the folder lib/.",
+    answer: "git submodule add https://github.com/user/lib.git lib",
+    explanation:
+      "Submodules pin another repository at a specific commit inside yours — `add` clones it and records the reference.",
+  },
+  {
+    id: "git-submodule-update",
+    category: "git",
+    prompt: "Initialize all submodules and pull their pinned commits recursively.",
+    answer: "git submodule update --init --recursive",
+    explanation:
+      "After a fresh clone, submodules are empty folders — this command fetches and checks out the recorded commits, nested and all.",
+  },
 ];
 
 export const shellQuestions: QuizQuestion[] = [

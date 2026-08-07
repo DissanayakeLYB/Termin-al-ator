@@ -42,8 +42,9 @@ npm run preview    # preview the production build
 The dataset currently contains **163 Vim questions** (modes, movement, editing,
 search & replace, visual mode, windows & tabs, text objects, macros, marks,
 filters, buffers, formatting), **50 tmux questions** (sessions, panes, windows,
-copy mode & buffers, configuration), **62 git questions** (staging, history,
-branches & merging, undoing & recovery, remotes, and advanced workflows), and
+copy mode & buffers, configuration), **104 git questions** (staging, history,
+branches & merging, undoing & recovery, history rewriting, remotes, config &
+aliases, internals, and submodules), and
 **76 shell questions** (files & navigation, searching, pipes & redirection,
 processes, interactive shortcuts, permissions, environment, text processing,
 and archives), and **81 docker questions** (images & containers, container
