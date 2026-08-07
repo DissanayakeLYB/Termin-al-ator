@@ -3786,6 +3786,147 @@ export const dockerQuestions: QuizQuestion[] = [
   },
 ];
 
+export const regexQuestions: QuizQuestion[] = [
+  // ── Anchors ───────────────────────────────────────────────────────────────
+  {
+    id: "regex-anchor-start",
+    category: "regex",
+    prompt: "Match the start of a line.",
+    answer: "^",
+    explanation: "`^` anchors the match to the start of a line — everything before it is fixed.",
+  },
+  {
+    id: "regex-anchor-end",
+    category: "regex",
+    prompt: "Match the end of a line.",
+    answer: "$",
+    explanation: "`$` anchors the match to the end of a line — nothing can follow it.",
+  },
+  {
+    id: "regex-word-boundary",
+    category: "regex",
+    prompt: "Match a word boundary (where a word meets non-word characters).",
+    answer: "\\b",
+    explanation: "`\\b` matches between a word character and a non-word one — e.g. the edges of `cat` in `cat and scatter`.",
+  },
+  {
+    id: "regex-not-word-boundary",
+    category: "regex",
+    prompt: "Match a position that is NOT a word boundary.",
+    answer: "\\B",
+    explanation: "`\\B` is the opposite of `\\b` — it matches inside a word, like the gap between `c` and `a` in `cat`.",
+  },
+  {
+    id: "regex-any-char",
+    category: "regex",
+    prompt: "Match any single character except a newline.",
+    answer: ".",
+    explanation: "The dot matches any one character — the universal wildcard. Paired with `*` it matches anything.",
+  },
+
+  // ── Character classes & ranges ───────────────────────────────────────────
+  {
+    id: "regex-digit",
+    category: "regex",
+    prompt: "Match a single digit (0–9).",
+    answer: "\\d",
+    explanation: "`\\d` is shorthand for the class `[0-9]` — one digit. `\\D` is any non-digit.",
+  },
+  {
+    id: "regex-word-char",
+    category: "regex",
+    prompt: "Match a single word character (letter, digit, or underscore).",
+    answer: "\\w",
+    explanation: "`\\w` covers `[A-Za-z0-9_]` — useful for matching identifiers and usernames.",
+  },
+  {
+    id: "regex-whitespace",
+    category: "regex",
+    prompt: "Match a single whitespace character (space, tab, newline).",
+    answer: "\\s",
+    explanation: "`\\s` matches space, tab, newline, carriage return, and form feed — `\\S` is any non-whitespace.",
+  },
+  {
+    id: "regex-non-digit",
+    category: "regex",
+    prompt: "Match any single character that is NOT a digit.",
+    answer: "\\D",
+    explanation: "`\\D` is the negated class `[^0-9]` — anything that isn't a digit.",
+  },
+  {
+    id: "regex-class-set",
+    category: "regex",
+    prompt: "Match exactly one of the characters a, b, or c.",
+    answer: "[abc]",
+    explanation: "Square brackets define a set — `[abc]` matches one of `a`, `b`, or `c`.",
+  },
+  {
+    id: "regex-class-range",
+    category: "regex",
+    prompt: "Match any lowercase letter from a to z.",
+    answer: "[a-z]",
+    explanation: "The dash inside a class creates a range — `[a-z]` matches any lowercase letter.",
+  },
+  {
+    id: "regex-class-negated",
+    category: "regex",
+    prompt: "Match any character EXCEPT the digits 0–9.",
+    answer: "[^0-9]",
+    explanation: "A `^` right after the opening bracket negates the class — `[^0-9]` matches anything that isn't a digit.",
+  },
+  {
+    id: "regex-class-word",
+    category: "regex",
+    prompt: "Match a letter or digit using an explicit class (not the `\\w` shorthand).",
+    answer: "[A-Za-z0-9]",
+    explanation: "This spells out `\\w`'s letters-and-digits part: `[A-Za-z0-9]`. Add `_` to match underscore too.",
+  },
+
+  // ── Quantifiers ──────────────────────────────────────────────────────────
+  {
+    id: "regex-quant-zero-or-more",
+    category: "regex",
+    prompt: "Match the letter `a` zero or more times.",
+    answer: "a*",
+    explanation: "`*` means \"zero or more\" — `a*` matches ``, `a`, `aa`, `aaa`, and so on.",
+  },
+  {
+    id: "regex-quant-one-or-more",
+    category: "regex",
+    prompt: "Match the letter `a` one or more times.",
+    answer: "a+",
+    explanation: "`+` means \"one or more\" — `a+` needs at least one `a`, unlike `a*` which allows zero.",
+  },
+  {
+    id: "regex-quant-optional",
+    category: "regex",
+    prompt: "Match the letter `a` zero or one time (make it optional).",
+    answer: "a?",
+    explanation: "`?` means \"zero or one\" — `a?` matches `a` or nothing. Great for plural spellings like `colou?r`.",
+  },
+  {
+    id: "regex-quant-exactly",
+    category: "regex",
+    prompt: "Match exactly three digits in a row.",
+    answer: "\\d{3}",
+    explanation: "Braces set a count — `{3}` means exactly three of the previous element.",
+  },
+  {
+    id: "regex-quant-range",
+    category: "regex",
+    prompt: "Match between 2 and 4 lowercase letters.",
+    answer: "[a-z]{2,4}",
+    explanation: "`{2,4}` is a range quantifier — at least 2, at most 4. `{2,}` would mean \"2 or more\".",
+  },
+  {
+    id: "regex-quant-lazy",
+    category: "regex",
+    prompt: "Match as few characters as possible (a lazy match) with `a` repeated.",
+    answer: "a*?",
+    explanation: "Adding `?` after a quantifier makes it lazy — it matches as little as possible. `a*` is greedy by default.",
+  },
+];
+
 /** A practice category with its dataset and blurb. */
 export interface QuestionSet {
   category: Category;
@@ -3800,65 +3941,4 @@ export interface QuestionSet {
  */
 export const questionSets: Record<Category, QuestionSet> = {
   vim: {
-    category: "vim",
-    label: "vim",
-    description: "the modal text editor — commands, motions, and text objects",
-    questions: vimQuestions,
-  },
-  tmux: {
-    category: "tmux",
-    label: "tmux",
-    description: "terminal multiplexer — sessions, panes, windows, buffers",
-    questions: tmuxQuestions,
-  },
-  shell: {
-    category: "shell",
-    label: "shell",
-    description: "files, pipes, redirection, and processes",
-    questions: shellQuestions,
-  },
-  git: {
-    category: "git",
-    label: "git",
-    description: "staging, history, branches, and remotes",
-    questions: gitQuestions,
-  },
-  docker: {
-    category: "docker",
-    label: "docker",
-    description: "containers, images, and compose",
-    questions: dockerQuestions,
-  },
-  regex: {
-    category: "regex",
-    label: "regex",
-    description: "patterns for search and replace",
-    questions: [],
-  },
-  ssh: {
-    category: "ssh",
-    label: "ssh",
-    description: "remote shells, keys, and tunneling",
-    questions: [],
-  },
-  kubernetes: {
-    category: "kubernetes",
-    label: "k8s",
-    description: "pods, deployments, and cluster basics",
-    questions: [],
-  },
-};
-
-/** Categories with a ready question set — shown as selectable in the picker. */
-export const availableQuestionSets: QuestionSet[] = Object.values(questionSets).filter(
-  (set) => set.questions.length > 0
-);
-
-/** Categories still in progress — shown greyed out in the picker. */
-export const comingSoonSets: QuestionSet[] = Object.values(questionSets).filter(
-  (set) => set.questions.length === 0
-);
-
-export const categoryLabels: Record<Category, string> = Object.fromEntries(
-  Object.values(questionSets).map((set) => [set.category, set.label])
-) as Record<Category, string>;
+    
