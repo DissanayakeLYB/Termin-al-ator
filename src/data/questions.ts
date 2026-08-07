@@ -3925,6 +3925,240 @@ export const regexQuestions: QuizQuestion[] = [
     answer: "a*?",
     explanation: "Adding `?` after a quantifier makes it lazy — it matches as little as possible. `a*` is greedy by default.",
   },
+
+  // ── Groups & alternation ─────────────────────────────────────────────────
+  {
+    id: "regex-group-capture",
+    category: "regex",
+    prompt: "Capture `ab` as a numbered group so you can reference it later.",
+    answer: "(ab)",
+    explanation: "Parentheses group AND capture — `(ab)` becomes group 1, usable as `\\1` in the same pattern.",
+  },
+  {
+    id: "regex-group-noncapture",
+    category: "regex",
+    prompt: "Group `ab` WITHOUT capturing it (no backreference).",
+    answer: "(?:ab)",
+    explanation: "`(?:...)` groups for precedence or repetition but doesn't capture — avoids cluttering your group numbers.",
+  },
+  {
+    id: "regex-alternation",
+    category: "regex",
+    prompt: "Match either the word `cat` or the word `dog`.",
+    answer: "cat|dog",
+    explanation: "`|` is alternation (\"or\"). Parenthesize it — `(cat|dog)` — when it sits next to other tokens.",
+  },
+  {
+    id: "regex-lookahead",
+    category: "regex",
+    prompt: "Match `foo` only when it is immediately followed by `bar` (lookahead).",
+    answer: "foo(?=bar)",
+    explanation: "`(?=...)` is a positive lookahead — it checks the next characters without consuming them.",
+  },
+  {
+    id: "regex-lookahead-neg",
+    category: "regex",
+    prompt: "Match `foo` only when it is NOT followed by `bar`.",
+    answer: "foo(?!bar)",
+    explanation: "`(?!...)` is a negative lookahead — matches when the lookahead text is absent.",
+  },
+  {
+    id: "regex-lookbehind",
+    category: "regex",
+    prompt: "Match `foo` only when it is preceded by `bar` (lookbehind).",
+    answer: "(?<=bar)foo",
+    explanation: "`(?<=...)` is a positive lookbehind — the text before the match must be present, but isn't consumed.",
+  },
+  {
+    id: "regex-backreference",
+    category: "regex",
+    prompt: "Refer back to whatever group 1 matched, requiring it again.",
+    answer: "\\1",
+    explanation: "`\\1` repeats group 1's exact text — `(\\w+)\\1` matches doubled words like `hellohello`.",
+  },
+
+  // ── Escapes & literals ───────────────────────────────────────────────────
+  {
+    id: "regex-escape-dot",
+    category: "regex",
+    prompt: "Match a literal period (not the any-character wildcard).",
+    answer: "\\.",
+    explanation: "The backslash escapes the dot's special meaning — `\\.` matches an actual period like in `file.txt`.",
+  },
+  {
+    id: "regex-escape-backslash",
+    category: "regex",
+    prompt: "Match a literal backslash character.",
+    answer: "\\\\",
+    explanation: "Escaping the escape — `\\\\` in the pattern is one literal backslash in the text.",
+  },
+  {
+    id: "regex-escape-star",
+    category: "regex",
+    prompt: "Match a literal asterisk (not the quantifier).",
+    answer: "\\*",
+    explanation: "`\\*` matches an actual `*` character — escape any special character to match it literally.",
+  },
+  {
+    id: "regex-escape-plus",
+    category: "regex",
+    prompt: "Match a literal plus sign (not the quantifier).",
+    answer: "\\+",
+    explanation: "`\\+` matches an actual `+` — like matching a phone number's plus prefix.",
+  },
+  {
+    id: "regex-escape-tab",
+    category: "regex",
+    prompt: "Match a tab character.",
+    answer: "\\t",
+    explanation: "`\\t` is the tab escape — handy when matching whitespace-sensitive output like CSV.",
+  },
+  {
+    id: "regex-escape-newline",
+    category: "regex",
+    prompt: "Match a newline character.",
+    answer: "\\n",
+    explanation: "`\\n` is the newline escape. Combine with `\\t` to match structured logs.",
+  },
+
+  // ── Common patterns ──────────────────────────────────────────────────────
+  {
+    id: "regex-pattern-email",
+    category: "regex",
+    prompt: "Match a simple email address like alice@example.com.",
+    answer: "\\w+@\\w+\\.\\w+",
+    explanation:
+      "`\\w+` before the `@`, a domain, and a TLD after the escaped dot. Real emails need more nuance, but this handles the common shape.",
+  },
+  {
+    id: "regex-pattern-ipv4",
+    category: "regex",
+    prompt: "Match an IPv4 address like 192.168.1.1.",
+    answer: "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}",
+    explanation:
+      "Four numbers of 1–3 digits separated by escaped dots — the classic IPv4 shape. (It also matches 999.999.999.999; a stricter one caps each octet at 255.)",
+  },
+  {
+    id: "regex-pattern-date",
+    category: "regex",
+    prompt: "Match a date in YYYY-MM-DD format like 2026-08-07.",
+    answer: "\\d{4}-\\d{2}-\\d{2}",
+    explanation: "Four digits, dash, two digits, dash, two digits — the ISO date layout that sorts lexically.",
+  },
+  {
+    id: "regex-pattern-time",
+    category: "regex",
+    prompt: "Match a 24-hour time in HH:MM format like 23:59.",
+    answer: "\\d{2}:\\d{2}",
+    explanation: "Two digits, colon, two digits — matches times like 08:07 and 23:59.",
+  },
+  {
+    id: "regex-pattern-hexcolor",
+    category: "regex",
+    prompt: "Match a hex color like #a3f5c1 (6 hex digits after the hash).",
+    answer: "#[0-9a-fA-F]{6}",
+    explanation: "The `#` is literal, then exactly six hex digits — both cases covered via `a-fA-F`.",
+  },
+  {
+    id: "regex-pattern-url",
+    category: "regex",
+    prompt: "Match an http or https URL.",
+    answer: "https?://\\S+",
+    explanation: "`https?` makes the `s` optional, then the scheme, then any non-whitespace run — a quick way to snag URLs from text.",
+  },
+  {
+    id: "regex-pattern-empty-line",
+    category: "regex",
+    prompt: "Match a blank line (a line containing only whitespace).",
+    answer: "^\\s*$",
+    explanation: "Start, zero or more whitespace, end — catches truly empty lines and ones full of spaces/tabs.",
+  },
+  {
+    id: "regex-pattern-username",
+    category: "regex",
+    prompt: "Match a username of 3–16 lowercase letters, digits, or underscores.",
+    answer: "[a-z0-9_]{3,16}",
+    explanation: "A character class scoped to allowed symbols, constrained by the `{3,16}` range quantifier.",
+  },
+  {
+    id: "regex-pattern-decimal",
+    category: "regex",
+    prompt: "Match a decimal number with a fractional part like 3.14.",
+    answer: "\\d+\\.\\d+",
+    explanation: "Digits, escaped dot, digits — matches 3.14 but not an integer like 42 (which has no dot).",
+  },
+  {
+    id: "regex-escape-hex",
+    category: "regex",
+    prompt: "Match the character with hex code 41 (the letter A).",
+    answer: "\\x41",
+    explanation: "`\\xHH` matches the character with that hex code — `\\x41` is the letter A. Useful for tricky control characters.",
+  },
+  {
+    id: "regex-flag-global",
+    category: "regex",
+    prompt: "In JavaScript, find every match instead of stopping at the first one.",
+    answer: "g",
+    explanation: "The `g` (global) flag makes the regex keep searching after the first match instead of stopping.",
+  },
+  {
+    id: "regex-flag-case-insensitive",
+    category: "regex",
+    prompt: "Make a regex match letters case-insensitively.",
+    answer: "i",
+    explanation: "The `i` (ignore case) flag lets `abc` match `ABC`, `Abc`, and `aBc`.",
+  },
+  {
+    id: "regex-flag-multiline",
+    category: "regex",
+    prompt: "Make `^` and `$` match at every line, not just the string's ends.",
+    answer: "m",
+    explanation: "The `m` (multiline) flag re-anchors `^` and `$` to each line boundary in the input.",
+  },
+  {
+    id: "regex-flag-dotall",
+    category: "regex",
+    prompt: "Make the dot match newlines too, not just other characters.",
+    answer: "s",
+    explanation: "The `s` (dotall) flag lets `.` match newline characters — handy when scraping multi-line blocks.",
+  },
+  {
+    id: "regex-anchor-optional-group",
+    category: "regex",
+    prompt: "Match `co` plus an optional `l`, so both `color` and `colour` match.",
+    answer: "colou?r",
+    explanation: "The `?` makes the `u` optional — `colou?r` matches `color` and `colour`. Quantifiers apply to whatever precedes them.",
+  },
+  {
+    id: "regex-anchor-greedy-contrast",
+    category: "regex",
+    prompt: "Match the content between two quotes, stopping at the first closing quote.",
+    answer: "\"[^\"]*\"",
+    aliases: ["\".*?\""],
+    explanation:
+      "Two ways to stop early: a lazy quantifier `\".*?\"` grabs as little as possible, while the negated class `[^\"]*` matches non-quotes only — both stop at the first closing quote.",
+  },
+  {
+    id: "regex-replace-groups",
+    category: "regex",
+    prompt: "In a sed replacement, reference the text captured by the first group.",
+    answer: "\\1",
+    explanation: "In `s/pattern/replacement/`, `\\1` in the replacement side refers to group 1 from the pattern — e.g. `s/(\\w+)@(\\w+)/\\2.\\1/`.",
+  },
+  {
+    id: "regex-escape-special-set",
+    category: "regex",
+    prompt: "Match a literal opening parenthesis.",
+    answer: "\\(",
+    explanation: "Parentheses are special, so escape them: `\\(` matches a literal `(`. In many flavors you escape the closing one too.",
+  },
+  {
+    id: "regex-anchor-start-end-full",
+    category: "regex",
+    prompt: "Match a whole line consisting of only the word `yes`.",
+    answer: "^yes$",
+    explanation: "Anchoring both ends forces the match to consume the entire line — no extra characters allowed around `yes`.",
+  },
 ];
 
 /** A practice category with its dataset and blurb. */
@@ -3941,4 +4175,65 @@ export interface QuestionSet {
  */
 export const questionSets: Record<Category, QuestionSet> = {
   vim: {
-    
+    category: "vim",
+    label: "vim",
+    description: "the modal text editor — commands, motions, and text objects",
+    questions: vimQuestions,
+  },
+  tmux: {
+    category: "tmux",
+    label: "tmux",
+    description: "terminal multiplexer — sessions, panes, windows, buffers",
+    questions: tmuxQuestions,
+  },
+  shell: {
+    category: "shell",
+    label: "shell",
+    description: "files, pipes, redirection, and processes",
+    questions: shellQuestions,
+  },
+  git: {
+    category: "git",
+    label: "git",
+    description: "staging, history, branches, and remotes",
+    questions: gitQuestions,
+  },
+  docker: {
+    category: "docker",
+    label: "docker",
+    description: "containers, images, and compose",
+    questions: dockerQuestions,
+  },
+  regex: {
+    category: "regex",
+    label: "regex",
+    description: "patterns for search and replace",
+    questions: regexQuestions,
+  },
+  ssh: {
+    category: "ssh",
+    label: "ssh",
+    description: "remote shells, keys, and tunneling",
+    questions: [],
+  },
+  kubernetes: {
+    category: "kubernetes",
+    label: "k8s",
+    description: "pods, deployments, and cluster basics",
+    questions: [],
+  },
+};
+
+/** Categories with a ready question set — shown as selectable in the picker. */
+export const availableQuestionSets: QuestionSet[] = Object.values(questionSets).filter(
+  (set) => set.questions.length > 0
+);
+
+/** Categories still in progress — shown greyed out in the picker. */
+export const comingSoonSets: QuestionSet[] = Object.values(questionSets).filter(
+  (set) => set.questions.length === 0
+);
+
+export const categoryLabels: Record<Category, string> = Object.fromEntries(
+  Object.values(questionSets).map((set) => [set.category, set.label])
+) as Record<Category, string>;

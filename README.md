@@ -47,9 +47,10 @@ branches & merging, undoing & recovery, history rewriting, remotes, config &
 aliases, internals, and submodules), and
 **76 shell questions** (files & navigation, searching, pipes & redirection,
 processes, interactive shortcuts, permissions, environment, text processing,
-and archives), and **81 docker questions** (images & containers, container
+and archives), **81 docker questions** (images & containers, container
 lifecycle, building & registries, Dockerfile instructions, compose, networks,
-volumes, and cleanup).
+volumes, and cleanup), and **51 regex questions** (anchors, character classes,
+quantifiers, groups & alternation, escapes, common patterns, and flags).
 
 ## Project structure
 
