@@ -133,6 +133,7 @@ export function ResultPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void
       </div>
 
       <InputBar
+        inputRef={inputRef}
         value={value}
         onChange={setValue}
         onSubmit={handleSubmit}

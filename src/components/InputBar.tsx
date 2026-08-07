@@ -1,10 +1,12 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { AnswerInput } from "./AnswerInput";
 
 interface InputBarProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  /** Ref to the inner input, for focusing on page load. */
+  inputRef?: Ref<HTMLInputElement>;
   placeholder?: string;
   readOnly?: boolean;
   hint?: ReactNode;
@@ -15,6 +17,7 @@ export function InputBar({
   value,
   onChange,
   onSubmit,
+  inputRef,
   placeholder,
   readOnly = false,
   hint,
@@ -24,6 +27,7 @@ export function InputBar({
     <div className="border-t border-term-edge bg-term-panel2 px-4 py-3 sm:px-8">
       <div className="flex items-center gap-3">
         <AnswerInput
+          ref={inputRef}
           value={value}
           onChange={onChange}
           onSubmit={onSubmit}

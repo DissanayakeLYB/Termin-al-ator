@@ -126,6 +126,7 @@ export function CategoryPage({ onSelect }: CategoryPageProps) {
       </div>
 
       <InputBar
+        inputRef={inputRef}
         value={value}
         onChange={setValue}
         onSubmit={handleSubmit}

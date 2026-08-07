@@ -154,6 +154,7 @@ export function QuizPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }
       <StatusBar quiz={quiz} />
 
       <InputBar
+        inputRef={inputRef}
         value={value}
         onChange={setValue}
         onSubmit={handleSubmit}
