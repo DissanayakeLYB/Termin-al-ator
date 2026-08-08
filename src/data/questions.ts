@@ -4607,6 +4607,530 @@ export const sshQuestions: QuizQuestion[] = [
   },
 ];
 
+export const kubernetesQuestions: QuizQuestion[] = [
+  // ── Cluster & context ────────────────────────────────────────────────────
+  {
+    id: "k8s-cluster-info",
+    category: "kubernetes",
+    prompt: "Show basic info about the cluster you're talking to.",
+    answer: "kubectl cluster-info",
+    explanation:
+      "Prints the control-plane and CoreDNS service endpoints — a quick sanity check that your context points somewhere real.",
+  },
+  {
+    id: "k8s-version",
+    category: "kubernetes",
+    prompt: "Print the kubectl client version and the server version.",
+    answer: "kubectl version",
+    explanation: "Shows Client Version and Server Version (server comes from the API).",
+  },
+  {
+    id: "k8s-nodes",
+    category: "kubernetes",
+    prompt: "List all nodes in the cluster.",
+    answer: "kubectl get nodes",
+    explanation:
+      "Each row is a node with its status (Ready/NotReady) and the kubelet/Kubernetes versions running on it.",
+  },
+  {
+    id: "k8s-nodes-wide",
+    category: "kubernetes",
+    prompt: "List nodes with extra details like internal IP and OS image.",
+    answer: "kubectl get nodes -o wide",
+    explanation:
+      "The `-o wide` output adds the node's IPs, OS, kernel, and container runtime to the default table.",
+  },
+  {
+    id: "k8s-current-context",
+    category: "kubernetes",
+    prompt: "Show the name of the cluster context you're currently using.",
+    answer: "kubectl config current-context",
+    explanation:
+      "A context bundles a cluster, a user, and a namespace. This prints which one kubectl is pointed at right now.",
+  },
+  {
+    id: "k8s-contexts",
+    category: "kubernetes",
+    prompt: "List every context defined in your kubeconfig.",
+    answer: "kubectl config get-contexts",
+    explanation:
+      "Shows all saved contexts with their cluster and user. The current one is marked with an asterisk.",
+  },
+  {
+    id: "k8s-use-context",
+    category: "kubernetes",
+    prompt: "Switch to the `dev` context.",
+    answer: "kubectl config use-context dev",
+    explanation:
+      "Permanently switches which cluster/user kubectl talks to until you switch back.",
+  },
+  {
+    id: "k8s-context-namespace",
+    category: "kubernetes",
+    prompt: "Make `prod` the default namespace for the `dev` context.",
+    answer: "kubectl config set-context dev --namespace=prod",
+    explanation:
+      "Updates the context in place so every future kubectl call in that context targets the `prod` namespace by default.",
+  },
+  {
+    id: "k8s-pods",
+    category: "kubernetes",
+    prompt: "List the pods in the current namespace.",
+    answer: "kubectl get pods",
+    explanation:
+      "The workhorse listing command — shows name, ready state, status, restarts, and age of each pod.",
+  },
+  {
+    id: "k8s-pods-all",
+    category: "kubernetes",
+    prompt: "List pods across all namespaces.",
+    answer: "kubectl get pods -A",
+    explanation:
+      "`-A` (alias for `--all-namespaces`) lists every pod in every namespace — essential for finding things cluster-wide.",
+    aliases: ["kubectl get pods --all-namespaces"],
+  },
+  {
+    id: "k8s-pod-yaml",
+    category: "kubernetes",
+    prompt: "Show the full YAML definition of the pod `my-pod`.",
+    answer: "kubectl get pod my-pod -o yaml",
+    explanation:
+      "Dumps the live object as YAML, including spec, status, and the final values the API server stored.",
+  },
+  {
+    id: "k8s-pod-describe",
+    category: "kubernetes",
+    prompt: "Get a detailed human-readable summary of `my-pod`, including events.",
+    answer: "kubectl describe pod my-pod",
+    explanation:
+      "`describe` is the first stop when a pod won't start — it shows container states, conditions, and recent events.",
+  },
+  {
+    id: "k8s-logs",
+    category: "kubernetes",
+    prompt: "Print the logs of the pod `my-pod`.",
+    answer: "kubectl logs my-pod",
+    explanation:
+      "Fetches stdout/stderr of the pod's (first) container. For multi-container pods add `-c <container>`.",
+  },
+  {
+    id: "k8s-logs-follow",
+    category: "kubernetes",
+    prompt: "Stream the logs of `my-pod` live, like `tail -f`.",
+    answer: "kubectl logs -f my-pod",
+    explanation:
+      "`-f` (follow) keeps the stream open and prints new log lines as they're written — great for watching a deploy.",
+  },
+  {
+    id: "k8s-logs-container",
+    category: "kubernetes",
+    prompt: "Print the logs of the `sidecar` container inside `my-pod`.",
+    answer: "kubectl logs my-pod -c sidecar",
+    explanation:
+      "Use `-c` to pick a specific container when a pod runs several of them.",
+  },
+  {
+    id: "k8s-logs-previous",
+    category: "kubernetes",
+    prompt: "See the logs from `my-pod`'s previous (crashed) container instance.",
+    answer: "kubectl logs my-pod --previous",
+    explanation:
+      "`--previous` shows the logs of the last incarnation of the container — the classic way to see a crash loop's final output.",
+  },
+  {
+    id: "k8s-exec",
+    category: "kubernetes",
+    prompt: "Open an interactive bash shell inside `my-pod`.",
+    answer: "kubectl exec -it my-pod -- bash",
+    explanation:
+      "`-i` keeps stdin open, `-t` allocates a TTY, and `--` separates kubectl flags from the command run in the container.",
+  },
+  {
+    id: "k8s-exec-command",
+    category: "kubernetes",
+    prompt: "Run a one-off command, `ls /app`, inside `my-pod` without a shell.",
+    answer: "kubectl exec my-pod -- ls /app",
+    explanation:
+      "Everything after `--` executes inside the pod. No `-it` needed when you just want the output of a single command.",
+  },
+  {
+    id: "k8s-run",
+    category: "kubernetes",
+    prompt: "Imperatively launch a workload named `web` from the `nginx` image.",
+    answer: "kubectl run web --image=nginx",
+    explanation:
+      "A quick imperative way to launch a workload from an image — in modern kubectl this creates a Deployment, not a bare pod.",
+  },
+  {
+    id: "k8s-delete-pod",
+    category: "kubernetes",
+    prompt: "Delete the pod `my-pod`.",
+    answer: "kubectl delete pod my-pod",
+    explanation:
+      "Deletes the pod gracefully. If it's owned by a Deployment, the controller immediately recreates it.",
+  },
+  {
+    id: "k8s-delete-force",
+    category: "kubernetes",
+    prompt: "Force-delete `my-pod` immediately, skipping the graceful grace period.",
+    answer: "kubectl delete pod my-pod --force --grace-period=0",
+    explanation:
+      "Nukes the pod without waiting — useful when it's stuck in Terminating. Use sparingly.",
+  },
+  {
+    id: "k8s-port-forward",
+    category: "kubernetes",
+    prompt: "Forward local port `8080` to `my-pod`'s port `80`.",
+    answer: "kubectl port-forward my-pod 8080:80",
+    explanation:
+      "Tunnels localhost:8080 to the pod's port 80 — handy for reaching a pod that has no Service yet.",
+  },
+  {
+    id: "k8s-cp",
+    category: "kubernetes",
+    prompt: "Copy the file `/tmp/notes.txt` out of `my-pod` to your current directory.",
+    answer: "kubectl cp my-pod:/tmp/notes.txt ./notes.txt",
+    explanation:
+      "`kubectl cp` copies files between your machine and a pod using `pod:path` syntax, like `scp`.",
+  },
+  // ── Workloads & rollouts ─────────────────────────────────────────────────
+  {
+    id: "k8s-create-deployment",
+    category: "kubernetes",
+    prompt: "Create a Deployment named `web` running the `nginx` image.",
+    answer: "kubectl create deployment web --image=nginx",
+    explanation:
+      "Scaffolds a Deployment with one replica. The Deployment controller keeps that many pods running.",
+  },
+  {
+    id: "k8s-get-deployments",
+    category: "kubernetes",
+    prompt: "List the Deployments in the current namespace.",
+    answer: "kubectl get deployments",
+    explanation:
+      "Shows desired vs. current replicas, how many are up-to-date/available, and the age of each Deployment.",
+  },
+  {
+    id: "k8s-get-replicasets",
+    category: "kubernetes",
+    prompt: "List the ReplicaSets in the current namespace.",
+    answer: "kubectl get rs",
+    explanation:
+      "ReplicaSets (short `rs`) are the controllers that actually hold the pod replicas; Deployments manage them.",
+  },
+  {
+    id: "k8s-get-statefulsets",
+    category: "kubernetes",
+    prompt: "List the StatefulSets in the current namespace.",
+    answer: "kubectl get statefulsets",
+    explanation:
+      "StatefulSets give pods stable identity and stable storage — for databases and clustered apps.",
+  },
+  {
+    id: "k8s-get-daemonsets",
+    category: "kubernetes",
+    prompt: "List the DaemonSets in the current namespace.",
+    answer: "kubectl get daemonsets",
+    explanation:
+      "DaemonSets run exactly one pod per node — the standard way to deploy node agents like log collectors.",
+  },
+  {
+    id: "k8s-get-cronjobs",
+    category: "kubernetes",
+    prompt: "List the CronJobs in the current namespace.",
+    answer: "kubectl get cronjobs",
+    explanation:
+      "CronJobs run Jobs on a schedule — the Kubernetes equivalent of cron for one-off tasks.",
+  },
+  {
+    id: "k8s-scale",
+    category: "kubernetes",
+    prompt: "Scale the Deployment `web` to 5 replicas.",
+    answer: "kubectl scale deployment web --replicas=5",
+    explanation:
+      "Imperatively changes the replica count; the Deployment rolls out new pods (or removes extras) to match.",
+  },
+  {
+    id: "k8s-rollout-status",
+    category: "kubernetes",
+    prompt: "Check the status of `web`'s in-progress rollout.",
+    answer: "kubectl rollout status deployment/web",
+    explanation:
+      "Blocks until the rollout completes (or fails), reporting progress — the deploy equivalent of a progress bar.",
+  },
+  {
+    id: "k8s-rollout-history",
+    category: "kubernetes",
+    prompt: "Show the rollout history of the Deployment `web`.",
+    answer: "kubectl rollout history deployment/web",
+    explanation:
+      "Lists every revision of the Deployment's pod template — the versions you can roll back to.",
+  },
+  {
+    id: "k8s-rollout-undo",
+    category: "kubernetes",
+    prompt: "Roll back the Deployment `web` to its previous revision.",
+    answer: "kubectl rollout undo deployment/web",
+    explanation:
+      "Reverts to the last revision (add `--to-revision=N` for a specific one) — the Kubernetes way of undoing a bad deploy.",
+  },
+  {
+    id: "k8s-rollout-restart",
+    category: "kubernetes",
+    prompt: "Force the Deployment `web` to restart all its pods (e.g. to pick up a new configmap).",
+    answer: "kubectl rollout restart deployment/web",
+    explanation:
+      "Bumps the pod template annotation so every pod is recreated — the trick for reloading ConfigMaps/Secrets without changing images.",
+  },
+  {
+    id: "k8s-set-image",
+    category: "kubernetes",
+    prompt: "Update the `nginx` container of Deployment `web` to image `nginx:1.25`.",
+    answer: "kubectl set image deployment/web nginx=nginx:1.25",
+    explanation:
+      "`set image` updates a container's image by name, triggering a rolling update. Syntax: <container>=<image>.",
+  },
+  {
+    id: "k8s-edit-deployment",
+    category: "kubernetes",
+    prompt: "Open the live spec of Deployment `web` in your editor and apply changes on save.",
+    answer: "kubectl edit deployment web",
+    explanation:
+      "Fetches the object, opens it in `$EDITOR`, and applies your edits on save — imperative editing without YAML files.",
+  },
+  // ── Services & networking ────────────────────────────────────────────────
+  {
+    id: "k8s-expose",
+    category: "kubernetes",
+    prompt: "Expose Deployment `web`'s port `80` as a LoadBalancer Service.",
+    answer: "kubectl expose deployment web --port=80 --type=LoadBalancer",
+    explanation:
+      "Creates a Service pointing at the Deployment's pods. LoadBalancer gives it an external IP on cloud clusters.",
+  },
+  {
+    id: "k8s-get-services",
+    category: "kubernetes",
+    prompt: "List the Services in the current namespace.",
+    answer: "kubectl get svc",
+    explanation:
+      "Shows each Service's type, ClusterIP, and the ports it forwards to — the stable network entry points for pods.",
+  },
+  {
+    id: "k8s-get-endpoints",
+    category: "kubernetes",
+    prompt: "List the Endpoints (the pod IPs a Service routes to) in the current namespace.",
+    answer: "kubectl get endpoints",
+    explanation:
+      "Endpoints hold the actual IP:port list a Service sends traffic to — handy for checking why a Service has no targets.",
+  },
+  {
+    id: "k8s-get-ingress",
+    category: "kubernetes",
+    prompt: "List the Ingress resources in the current namespace.",
+    answer: "kubectl get ingress",
+    explanation:
+      "Ingresses route HTTP/S traffic by hostname and path to Services — the Kubernetes way of doing virtual hosts.",
+  },
+  {
+    id: "k8s-get-networkpolicies",
+    category: "kubernetes",
+    prompt: "List the NetworkPolicies in the current namespace.",
+    answer: "kubectl get networkpolicies",
+    explanation:
+      "NetworkPolicies define which pods can talk to which — the firewall rules of the cluster (requires a CNI that enforces them).",
+  },
+  // ── Config & secrets ─────────────────────────────────────────────────────
+  {
+    id: "k8s-create-configmap",
+    category: "kubernetes",
+    prompt: "Create a ConfigMap named `app-config` from the file `config.json`.",
+    answer: "kubectl create configmap app-config --from-file=config.json",
+    explanation:
+      "Loads the file's contents into a ConfigMap that pods can mount or read as env vars — config without rebuilding images.",
+  },
+  {
+    id: "k8s-get-configmaps",
+    category: "kubernetes",
+    prompt: "List the ConfigMaps in the current namespace.",
+    answer: "kubectl get configmaps",
+    explanation:
+      "Shows the ConfigMaps available — plain-text configuration that can be injected into pods.",
+  },
+  {
+    id: "k8s-create-secret",
+    category: "kubernetes",
+    prompt: "Create a generic Secret named `db-secret` with the literal `password=sup3rs3cret`.",
+    answer: "kubectl create secret generic db-secret --from-literal=password=sup3rs3cret",
+    explanation:
+      "Stores the key/value pair base64-encoded in the cluster. Prefer Secrets over plaintext ConfigMaps for anything sensitive.",
+  },
+  {
+    id: "k8s-get-secrets",
+    category: "kubernetes",
+    prompt: "List the Secrets in the current namespace.",
+    answer: "kubectl get secrets",
+    explanation:
+      "Lists Secrets by name and type — the actual values stay hidden unless you decode them with `-o yaml` + base64.",
+  },
+  // ── Namespaces ───────────────────────────────────────────────────────────
+  {
+    id: "k8s-get-namespaces",
+    category: "kubernetes",
+    prompt: "List all namespaces.",
+    answer: "kubectl get namespaces",
+    explanation:
+      "Namespaces partition a cluster — `kube-system`, `default`, and any project-specific ones.",
+  },
+  {
+    id: "k8s-create-namespace",
+    category: "kubernetes",
+    prompt: "Create a namespace called `dev`.",
+    answer: "kubectl create namespace dev",
+    explanation:
+      "Makes a fresh namespace for isolating workloads; you can then scope everything with `-n dev`.",
+  },
+  {
+    id: "k8s-delete-namespace",
+    category: "kubernetes",
+    prompt: "Delete the namespace `dev` and everything in it.",
+    answer: "kubectl delete namespace dev",
+    explanation:
+      "Removes the namespace and all resources inside it — a heavy hammer, so make sure it's the namespace you meant.",
+  },
+  {
+    id: "k8s-get-pods-namespace",
+    category: "kubernetes",
+    prompt: "List the pods specifically in the `dev` namespace.",
+    answer: "kubectl get pods -n dev",
+    explanation:
+      "`-n` (or `--namespace`) overrides the current namespace for this one command.",
+  },
+  // ── Resource management & manifests ──────────────────────────────────────
+  {
+    id: "k8s-apply",
+    category: "kubernetes",
+    prompt: "Apply the resources defined in `deploy.yaml` to the cluster.",
+    answer: "kubectl apply -f deploy.yaml",
+    explanation:
+      "The declarative way: creates or updates whatever the manifest describes, reconciling toward the desired state.",
+  },
+  {
+    id: "k8s-delete-f",
+    category: "kubernetes",
+    prompt: "Delete all resources defined in `deploy.yaml` from the cluster.",
+    answer: "kubectl delete -f deploy.yaml",
+    explanation:
+      "Deletes every object listed in the manifest — the inverse of `kubectl apply -f`.",
+  },
+  {
+    id: "k8s-get-all",
+    category: "kubernetes",
+    prompt: "List all common resource types in the current namespace at once.",
+    answer: "kubectl get all",
+    explanation:
+      "Shows pods, services, deployments, replicasets, and more in one table — a quick overview of a namespace.",
+  },
+  {
+    id: "k8s-api-resources",
+    category: "kubernetes",
+    prompt: "List every resource type the cluster's API server supports.",
+    answer: "kubectl api-resources",
+    explanation:
+      "Dumps all resource kinds, their short names, API groups, and whether they're namespaced — great for discovery.",
+  },
+  {
+    id: "k8s-explain",
+    category: "kubernetes",
+    prompt: "Read the field-by-field documentation for the `pod` resource right from the CLI.",
+    answer: "kubectl explain pod",
+    explanation:
+      "Built-in docs for any resource — `kubectl explain pod.spec.containers` drills into nested fields.",
+    aliases: ["kubectl explain pod.spec.containers"],
+  },
+  {
+    id: "k8s-label",
+    category: "kubernetes",
+    prompt: "Add the label `env=prod` to the pod `my-pod`.",
+    answer: "kubectl label pod my-pod env=prod",
+    explanation:
+      "Attaches a key=value label used by selectors in Services, Deployments, and NetworkPolicies.",
+  },
+  {
+    id: "k8s-annotate",
+    category: "kubernetes",
+    prompt: "Add the annotation `description=legacy-app` to the pod `my-pod`.",
+    answer: "kubectl annotate pod my-pod description=legacy-app",
+    explanation:
+      "Annotations attach non-identifying metadata that tools can read but selectors can't filter on.",
+  },
+  {
+    id: "k8s-top-nodes",
+    category: "kubernetes",
+    prompt: "Show live CPU and memory usage for all nodes.",
+    answer: "kubectl top nodes",
+    explanation:
+      "Reports real resource usage per node (requires the metrics-server). The first stop when something is resource-starved.",
+  },
+  {
+    id: "k8s-top-pods",
+    category: "kubernetes",
+    prompt: "Show live CPU and memory usage for the pods in the current namespace.",
+    answer: "kubectl top pods",
+    explanation:
+      "Per-pod resource usage snapshot — useful for spotting pods that are hogging or exceeding their requests.",
+  },
+  {
+    id: "k8s-events",
+    category: "kubernetes",
+    prompt: "Show recent cluster events for the current namespace.",
+    answer: "kubectl get events",
+    explanation:
+      "Events are the cluster's log of warnings, scheduling, and lifecycle changes — `--sort-by=.lastTimestamp` orders them.",
+    aliases: ["kubectl get events --sort-by=.lastTimestamp"],
+  },
+  {
+    id: "k8s-drain",
+    category: "kubernetes",
+    prompt: "Safely drain `node-1` so its pods move to other nodes before maintenance.",
+    answer: "kubectl drain node-1",
+    explanation:
+      "Marks the node unschedulable and evicts its pods gracefully. Add `--ignore-daemonsets` when DaemonSets block it.",
+    aliases: ["kubectl drain node-1 --ignore-daemonsets"],
+  },
+  {
+    id: "k8s-cordon",
+    category: "kubernetes",
+    prompt: "Mark `node-1` as unschedulable so no new pods land on it.",
+    answer: "kubectl cordon node-1",
+    explanation:
+      "Stops new scheduling onto the node while leaving existing pods running — a gentler prelude to a drain.",
+  },
+  {
+    id: "k8s-uncordon",
+    category: "kubernetes",
+    prompt: "Mark `node-1` as schedulable again.",
+    answer: "kubectl uncordon node-1",
+    explanation:
+      "Reverses a cordon so the node accepts new pods again.",
+  },
+  {
+    id: "k8s-manifest-apiVersion",
+    category: "kubernetes",
+    prompt: "In a manifest, what's the first line that declares the API version of a `v1` Pod?",
+    answer: "apiVersion: v1",
+    explanation:
+      "Every manifest starts with `apiVersion` naming the API group and version. Pods live in the core `v1` group.",
+  },
+  {
+    id: "k8s-manifest-kind",
+    category: "kubernetes",
+    prompt: "In a manifest, which line declares that the resource is a Pod?",
+    answer: "kind: Pod",
+    explanation:
+      "The `kind` line names the resource type — `Pod`, `Deployment`, `Service`, and so on. It follows `apiVersion`.",
+  },
+];
+
 /** A practice category with its dataset and blurb. */
 export interface QuestionSet {
   category: Category;
@@ -4666,7 +5190,7 @@ export const questionSets: Record<Category, QuestionSet> = {
     category: "kubernetes",
     label: "k8s",
     description: "pods, deployments, and cluster basics",
-    questions: [],
+    questions: kubernetesQuestions,
   },
 };
 

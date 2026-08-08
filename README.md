@@ -52,7 +52,9 @@ lifecycle, building & registries, Dockerfile instructions, compose, networks,
 volumes, and cleanup), **51 regex questions** (anchors, character classes,
 quantifiers, groups & alternation, escapes, common patterns, and flags), and
 **54 ssh questions** (connecting, keys & authentication, the agent, tunneling,
-file transfer, config & hardening).
+file transfer, config & hardening), and **64 kubernetes questions** (cluster &
+context, pods, workloads & rollouts, services & networking, config & secrets,
+namespaces, resource management, and manifests).
 
 ## Project structure
 
