@@ -6,6 +6,8 @@ export interface QuestionResult {
   /** The normalized answer the user submitted. */
   submitted: string;
   correct: boolean;
+  /** How many progressive hints were revealed before answering. */
+  hintsUsed: number;
 }
 
 export interface Attempt extends QuestionResult {
@@ -35,10 +37,15 @@ export interface QuizApi {
   result: QuestionResult | null;
   /** Every answer of the session, in order. */
   attempts: Attempt[];
+  /** Total hints revealed across the whole session. */
+  hintsUsed: number;
   /** True once the user ends the session (results screen). */
   ended: boolean;
-  /** Submit an answer; returns whether it was correct, or null if ignored. */
-  submit: (input: string) => boolean | null;
+  /**
+   * Submit an answer; returns whether it was correct, or null if ignored.
+   * Pass the number of hints revealed for this question to track hint use.
+   */
+  submit: (input: string, hintsUsed?: number) => boolean | null;
   next: () => void;
   quit: () => void;
   restart: () => void;
@@ -83,14 +90,17 @@ export function useQuiz({ questions, shuffle = true }: UseQuizOptions): QuizApi 
   const current = deck[deckIndex];
 
   const submit = useCallback(
-    (input: string): boolean | null => {
+    (input: string, hintsUsed: number = 0): boolean | null => {
       const normalized = normalizeAnswer(input);
       if (!normalized || ended || result) return null;
 
       const question = deck[deckIndex];
       const correct = isCorrect(normalized, question);
-      setResult({ submitted: normalized, correct });
-      setAttempts((prev) => [...prev, { submitted: normalized, correct, question }]);
+      setResult({ submitted: normalized, correct, hintsUsed });
+      setAttempts((prev) => [
+        ...prev,
+        { submitted: normalized, correct, hintsUsed, question },
+      ]);
       return correct;
     },
     [deck, deckIndex, ended, result]
@@ -120,6 +130,7 @@ export function useQuiz({ questions, shuffle = true }: UseQuizOptions): QuizApi 
 
   const answered = attempts.length;
   const score = attempts.reduce((n, a) => n + (a.correct ? 1 : 0), 0);
+  const hintsUsed = attempts.reduce((n, a) => n + a.hintsUsed, 0);
   const accuracy = answered > 0 ? Math.round((score / answered) * 100) : 0;
   const distinctSeen = new Set(attempts.map((a) => a.question.id)).size;
   const allSeen = questions.length > 0 && distinctSeen >= questions.length;
@@ -135,6 +146,7 @@ export function useQuiz({ questions, shuffle = true }: UseQuizOptions): QuizApi 
     allSeen,
     result,
     attempts,
+    hintsUsed,
     ended,
     submit,
     next,

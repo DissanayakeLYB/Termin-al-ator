@@ -40,6 +40,10 @@ npm run preview    # preview the production build
 - **Exit anytime, switch anytime** — type `:quit` (or `exit`, `bye`) to end the
   session and see results; type `:menu` (or `switch`) to jump back to the
   practice picker mid-session and start another category.
+- **Stuck? Ask for a hint** — click the `hint?` button (or type `:hint`) to
+  reveal a progressively more helpful clue: a conceptual hint, then a stronger
+  one, then one that almost gives the answer. Three hints per question, never
+  an instant answer. Hint use is tracked and shown on the results screen.
 - Answers are validated exactly (whitespace-tolerant). Ctrl combos are
   case-insensitive (`ctrl+r` = `Ctrl+r`), and some questions accept aliases
   (`:x` for `:wq`, `esc` for `Esc`, `42G` for `:42`).
@@ -81,7 +85,8 @@ src/
   data/workflowQuestions.ts # scenario questions for the workflow level
   hooks/useQuiz.ts          # infinite-session quiz state machine
   utils/validate.ts         # answer normalization + exact-match validation
-  utils/commands.ts         # reserved session commands (:quit, :menu, back, restart)
+  utils/commands.ts         # reserved session commands (:quit, :menu, :hint, back)
+  utils/hints.ts            # progressive hint engine (derived + authored)
   components/               # presentational UI (Button, InputBar, BootBanner, …)
   pages/                    # CategoryPage + LevelPage + QuizPage + ResultPage
   App.tsx                   # full-page terminal shell + category/level routing
@@ -96,7 +101,9 @@ src/
 4. The category picker picks it up automatically — no other wiring needed.
 
 Each `QuizQuestion` is
-`{ id, category, level, prompt, answer, explanation, aliases? }` where `level`
-is `"pareto" | "core" | "workflow"` (chaos is a session-level mix of all three,
-not a per-question tag). Keep prompts phrased as a task ("Save the current
-file") — they render directly as terminal output, with no added prefix.
+`{ id, category, level, prompt, answer, explanation, hints?, aliases? }` where
+`level` is `"pareto" | "core" | "workflow"` (chaos is a session-level mix of
+all three, not a per-question tag) and `hints?` is an optional array of up to
+three progressive hints (omit it to get hints derived automatically in
+`src/utils/hints.ts`). Keep prompts phrased as a task ("Save the current file")
+— they render directly as terminal output, with no added prefix.

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { categoryLabels, type Level } from "../data/questions";
 import { levelInfo } from "../data/levels";
 import type { Attempt, QuizApi } from "../hooks/useQuiz";
-import { isExitCommand, isMenuCommand } from "../utils/commands";
+import { isExitCommand, isHintCommand, isMenuCommand } from "../utils/commands";
+import { getHints } from "../utils/hints";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { Feedback } from "../components/Feedback";
@@ -59,14 +60,19 @@ export function QuizPage({
   const lvl = levelInfo(level);
 
   const [value, setValue] = useState("");
+  const [hintCount, setHintCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lockedRef = useRef(false);
+
+  const hints = getHints(current);
+  const hintsExhausted = hintCount >= hints.length;
 
   // Fresh input + focus for each new task, and release the submit lock
   // whenever there is no pending result.
   useEffect(() => {
     setValue("");
+    setHintCount(0);
     lockedRef.current = false;
     inputRef.current?.focus();
   }, [current.id]);
@@ -96,12 +102,23 @@ export function QuizPage({
       onMenu();
       return;
     }
+    if (isHintCommand(input)) {
+      revealHint();
+      setValue("");
+      return;
+    }
     if (!input.trim()) return;
-    const accepted = submit(input);
+    const accepted = submit(input, hintCount);
     if (accepted !== null) {
       setValue(input.trim());
       lockedRef.current = true;
     }
+  };
+
+  const revealHint = () => {
+    if (result || hintsExhausted) return;
+    setHintCount((c) => c + 1);
+    inputRef.current?.focus();
   };
 
   return (
@@ -150,6 +167,32 @@ export function QuizPage({
               {current.prompt}
             </h2>
 
+            {!result && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Button
+                  variant="ghost"
+                  className="px-3 py-1 text-xs"
+                  onClick={revealHint}
+                  disabled={hintsExhausted}
+                  aria-label="reveal a hint"
+                >
+                  {hintCount === 0
+                    ? "hint?"
+                    : hintsExhausted
+                      ? "hints used"
+                      : `hint ${hintCount}/${hints.length}`}
+                </Button>
+                {hintCount > 0 && (
+                  <p
+                    className="border-l-2 border-term-amber/50 pl-3 text-xs leading-relaxed text-term-amber/90 sm:text-sm"
+                    role="status"
+                  >
+                    hint {hintCount}/{hints.length}: {hints[hintCount - 1]}
+                  </p>
+                )}
+              </div>
+            )}
+
             {result && (
               <div className="mt-4 space-y-3">
                 <Feedback result={result} question={current} />
@@ -177,7 +220,8 @@ export function QuizPage({
         readOnly={result !== null}
         hint={
           <span className="sm:hidden">
-            enter: submit / next · <span className="text-term-amber">:quit</span> end ·{" "}
+            enter: submit / next · <span className="text-term-amber">:hint</span> clue ·{" "}
+            <span className="text-term-amber">:quit</span> end ·{" "}
             <span className="text-term-amber">:menu</span> switch
           </span>
         }

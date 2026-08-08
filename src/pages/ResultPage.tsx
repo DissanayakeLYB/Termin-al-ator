@@ -43,7 +43,7 @@ export function ResultPage({
   level: Level;
   onMenu: () => void;
 }) {
-  const { attempts, score, answered, accuracy, distinctSeen, totalQuestions, restart } = quiz;
+  const { attempts, score, answered, accuracy, distinctSeen, totalQuestions, hintsUsed, restart } = quiz;
   const missed = latestMissed(attempts);
   const label = categoryLabels[quiz.current.category];
   const lvl = levelInfo(level);
@@ -103,6 +103,11 @@ export function ResultPage({
               value={`${distinctSeen}/${totalQuestions} questions`}
             />
             <StatRow label="level" value={lvl.name} tone={lvl.accent} />
+            <StatRow
+              label="hints"
+              value={hintsUsed === 0 ? "none" : `${hintsUsed} used`}
+              tone={hintsUsed > 0 ? "text-term-amber" : undefined}
+            />
           </div>
 
           <p className="mt-5 text-term-bright">{getVerdict(accuracy)}</p>
@@ -113,7 +118,7 @@ export function ResultPage({
                 review — {missed.length} to revisit
               </h3>
               <ul className="terminal-scroll mt-4 max-h-72 space-y-4 overflow-y-auto pr-2">
-                {missed.map(({ question, submitted }) => (
+                {missed.map(({ question, submitted, hintsUsed }) => (
                   <li
                     key={question.id}
                     className="border-b border-term-edge/60 pb-3 last:border-0"
@@ -129,6 +134,11 @@ export function ResultPage({
                       <span className="font-semibold text-term-green">
                         {question.answer}
                       </span>
+                      {hintsUsed > 0 && (
+                        <span className="text-term-dim">
+                          {" "}· used {hintsUsed} hint{hintsUsed === 1 ? "" : "s"}
+                        </span>
+                      )}
                     </p>
                   </li>
                 ))}

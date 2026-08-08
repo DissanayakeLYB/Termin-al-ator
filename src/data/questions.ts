@@ -62,6 +62,11 @@ export interface QuizQuestion {
   answer: string;
   /** Short explanation shown after answering (especially when wrong). */
   explanation: string;
+  /**
+   * Optional progressive hints (most helpful last). When omitted, hints are
+   * derived automatically from the question's answer — see `src/utils/hints.ts`.
+   */
+  hints?: string[];
   /** Optional extra accepted spellings, matched exactly. */
   aliases?: string[];
 }
