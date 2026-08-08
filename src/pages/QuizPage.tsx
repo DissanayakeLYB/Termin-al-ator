@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { categoryLabels } from "../data/questions";
+import { categoryLabels, type Level } from "../data/questions";
+import { levelInfo } from "../data/levels";
 import type { Attempt, QuizApi } from "../hooks/useQuiz";
 import { isExitCommand, isMenuCommand } from "../utils/commands";
 import { BootBanner } from "../components/BootBanner";
@@ -10,10 +11,12 @@ import { StatusBar } from "../components/StatusBar";
 
 function HistoryLine({ attempt, index }: { attempt: Attempt; index: number }) {
   const { question, submitted, correct } = attempt;
+  const lvl = levelInfo(question.level);
   return (
     <div className="space-y-1">
       <p className="text-[10px] uppercase tracking-widest text-term-dim">
-        task {index + 1} · {categoryLabels[question.category]}
+        task {index + 1} · {categoryLabels[question.category]} ·{" "}
+        <span className={lvl.accent}>{lvl.name}</span>
       </p>
       <p className="text-sm leading-relaxed text-term-fg/90 sm:text-base">
         {question.prompt}
@@ -33,7 +36,15 @@ function HistoryLine({ attempt, index }: { attempt: Attempt; index: number }) {
   );
 }
 
-export function QuizPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }) {
+export function QuizPage({
+  quiz,
+  level,
+  onMenu,
+}: {
+  quiz: QuizApi;
+  level: Level;
+  onMenu: () => void;
+}) {
   const {
     current,
     taskNumber,
@@ -45,6 +56,7 @@ export function QuizPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }
     submit,
     next,
   } = quiz;
+  const lvl = levelInfo(level);
 
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,11 +119,13 @@ export function QuizPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }
       >
         <div className="max-w-3xl">
           {/* Boot banner */}
-          <BootBanner tag={`${categoryLabels[current.category]} trainer`}>
-            {totalQuestions} questions · randomized · no fixed rounds — keep going
-            until you're done. Type <span className="text-term-amber">:quit</span>{" "}
-            to end the session, or <span className="text-term-amber">:menu</span>{" "}
-            to switch practice.
+          <BootBanner
+            tag={`${categoryLabels[current.category]} · ${lvl.name} trainer`}
+          >
+            <span className={lvl.accent}>{totalQuestions} questions</span> ·{" "}
+            {lvl.sessionHint} — keep going until you're done. Type{" "}
+            <span className="text-term-amber">:quit</span> to end the session, or{" "}
+            <span className="text-term-amber">:menu</span> to switch practice.
           </BootBanner>
 
           {/* History of answered tasks */}
@@ -127,6 +141,7 @@ export function QuizPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }
           <div className="mt-6 border-l-2 border-term-green pl-4">
             <p className="text-[10px] uppercase tracking-widest text-term-dim">
               task {taskNumber} · {categoryLabels[current.category]} ·{" "}
+              <span className={lvl.accent}>{lvl.name}</span> ·{" "}
               <span className="tabular-nums">
                 {distinctSeen}/{totalQuestions} seen
               </span>
@@ -151,7 +166,7 @@ export function QuizPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }
         </div>
       </div>
 
-      <StatusBar quiz={quiz} />
+      <StatusBar quiz={quiz} level={level} />
 
       <InputBar
         inputRef={inputRef}

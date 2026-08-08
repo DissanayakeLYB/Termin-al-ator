@@ -1,11 +1,19 @@
 import type { QuizApi } from "../hooks/useQuiz";
+import type { Level } from "../data/questions";
+import { levelInfo } from "../data/levels";
 import { ProgressBar } from "./ProgressBar";
 
-export function StatusBar({ quiz }: { quiz: QuizApi }) {
+export function StatusBar({ quiz, level }: { quiz: QuizApi; level?: Level }) {
   const { score, answered, accuracy, distinctSeen, totalQuestions, allSeen } = quiz;
+  const lvl = level ? levelInfo(level) : null;
 
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-term-edge bg-term-bg px-4 py-2 text-xs text-term-dim sm:px-8">
+      {lvl && (
+        <span className={`font-semibold uppercase tracking-wider ${lvl.accent}`}>
+          {lvl.name}
+        </span>
+      )}
       <span>
         score{" "}
         <span className="font-bold tabular-nums text-term-green">{score}</span>

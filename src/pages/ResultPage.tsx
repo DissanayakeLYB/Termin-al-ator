@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { QuizApi } from "../hooks/useQuiz";
-import { categoryLabels } from "../data/questions";
+import { categoryLabels, type Level } from "../data/questions";
+import { levelInfo } from "../data/levels";
 import { isMenuCommand, isRestartCommand } from "../utils/commands";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
@@ -33,10 +34,19 @@ function StatRow({ label, value, tone }: { label: string; value: string; tone?: 
   );
 }
 
-export function ResultPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void }) {
+export function ResultPage({
+  quiz,
+  level,
+  onMenu,
+}: {
+  quiz: QuizApi;
+  level: Level;
+  onMenu: () => void;
+}) {
   const { attempts, score, answered, accuracy, distinctSeen, totalQuestions, restart } = quiz;
   const missed = latestMissed(attempts);
   const label = categoryLabels[quiz.current.category];
+  const lvl = levelInfo(level);
 
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -80,7 +90,8 @@ export function ResultPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void
       >
         <div className="max-w-3xl">
           <p className="text-sm uppercase tracking-[0.3em] text-term-amber">
-            — {label} session complete —
+            — {label} · <span className={lvl.accent}>{lvl.name}</span> session
+            complete —
           </p>
 
           <div className="mt-6 space-y-2">
@@ -91,6 +102,7 @@ export function ResultPage({ quiz, onMenu }: { quiz: QuizApi; onMenu: () => void
               label="covered"
               value={`${distinctSeen}/${totalQuestions} questions`}
             />
+            <StatRow label="level" value={lvl.name} tone={lvl.accent} />
           </div>
 
           <p className="mt-5 text-term-bright">{getVerdict(accuracy)}</p>

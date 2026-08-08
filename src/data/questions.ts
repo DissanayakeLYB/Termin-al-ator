@@ -1,3 +1,14 @@
+import {
+  vimWorkflowQuestions,
+  tmuxWorkflowQuestions,
+  gitWorkflowQuestions,
+  shellWorkflowQuestions,
+  dockerWorkflowQuestions,
+  regexWorkflowQuestions,
+  sshWorkflowQuestions,
+  kubernetesWorkflowQuestions,
+} from "./workflowQuestions";
+
 /**
  * Question dataset for the termin(al)ator trainer.
  *
@@ -6,6 +17,11 @@
  *   2. Export a `xxxQuestions: QuizQuestion[]` array for it.
  *   3. Add an entry to the `questionSets` registry (label + description).
  *   4. The category picker (CategoryPage) picks it up automatically.
+ *
+ * Every question also carries a `level` — the *kind* of practice it belongs
+ * to (pareto / core / workflow), see `src/data/levels.ts` for the meaning of
+ * each level. New scenario-style questions for the workflow level live in
+ * `src/data/workflowQuestions.ts` and are merged in via `questionSets`.
  *
  * Sessions are infinite: the deck reshuffles when exhausted, so questions
  * repeat. The user ends the session (`:quit`) or switches practice
@@ -22,9 +38,24 @@ export type Category =
   | "ssh"
   | "kubernetes";
 
+/**
+ * Practice levels. Each level is a different *kind* of practice, not a
+ * difficulty rating:
+ * - "pareto"   — the ~20% of commands used most in real life (muscle memory)
+ * - "core"     — the essential foundation every regular user should know
+ * - "workflow" — realistic scenarios where you pick the commands to use
+ * - "chaos"    — every level mixed, no hints (a session-level, not per-question)
+ */
+export type Level = "pareto" | "core" | "workflow" | "chaos";
+
+/** The levels a single question can belong to (chaos is a mix of these). */
+export type QuestionLevel = Exclude<Level, "chaos">;
+
 export interface QuizQuestion {
   id: string;
   category: Category;
+  /** Which practice level this question belongs to (see `levels.ts`). */
+  level: QuestionLevel;
   /** The task the user must figure out how to perform. */
   prompt: string;
   /** The exact accepted command. */
@@ -40,6 +71,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Starting & modes ──────────────────────────────────────────────────────
   {
     id: "vim-open-file",
+    level: "pareto",
     category: "vim",
     prompt: "From the shell, open Vim and load the file `notes.md`.",
     answer: "vim notes.md",
@@ -48,6 +80,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-insert-before",
+    level: "pareto",
     category: "vim",
     prompt: "Switch to insert mode, inserting text before the cursor.",
     answer: "i",
@@ -56,6 +89,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-insert-start",
+    level: "core",
     category: "vim",
     prompt: "Switch to insert mode, inserting text at the very start of the current line.",
     answer: "I",
@@ -63,6 +97,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-insert-after",
+    level: "pareto",
     category: "vim",
     prompt: "Switch to insert mode, inserting text after the cursor.",
     answer: "a",
@@ -70,6 +105,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-insert-end",
+    level: "pareto",
     category: "vim",
     prompt: "Switch to insert mode at the end of the current line.",
     answer: "A",
@@ -77,6 +113,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-insert-newline-below",
+    level: "pareto",
     category: "vim",
     prompt: "Open a new line below the cursor and switch to insert mode.",
     answer: "o",
@@ -85,6 +122,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-insert-newline-above",
+    level: "core",
     category: "vim",
     prompt: "Open a new line above the cursor and switch to insert mode.",
     answer: "O",
@@ -93,6 +131,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-normal",
+    level: "pareto",
     category: "vim",
     prompt: "Return to normal mode from insert mode.",
     answer: "Esc",
@@ -104,6 +143,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── File operations ───────────────────────────────────────────────────────
   {
     id: "vim-save",
+    level: "pareto",
     category: "vim",
     prompt: "Save the current file (write your changes to disk).",
     answer: ":w",
@@ -112,6 +152,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-quit",
+    level: "pareto",
     category: "vim",
     prompt: "Quit Vim.",
     answer: ":q",
@@ -120,6 +161,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-save-quit",
+    level: "pareto",
     category: "vim",
     prompt: "Save the current file and quit Vim in one step.",
     answer: ":wq",
@@ -128,6 +170,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-quit-force",
+    level: "pareto",
     category: "vim",
     prompt: "Quit Vim without saving your changes.",
     answer: ":q!",
@@ -136,6 +179,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-save-as",
+    level: "core",
     category: "vim",
     prompt: "Save the current buffer to a new file named `backup.txt`.",
     answer: ":w backup.txt",
@@ -144,6 +188,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-save-quit-zz",
+    level: "core",
     category: "vim",
     prompt: "Save and quit using a two-key normal-mode shortcut.",
     answer: "ZZ",
@@ -152,6 +197,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-quit-force-zz",
+    level: "core",
     category: "vim",
     prompt: "Quit without saving using a two-key normal-mode shortcut.",
     answer: "ZQ",
@@ -159,6 +205,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-reload",
+    level: "workflow",
     category: "vim",
     prompt: "Discard all unsaved changes and reload the file from disk.",
     answer: ":e!",
@@ -167,6 +214,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-open-other",
+    level: "core",
     category: "vim",
     prompt: "Open the file `todo.txt` in a new buffer without leaving Vim.",
     answer: ":e todo.txt",
@@ -177,6 +225,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Moving around ─────────────────────────────────────────────────────────
   {
     id: "vim-left",
+    level: "pareto",
     category: "vim",
     prompt: "Move the cursor one character to the left.",
     answer: "h",
@@ -184,6 +233,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-down",
+    level: "pareto",
     category: "vim",
     prompt: "Move the cursor down one line.",
     answer: "j",
@@ -191,6 +241,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-up",
+    level: "pareto",
     category: "vim",
     prompt: "Move the cursor up one line.",
     answer: "k",
@@ -198,6 +249,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-right",
+    level: "pareto",
     category: "vim",
     prompt: "Move the cursor one character to the right.",
     answer: "l",
@@ -205,6 +257,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-word-next",
+    level: "pareto",
     category: "vim",
     prompt: "Jump to the start of the next word.",
     answer: "w",
@@ -212,6 +265,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-word-back",
+    level: "pareto",
     category: "vim",
     prompt: "Jump back to the start of the previous word.",
     answer: "b",
@@ -219,6 +273,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-word-end",
+    level: "core",
     category: "vim",
     prompt: "Jump to the end of the current word.",
     answer: "e",
@@ -226,6 +281,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-line-start",
+    level: "pareto",
     category: "vim",
     prompt: "Move to the very start of the current line.",
     answer: "0",
@@ -233,6 +289,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-line-first-nonblank",
+    level: "core",
     category: "vim",
     prompt: "Move to the first non-blank character of the current line.",
     answer: "^",
@@ -241,6 +298,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-line-end",
+    level: "pareto",
     category: "vim",
     prompt: "Move to the end of the current line.",
     answer: "$",
@@ -248,6 +306,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-file-start",
+    level: "pareto",
     category: "vim",
     prompt: "Jump to the very first line of the file.",
     answer: "gg",
@@ -255,6 +314,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-file-end",
+    level: "pareto",
     category: "vim",
     prompt: "Jump to the very last line of the file.",
     answer: "G",
@@ -263,6 +323,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-go-line",
+    level: "core",
     category: "vim",
     prompt: "Jump directly to line 42.",
     answer: ":42",
@@ -272,6 +333,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-half-down",
+    level: "core",
     category: "vim",
     prompt: "Scroll half a screen down.",
     answer: "Ctrl+d",
@@ -279,6 +341,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-half-up",
+    level: "core",
     category: "vim",
     prompt: "Scroll half a screen up.",
     answer: "Ctrl+u",
@@ -286,6 +349,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-page-down",
+    level: "core",
     category: "vim",
     prompt: "Scroll one full screen down.",
     answer: "Ctrl+f",
@@ -293,6 +357,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-page-up",
+    level: "core",
     category: "vim",
     prompt: "Scroll one full screen up.",
     answer: "Ctrl+b",
@@ -300,6 +365,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-match",
+    level: "core",
     category: "vim",
     prompt: "Jump to the bracket matching the one under the cursor.",
     answer: "%",
@@ -308,6 +374,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-down-5",
+    level: "core",
     category: "vim",
     prompt: "Move the cursor down exactly 5 lines.",
     answer: "5j",
@@ -316,6 +383,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-screen-top",
+    level: "core",
     category: "vim",
     prompt: "Jump to the top of the screen.",
     answer: "H",
@@ -323,6 +391,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-screen-mid",
+    level: "core",
     category: "vim",
     prompt: "Jump to the middle of the screen.",
     answer: "M",
@@ -330,6 +399,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-screen-bottom",
+    level: "core",
     category: "vim",
     prompt: "Jump to the bottom of the screen.",
     answer: "L",
@@ -337,6 +407,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-para-next",
+    level: "core",
     category: "vim",
     prompt: "Jump forward to the start of the next paragraph.",
     answer: "}",
@@ -347,6 +418,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Editing ───────────────────────────────────────────────────────────────
   {
     id: "vim-delete-line",
+    level: "pareto",
     category: "vim",
     prompt: "Delete the entire line the cursor is on.",
     answer: "dd",
@@ -355,6 +427,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-char",
+    level: "pareto",
     category: "vim",
     prompt: "Delete the single character under the cursor.",
     answer: "x",
@@ -362,6 +435,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-char-before",
+    level: "core",
     category: "vim",
     prompt: "Delete the single character before the cursor.",
     answer: "X",
@@ -369,6 +443,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-word",
+    level: "pareto",
     category: "vim",
     prompt: "Delete the word under the cursor.",
     answer: "dw",
@@ -377,6 +452,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-to-eol",
+    level: "core",
     category: "vim",
     prompt: "Delete everything from the cursor to the end of the line.",
     answer: "d$",
@@ -385,6 +461,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-undo",
+    level: "pareto",
     category: "vim",
     prompt: "Undo the last change.",
     answer: "u",
@@ -393,6 +470,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-redo",
+    level: "pareto",
     category: "vim",
     prompt: "Redo the last change you just undid.",
     answer: "Ctrl+r",
@@ -400,6 +478,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-repeat",
+    level: "pareto",
     category: "vim",
     prompt: "Repeat the last change you made.",
     answer: ".",
@@ -408,6 +487,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-yank-line",
+    level: "pareto",
     category: "vim",
     prompt: "Copy (yank) the entire line the cursor is on.",
     answer: "yy",
@@ -415,6 +495,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-yank-word",
+    level: "core",
     category: "vim",
     prompt: "Copy (yank) the word under the cursor.",
     answer: "yw",
@@ -422,6 +503,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-paste-below",
+    level: "pareto",
     category: "vim",
     prompt: "Paste the last yanked or deleted text below the cursor.",
     answer: "p",
@@ -429,6 +511,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-paste-above",
+    level: "core",
     category: "vim",
     prompt: "Paste the last yanked or deleted text above the cursor.",
     answer: "P",
@@ -437,6 +520,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-join",
+    level: "core",
     category: "vim",
     prompt: "Join the current line with the line below it.",
     answer: "J",
@@ -445,6 +529,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-change-line",
+    level: "pareto",
     category: "vim",
     prompt: "Replace the entire line — delete it and enter insert mode.",
     answer: "cc",
@@ -453,6 +538,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-change-word",
+    level: "pareto",
     category: "vim",
     prompt: "Replace the word under the cursor — delete it and enter insert mode.",
     answer: "cw",
@@ -461,6 +547,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-substitute-char",
+    level: "core",
     category: "vim",
     prompt: "Delete the character under the cursor and enter insert mode.",
     answer: "s",
@@ -468,6 +555,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-substitute-line",
+    level: "core",
     category: "vim",
     prompt: "Delete the entire line and enter insert mode.",
     answer: "S",
@@ -475,6 +563,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-toggle-case",
+    level: "core",
     category: "vim",
     prompt: "Toggle the case of the character under the cursor.",
     answer: "~",
@@ -483,6 +572,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-indent",
+    level: "core",
     category: "vim",
     prompt: "Indent the current line one level to the right.",
     answer: ">>",
@@ -491,6 +581,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-unindent",
+    level: "core",
     category: "vim",
     prompt: "Unindent the current line one level to the left.",
     answer: "<<",
@@ -498,6 +589,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-sort",
+    level: "core",
     category: "vim",
     prompt: "Sort the lines of the file alphabetically.",
     answer: ":sort",
@@ -507,6 +599,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Searching & replacing ─────────────────────────────────────────────────
   {
     id: "vim-search",
+    level: "pareto",
     category: "vim",
     prompt: "Search forward for the word `error`.",
     answer: "/error",
@@ -515,6 +608,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-search-back",
+    level: "core",
     category: "vim",
     prompt: "Search backward for the word `error`.",
     answer: "?error",
@@ -523,6 +617,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-search-next",
+    level: "pareto",
     category: "vim",
     prompt: "Jump to the next search match.",
     answer: "n",
@@ -531,6 +626,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-search-prev",
+    level: "core",
     category: "vim",
     prompt: "Jump to the previous search match.",
     answer: "N",
@@ -538,6 +634,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-search-under",
+    level: "core",
     category: "vim",
     prompt: "Search forward for the word currently under the cursor.",
     answer: "*",
@@ -546,6 +643,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-search-under-back",
+    level: "core",
     category: "vim",
     prompt: "Search backward for the word currently under the cursor.",
     answer: "#",
@@ -553,6 +651,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-replace-all",
+    level: "pareto",
     category: "vim",
     prompt: "Replace every occurrence of `foo` with `bar` across the whole file.",
     answer: ":%s/foo/bar/g",
@@ -561,6 +660,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-replace-confirm",
+    level: "workflow",
     category: "vim",
     prompt: "Replace every `foo` with `bar`, asking for confirmation before each change.",
     answer: ":%s/foo/bar/gc",
@@ -569,6 +669,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-clear-highlight",
+    level: "core",
     category: "vim",
     prompt: "Remove the highlighting left over from a search.",
     answer: ":nohlsearch",
@@ -580,6 +681,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Visual mode ───────────────────────────────────────────────────────────
   {
     id: "vim-visual-char",
+    level: "pareto",
     category: "vim",
     prompt: "Start character-wise visual selection.",
     answer: "v",
@@ -588,6 +690,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-visual-line",
+    level: "core",
     category: "vim",
     prompt: "Start line-wise visual selection.",
     answer: "V",
@@ -596,6 +699,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-visual-block",
+    level: "core",
     category: "vim",
     prompt: "Start block-wise (rectangular) visual selection.",
     answer: "Ctrl+v",
@@ -604,6 +708,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-visual-yank",
+    level: "core",
     category: "vim",
     prompt: "With text selected in visual mode, copy the selection.",
     answer: "y",
@@ -612,6 +717,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-visual-delete",
+    level: "core",
     category: "vim",
     prompt: "With text selected in visual mode, delete the selection.",
     answer: "d",
@@ -621,6 +727,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Windows & tabs ────────────────────────────────────────────────────────
   {
     id: "vim-split-h",
+    level: "core",
     category: "vim",
     prompt: "Split the window horizontally.",
     answer: ":sp",
@@ -630,6 +737,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-split-v",
+    level: "core",
     category: "vim",
     prompt: "Split the window vertically.",
     answer: ":vsp",
@@ -638,6 +746,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-window-switch",
+    level: "core",
     category: "vim",
     prompt: "Switch to the next window in a split.",
     answer: "Ctrl+w w",
@@ -646,6 +755,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-window-close",
+    level: "core",
     category: "vim",
     prompt: "Close the current window in a split.",
     answer: ":q",
@@ -654,6 +764,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-tab-new",
+    level: "core",
     category: "vim",
     prompt: "Open a new tab.",
     answer: ":tabnew",
@@ -661,6 +772,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-tab-next",
+    level: "core",
     category: "vim",
     prompt: "Switch to the next tab.",
     answer: "gt",
@@ -668,6 +780,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-tab-prev",
+    level: "core",
     category: "vim",
     prompt: "Switch to the previous tab.",
     answer: "gT",
@@ -677,6 +790,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Settings & utilities ──────────────────────────────────────────────────
   {
     id: "vim-numbers",
+    level: "core",
     category: "vim",
     prompt: "Show line numbers in Vim.",
     answer: ":set number",
@@ -686,6 +800,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-syntax",
+    level: "core",
     category: "vim",
     prompt: "Turn on syntax highlighting.",
     answer: ":syntax on",
@@ -694,6 +809,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-help",
+    level: "core",
     category: "vim",
     prompt: "Open Vim's built-in help.",
     answer: ":help",
@@ -702,6 +818,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-registers",
+    level: "core",
     category: "vim",
     prompt: "List the contents of all registers.",
     answer: ":reg",
@@ -711,6 +828,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-buffers",
+    level: "core",
     category: "vim",
     prompt: "List all open buffers.",
     answer: ":ls",
@@ -720,6 +838,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-shell",
+    level: "core",
     category: "vim",
     prompt: "Run the shell command `ls` without leaving Vim.",
     answer: ":!ls",
@@ -730,6 +849,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Text objects & operator motions ───────────────────────────────────────
   {
     id: "vim-ciw",
+    level: "core",
     category: "vim",
     prompt: "Replace the whole word under the cursor with new text — no deleting first.",
     answer: "ciw",
@@ -738,6 +858,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-caw",
+    level: "core",
     category: "vim",
     prompt: "Replace the word under the cursor plus the whitespace around it.",
     answer: "caw",
@@ -746,6 +867,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-ci-quote",
+    level: "core",
     category: "vim",
     prompt: "Replace the text inside the nearest double quotes, leaving the quotes themselves.",
     answer: "ci\"",
@@ -754,6 +876,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-di-quote",
+    level: "core",
     category: "vim",
     prompt: "Delete the text inside the nearest double quotes, leaving the quotes.",
     answer: "di\"",
@@ -761,6 +884,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-ci-paren",
+    level: "core",
     category: "vim",
     prompt: "Replace everything inside the nearest parentheses, keeping the parens.",
     answer: "ci(",
@@ -769,6 +893,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-di-paren",
+    level: "core",
     category: "vim",
     prompt: "Delete everything inside the nearest parentheses, keeping the parens.",
     answer: "di(",
@@ -776,6 +901,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-da-paren",
+    level: "core",
     category: "vim",
     prompt: "Delete the nearest parentheses and everything inside them.",
     answer: "da(",
@@ -783,6 +909,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-yiw",
+    level: "core",
     category: "vim",
     prompt: "Yank just the word under the cursor, nothing else.",
     answer: "yiw",
@@ -790,6 +917,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-yi-quote",
+    level: "core",
     category: "vim",
     prompt: "Yank the text inside the nearest double quotes.",
     answer: "yi\"",
@@ -797,6 +925,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-vip",
+    level: "core",
     category: "vim",
     prompt: "Select the entire paragraph the cursor is in.",
     answer: "vip",
@@ -805,6 +934,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-vib",
+    level: "core",
     category: "vim",
     prompt: "Select everything inside the nearest parentheses.",
     answer: "vib",
@@ -813,6 +943,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-vit",
+    level: "core",
     category: "vim",
     prompt: "Select the text inside the HTML tag under the cursor.",
     answer: "vit",
@@ -823,6 +954,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Finding characters (f / t motions) ────────────────────────────────────
   {
     id: "vim-find-char",
+    level: "core",
     category: "vim",
     prompt: "Jump forward to the next `,` on the current line.",
     answer: "f,",
@@ -830,6 +962,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-till-char",
+    level: "core",
     category: "vim",
     prompt: "Move to the character just before the next `)` on the current line.",
     answer: "t)",
@@ -838,6 +971,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-find-repeat",
+    level: "core",
     category: "vim",
     prompt: "Repeat the last character find (`f`/`t`) in the same direction.",
     answer: ";",
@@ -845,6 +979,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-find-repeat-back",
+    level: "core",
     category: "vim",
     prompt: "Repeat the last character find (`f`/`t`) in the opposite direction.",
     answer: ",",
@@ -854,6 +989,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Registers & macros ────────────────────────────────────────────────────
   {
     id: "vim-macro-record",
+    level: "workflow",
     category: "vim",
     prompt: "Start recording a macro into register `a`.",
     answer: "qa",
@@ -862,6 +998,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-macro-stop",
+    level: "workflow",
     category: "vim",
     prompt: "Stop recording the macro you're currently recording.",
     answer: "q",
@@ -869,6 +1006,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-macro-play",
+    level: "workflow",
     category: "vim",
     prompt: "Play back the macro stored in register `a`.",
     answer: "@a",
@@ -877,6 +1015,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-macro-replay",
+    level: "workflow",
     category: "vim",
     prompt: "Replay the most recently executed macro.",
     answer: "@@",
@@ -886,6 +1025,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Marks & jump lists ────────────────────────────────────────────────────
   {
     id: "vim-mark-set",
+    level: "core",
     category: "vim",
     prompt: "Set a mark named `a` at the current position.",
     answer: "ma",
@@ -894,6 +1034,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-mark-jump-line",
+    level: "core",
     category: "vim",
     prompt: "Jump to the line where mark `a` sits.",
     answer: "'a",
@@ -901,6 +1042,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-mark-jump-exact",
+    level: "core",
     category: "vim",
     prompt: "Jump to the exact line and column of mark `a`.",
     answer: "`a",
@@ -909,6 +1051,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-insert-pos",
+    level: "core",
     category: "vim",
     prompt: "Return to the spot where you last inserted or edited text.",
     answer: "gi",
@@ -917,6 +1060,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-jump-back",
+    level: "core",
     category: "vim",
     prompt: "Jump back to your previous cursor position.",
     answer: "Ctrl+o",
@@ -925,6 +1069,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-jump-fwd",
+    level: "core",
     category: "vim",
     prompt: "Jump forward through the jump list again.",
     answer: "Ctrl+i",
@@ -934,6 +1079,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Numbers ───────────────────────────────────────────────────────────────
   {
     id: "vim-num-inc",
+    level: "core",
     category: "vim",
     prompt: "Increase the number under the cursor by one.",
     answer: "Ctrl+a",
@@ -941,6 +1087,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-num-dec",
+    level: "core",
     category: "vim",
     prompt: "Decrease the number under the cursor by one.",
     answer: "Ctrl+x",
@@ -950,6 +1097,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Filters & command-line tricks ─────────────────────────────────────────
   {
     id: "vim-filter-sort",
+    level: "workflow",
     category: "vim",
     prompt: "Sort the entire file by piping it through the `sort` shell command.",
     answer: ":%!sort",
@@ -958,6 +1106,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-format-json",
+    level: "workflow",
     category: "vim",
     prompt: "Pretty-print the JSON in the current buffer.",
     answer: ":%!python -m json.tool",
@@ -966,6 +1115,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-r-shell",
+    level: "core",
     category: "vim",
     prompt: "Insert the output of the shell command `date` below the cursor.",
     answer: ":r !date",
@@ -973,6 +1123,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-r-file",
+    level: "core",
     category: "vim",
     prompt: "Insert the contents of `notes.txt` below the cursor.",
     answer: ":r notes.txt",
@@ -980,6 +1131,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-blank",
+    level: "workflow",
     category: "vim",
     prompt: "Delete every blank line in the file.",
     answer: ":g/^$/d",
@@ -987,6 +1139,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-matching",
+    level: "workflow",
     category: "vim",
     prompt: "Delete every line containing the word `debug`.",
     answer: ":g/debug/d",
@@ -994,6 +1147,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-keep-matching",
+    level: "workflow",
     category: "vim",
     prompt: "Delete every line that does NOT contain `debug`.",
     answer: ":v/debug/d",
@@ -1002,6 +1156,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-reverse-lines",
+    level: "core",
     category: "vim",
     prompt: "Reverse the order of all lines in the file.",
     answer: ":g/^/m0",
@@ -1010,6 +1165,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-strip-trailing",
+    level: "workflow",
     category: "vim",
     prompt: "Remove trailing whitespace from every line.",
     answer: ":%s/\\s\\+$//",
@@ -1018,6 +1174,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-add-comma",
+    level: "workflow",
     category: "vim",
     prompt: "Append a comma to the end of every line.",
     answer: ":%s/$/,/",
@@ -1026,6 +1183,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-put-range",
+    level: "core",
     category: "vim",
     prompt: "Insert the numbers 1 through 10 as ten separate lines.",
     answer: ":put =range(1,10)",
@@ -1034,6 +1192,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-sudo-save",
+    level: "workflow",
     category: "vim",
     prompt: "Save the current file with sudo privileges even when it's read-only.",
     answer: ":w !sudo tee %",
@@ -1042,6 +1201,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-sort-numeric",
+    level: "core",
     category: "vim",
     prompt: "Sort the file numerically instead of alphabetically.",
     answer: ":sort n",
@@ -1049,6 +1209,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-sort-unique",
+    level: "core",
     category: "vim",
     prompt: "Sort the file and remove duplicate lines.",
     answer: ":sort u",
@@ -1056,6 +1217,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-repeat-subst",
+    level: "workflow",
     category: "vim",
     prompt: "Repeat the last substitution on the current line.",
     answer: "&",
@@ -1063,6 +1225,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-repeat-subst-all",
+    level: "workflow",
     category: "vim",
     prompt: "Repeat the last substitution across the whole file.",
     answer: "g&",
@@ -1072,6 +1235,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Buffers & multiple files ──────────────────────────────────────────────
   {
     id: "vim-alternate-file",
+    level: "core",
     category: "vim",
     prompt: "Switch to the file you were editing before.",
     answer: "Ctrl+^",
@@ -1080,6 +1244,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-e-alternate",
+    level: "core",
     category: "vim",
     prompt: "Open the previous file without leaving Vim.",
     answer: ":e #",
@@ -1087,6 +1252,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-buffer-next",
+    level: "core",
     category: "vim",
     prompt: "Move to the next open buffer.",
     answer: ":bn",
@@ -1095,6 +1261,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-buffer-delete",
+    level: "core",
     category: "vim",
     prompt: "Remove the current buffer from the buffer list.",
     answer: ":bd",
@@ -1102,6 +1269,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-quit-all",
+    level: "core",
     category: "vim",
     prompt: "Quit all windows at once.",
     answer: ":qall",
@@ -1109,6 +1277,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-quit-all-force",
+    level: "core",
     category: "vim",
     prompt: "Quit all windows without saving any changes.",
     answer: ":qall!",
@@ -1116,6 +1285,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-write-all",
+    level: "core",
     category: "vim",
     prompt: "Save all modified buffers.",
     answer: ":wall",
@@ -1125,6 +1295,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Smart editing tricks ──────────────────────────────────────────────────
   {
     id: "vim-swap-chars",
+    level: "workflow",
     category: "vim",
     prompt: "Swap the character under the cursor with the one after it.",
     answer: "xp",
@@ -1132,6 +1303,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-swap-lines",
+    level: "workflow",
     category: "vim",
     prompt: "Swap the current line with the line below it.",
     answer: "ddp",
@@ -1140,6 +1312,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-eol-short",
+    level: "core",
     category: "vim",
     prompt: "Delete from the cursor to the end of the line using the one-key shortcut.",
     answer: "D",
@@ -1147,6 +1320,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-until-char",
+    level: "workflow",
     category: "vim",
     prompt: "Delete from the cursor up to, but not including, the next `;`.",
     answer: "dt;",
@@ -1155,6 +1329,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-delete-thru-char",
+    level: "workflow",
     category: "vim",
     prompt: "Delete from the cursor through the next `)` including it.",
     answer: "df)",
@@ -1162,6 +1337,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-replace-char",
+    level: "workflow",
     category: "vim",
     prompt: "Replace the character under the cursor with `x` without entering insert mode.",
     answer: "rx",
@@ -1169,6 +1345,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-reselect",
+    level: "workflow",
     category: "vim",
     prompt: "Re-select the last visual selection.",
     answer: "gv",
@@ -1177,6 +1354,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-go-def",
+    level: "workflow",
     category: "vim",
     prompt: "Jump to the definition of the identifier under the cursor.",
     answer: "gd",
@@ -1184,6 +1362,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-open-under",
+    level: "workflow",
     category: "vim",
     prompt: "Open the file whose name is under the cursor.",
     answer: "gf",
@@ -1191,6 +1370,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-man-under",
+    level: "workflow",
     category: "vim",
     prompt: "Show the man page for the word under the cursor.",
     answer: "K",
@@ -1200,6 +1380,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Formatting & case ─────────────────────────────────────────────────────
   {
     id: "vim-upper-line",
+    level: "core",
     category: "vim",
     prompt: "Uppercase the entire current line.",
     answer: "gUU",
@@ -1207,6 +1388,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-lower-line",
+    level: "core",
     category: "vim",
     prompt: "Lowercase the entire current line.",
     answer: "guu",
@@ -1214,6 +1396,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-upper-word",
+    level: "core",
     category: "vim",
     prompt: "Uppercase the word under the cursor.",
     answer: "gUw",
@@ -1221,6 +1404,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-format-line",
+    level: "core",
     category: "vim",
     prompt: "Re-wrap the current line to fit the text width.",
     answer: "gqq",
@@ -1228,6 +1412,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-format-para",
+    level: "core",
     category: "vim",
     prompt: "Re-wrap the whole paragraph under the cursor.",
     answer: "gqap",
@@ -1235,6 +1420,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-indent-file",
+    level: "core",
     category: "vim",
     prompt: "Re-indent the entire file to match your indentation settings.",
     answer: "gg=G",
@@ -1242,6 +1428,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-indent-line-eq",
+    level: "core",
     category: "vim",
     prompt: "Auto-indent just the current line.",
     answer: "==",
@@ -1251,6 +1438,7 @@ export const vimQuestions: QuizQuestion[] = [
   // ── Settings & info ───────────────────────────────────────────────────────
   {
     id: "vim-highlight-on",
+    level: "core",
     category: "vim",
     prompt: "Highlight every match of your last search.",
     answer: ":set hls",
@@ -1258,6 +1446,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-spell",
+    level: "core",
     category: "vim",
     prompt: "Turn on spell checking.",
     answer: ":set spell",
@@ -1265,6 +1454,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-file-status",
+    level: "core",
     category: "vim",
     prompt: "Show the file name, line count, and cursor position as a percentage.",
     answer: "Ctrl+g",
@@ -1272,6 +1462,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-char-code",
+    level: "core",
     category: "vim",
     prompt: "Show the numeric (ASCII/Unicode) value of the character under the cursor.",
     answer: "ga",
@@ -1280,6 +1471,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-command-history",
+    level: "core",
     category: "vim",
     prompt: "Open a window listing your command history for reuse.",
     answer: "q:",
@@ -1287,6 +1479,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-search-history",
+    level: "core",
     category: "vim",
     prompt: "Open a window listing your search history.",
     answer: "q/",
@@ -1294,6 +1487,7 @@ export const vimQuestions: QuizQuestion[] = [
   },
   {
     id: "vim-source-vimrc",
+    level: "workflow",
     category: "vim",
     prompt: "Reload your vimrc settings without restarting Vim.",
     answer: ":so $MYVIMRC",
@@ -1306,6 +1500,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   // ── Sessions ──────────────────────────────────────────────────────────────
   {
     id: "tmux-new-session",
+    level: "pareto",
     category: "tmux",
     prompt: "Start a new tmux session named `work`.",
     answer: "tmux new -s work",
@@ -1315,6 +1510,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-new-detached",
+    level: "workflow",
     category: "tmux",
     prompt: "Start a new session named `work` without attaching to it.",
     answer: "tmux new -d -s work",
@@ -1324,6 +1520,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-list",
+    level: "pareto",
     category: "tmux",
     prompt: "List all running tmux sessions.",
     answer: "tmux ls",
@@ -1332,6 +1529,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-attach-last",
+    level: "pareto",
     category: "tmux",
     prompt: "Attach to the most recently used session.",
     answer: "tmux attach",
@@ -1341,6 +1539,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-attach-named",
+    level: "pareto",
     category: "tmux",
     prompt: "Attach to the session named `work`.",
     answer: "tmux attach -t work",
@@ -1349,6 +1548,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-detach",
+    level: "pareto",
     category: "tmux",
     prompt: "Leave the current session, keeping it running in the background.",
     answer: "Ctrl+b d",
@@ -1357,6 +1557,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-kill-session",
+    level: "core",
     category: "tmux",
     prompt: "Kill the session named `work` entirely.",
     answer: "tmux kill-session -t work",
@@ -1365,6 +1566,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-kill-server",
+    level: "core",
     category: "tmux",
     prompt: "Kill every tmux session at once.",
     answer: "tmux kill-server",
@@ -1373,6 +1575,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-rename-session",
+    level: "core",
     category: "tmux",
     prompt: "Rename the current session to `dev`.",
     answer: "Ctrl+b $",
@@ -1381,6 +1584,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-rename-session-cli",
+    level: "core",
     category: "tmux",
     prompt: "Rename the session `work` to `dev` from the shell.",
     answer: "tmux rename-session -t work dev",
@@ -1388,6 +1592,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-attach-or-create",
+    level: "workflow",
     category: "tmux",
     prompt: "Attach to `work` if it exists, or create it if it doesn't.",
     answer: "tmux new -A -s work",
@@ -1397,6 +1602,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-session-chooser",
+    level: "core",
     category: "tmux",
     prompt: "Open the interactive chooser to browse and switch sessions.",
     answer: "Ctrl+b s",
@@ -1406,6 +1612,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   // ── Panes ─────────────────────────────────────────────────────────────────
   {
     id: "tmux-split-side",
+    level: "pareto",
     category: "tmux",
     prompt: "Split the current pane into two, side by side.",
     answer: "Ctrl+b %",
@@ -1414,6 +1621,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-split-stack",
+    level: "pareto",
     category: "tmux",
     prompt: "Split the current pane into two, one above the other.",
     answer: "Ctrl+b \"",
@@ -1422,6 +1630,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-next",
+    level: "pareto",
     category: "tmux",
     prompt: "Move to the next pane.",
     answer: "Ctrl+b o",
@@ -1429,6 +1638,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-last",
+    level: "core",
     category: "tmux",
     prompt: "Jump back to the previously active pane.",
     answer: "Ctrl+b ;",
@@ -1437,6 +1647,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-numbers",
+    level: "core",
     category: "tmux",
     prompt: "Show pane numbers so you can jump straight to one.",
     answer: "Ctrl+b q",
@@ -1445,6 +1656,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-zoom",
+    level: "pareto",
     category: "tmux",
     prompt: "Zoom the current pane to fill the whole window (toggle).",
     answer: "Ctrl+b z",
@@ -1453,6 +1665,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-close",
+    level: "pareto",
     category: "tmux",
     prompt: "Close the current pane.",
     answer: "Ctrl+b x",
@@ -1462,6 +1675,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-break",
+    level: "workflow",
     category: "tmux",
     prompt: "Break the current pane out into its own window.",
     answer: "Ctrl+b !",
@@ -1469,6 +1683,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-swap-prev",
+    level: "core",
     category: "tmux",
     prompt: "Swap the current pane with the previous one.",
     answer: "Ctrl+b {",
@@ -1476,6 +1691,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-swap-next",
+    level: "core",
     category: "tmux",
     prompt: "Swap the current pane with the next one.",
     answer: "Ctrl+b }",
@@ -1483,6 +1699,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-pane-resize",
+    level: "workflow",
     category: "tmux",
     prompt: "Resize the current pane 10 cells taller.",
     answer: "resize-pane -U 10",
@@ -1492,6 +1709,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-layout-cycle",
+    level: "workflow",
     category: "tmux",
     prompt: "Cycle through the preset pane layouts.",
     answer: "Ctrl+b Space",
@@ -1502,6 +1720,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   // ── Windows ───────────────────────────────────────────────────────────────
   {
     id: "tmux-window-new",
+    level: "pareto",
     category: "tmux",
     prompt: "Create a new window.",
     answer: "Ctrl+b c",
@@ -1509,6 +1728,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-next",
+    level: "pareto",
     category: "tmux",
     prompt: "Switch to the next window.",
     answer: "Ctrl+b n",
@@ -1516,6 +1736,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-prev",
+    level: "core",
     category: "tmux",
     prompt: "Switch to the previous window.",
     answer: "Ctrl+b p",
@@ -1523,6 +1744,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-number",
+    level: "pareto",
     category: "tmux",
     prompt: "Jump straight to window 3.",
     answer: "Ctrl+b 3",
@@ -1531,6 +1753,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-last",
+    level: "core",
     category: "tmux",
     prompt: "Switch to the window you visited most recently.",
     answer: "Ctrl+b l",
@@ -1538,6 +1761,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-list",
+    level: "core",
     category: "tmux",
     prompt: "Open the interactive chooser to pick a window.",
     answer: "Ctrl+b w",
@@ -1545,6 +1769,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-rename",
+    level: "core",
     category: "tmux",
     prompt: "Rename the current window to `logs`.",
     answer: "Ctrl+b ,",
@@ -1552,6 +1777,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-kill",
+    level: "pareto",
     category: "tmux",
     prompt: "Kill the current window (and everything running in it).",
     answer: "Ctrl+b &",
@@ -1559,6 +1785,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-find",
+    level: "workflow",
     category: "tmux",
     prompt: "Find a window by searching for text in its title.",
     answer: "Ctrl+b f",
@@ -1566,6 +1793,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-window-new-cli",
+    level: "workflow",
     category: "tmux",
     prompt: "Create a new window named `monitor` in session `work` from the shell.",
     answer: "tmux new-window -n monitor -t work",
@@ -1576,6 +1804,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   // ── Copy mode & buffers ───────────────────────────────────────────────────
   {
     id: "tmux-copy-mode",
+    level: "pareto",
     category: "tmux",
     prompt: "Enter copy mode so you can scroll through the pane history.",
     answer: "Ctrl+b [",
@@ -1584,6 +1813,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-copy-scroll",
+    level: "core",
     category: "tmux",
     prompt: "Enter copy mode and jump up one page in the history.",
     answer: "Ctrl+b PgUp",
@@ -1593,6 +1823,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-copy-exit",
+    level: "core",
     category: "tmux",
     prompt: "Leave copy mode without copying anything.",
     answer: "q",
@@ -1601,6 +1832,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-copy-select",
+    level: "core",
     category: "tmux",
     prompt: "In copy mode with default bindings, start the selection at the cursor.",
     answer: "Space",
@@ -1610,6 +1842,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-copy-yank",
+    level: "core",
     category: "tmux",
     prompt: "In copy mode, copy the selected text.",
     answer: "Enter",
@@ -1619,6 +1852,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-paste-buffer",
+    level: "core",
     category: "tmux",
     prompt: "Paste the most recently copied text.",
     answer: "Ctrl+b ]",
@@ -1627,6 +1861,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-choose-buffer",
+    level: "workflow",
     category: "tmux",
     prompt: "Open the buffer chooser to paste from any saved buffer.",
     answer: "Ctrl+b =",
@@ -1634,6 +1869,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-list-buffers",
+    level: "core",
     category: "tmux",
     prompt: "List all copy buffers from the shell.",
     answer: "tmux list-buffers",
@@ -1641,6 +1877,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-capture-pane",
+    level: "workflow",
     category: "tmux",
     prompt: "Dump the entire visible pane content to standard output.",
     answer: "tmux capture-pane -p",
@@ -1651,6 +1888,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   // ── Customization & config ────────────────────────────────────────────────
   {
     id: "tmux-command-prompt",
+    level: "core",
     category: "tmux",
     prompt: "Open the tmux command prompt to type a tmux command.",
     answer: "Ctrl+b :",
@@ -1659,6 +1897,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-help",
+    level: "core",
     category: "tmux",
     prompt: "Show all key bindings — tmux's built-in help.",
     answer: "Ctrl+b ?",
@@ -1667,6 +1906,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-clock",
+    level: "core",
     category: "tmux",
     prompt: "Show a big clock in the current pane.",
     answer: "Ctrl+b t",
@@ -1674,6 +1914,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-mouse",
+    level: "workflow",
     category: "tmux",
     prompt: "Enable mouse support for all sessions.",
     answer: "tmux set -g mouse on",
@@ -1682,6 +1923,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-prefix-change",
+    level: "workflow",
     category: "tmux",
     prompt: "Change the prefix key from Ctrl+b to Ctrl+a.",
     answer: "tmux set -g prefix C-a",
@@ -1690,6 +1932,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-reload-config",
+    level: "workflow",
     category: "tmux",
     prompt: "Reload your tmux configuration from `~/.tmux.conf`.",
     answer: "source-file ~/.tmux.conf",
@@ -1699,6 +1942,7 @@ export const tmuxQuestions: QuizQuestion[] = [
   },
   {
     id: "tmux-list-keys",
+    level: "core",
     category: "tmux",
     prompt: "List all key bindings from the shell.",
     answer: "tmux list-keys",
@@ -1711,6 +1955,7 @@ export const gitQuestions: QuizQuestion[] = [
   // ── Setup & basics ────────────────────────────────────────────────────────
   {
     id: "git-init",
+    level: "pareto",
     category: "git",
     prompt: "Create a new repository in the current directory.",
     answer: "git init",
@@ -1719,6 +1964,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-clone",
+    level: "pareto",
     category: "git",
     prompt: "Copy the remote repository `https://github.com/user/repo.git` into the current folder.",
     answer: "git clone https://github.com/user/repo.git",
@@ -1727,6 +1973,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-status",
+    level: "pareto",
     category: "git",
     prompt: "Show the current state of the working tree and the staging area.",
     answer: "git status",
@@ -1735,6 +1982,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-add-all",
+    level: "pareto",
     category: "git",
     prompt: "Stage every change — new, modified, and deleted files — in one go.",
     answer: "git add .",
@@ -1744,6 +1992,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-add-file",
+    level: "pareto",
     category: "git",
     prompt: "Stage only the file `main.py`.",
     answer: "git add main.py",
@@ -1752,6 +2001,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-add-patch",
+    level: "workflow",
     category: "git",
     prompt: "Review each change and stage it interactively, hunk by hunk.",
     answer: "git add -p",
@@ -1760,6 +2010,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-commit-message",
+    level: "pareto",
     category: "git",
     prompt: "Commit the staged changes with the message `fix typo`.",
     answer: "git commit -m \"fix typo\"",
@@ -1768,6 +2019,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-commit-amend",
+    level: "pareto",
     category: "git",
     prompt: "Rewrite the most recent commit's message in your editor.",
     answer: "git commit --amend",
@@ -1778,6 +2030,7 @@ export const gitQuestions: QuizQuestion[] = [
   // ── Diff & history ────────────────────────────────────────────────────────
   {
     id: "git-diff",
+    level: "pareto",
     category: "git",
     prompt: "Show the unstaged changes in your working tree.",
     answer: "git diff",
@@ -1785,6 +2038,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-diff-staged",
+    level: "pareto",
     category: "git",
     prompt: "Show the changes you've staged, ready to be committed.",
     answer: "git diff --staged",
@@ -1794,6 +2048,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-show-commit",
+    level: "core",
     category: "git",
     prompt: "Show the full details and diff of commit `abc1234`.",
     answer: "git show abc1234",
@@ -1802,6 +2057,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log",
+    level: "pareto",
     category: "git",
     prompt: "List the commit history, newest first.",
     answer: "git log",
@@ -1810,6 +2066,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-oneline",
+    level: "pareto",
     category: "git",
     prompt: "List the commit history as one compact line per commit.",
     answer: "git log --oneline",
@@ -1818,6 +2075,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-graph",
+    level: "core",
     category: "git",
     prompt: "Show the commit history as an ASCII graph of branches and merges.",
     answer: "git log --graph",
@@ -1827,6 +2085,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-p",
+    level: "core",
     category: "git",
     prompt: "Show the commit history with the full diff of every commit.",
     answer: "git log -p",
@@ -1835,6 +2094,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-author",
+    level: "core",
     category: "git",
     prompt: "Find every commit written by the author `alice`.",
     answer: "git log --author=alice",
@@ -1843,6 +2103,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-blame",
+    level: "core",
     category: "git",
     prompt: "Show which commit last touched each line of `main.py`.",
     answer: "git blame main.py",
@@ -1851,6 +2112,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-grep",
+    level: "core",
     category: "git",
     prompt: "Search the tracked files for the word `TODO`.",
     answer: "git grep TODO",
@@ -1859,6 +2121,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-shortlog",
+    level: "core",
     category: "git",
     prompt: "Summarize how many commits each author contributed.",
     answer: "git shortlog -sn",
@@ -1869,6 +2132,7 @@ export const gitQuestions: QuizQuestion[] = [
   // ── Branches & merging ────────────────────────────────────────────────────
   {
     id: "git-branch-list",
+    level: "pareto",
     category: "git",
     prompt: "List all local branches.",
     answer: "git branch",
@@ -1876,6 +2140,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-new",
+    level: "pareto",
     category: "git",
     prompt: "Create a new branch named `feature` without switching to it.",
     answer: "git branch feature",
@@ -1884,6 +2149,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-checkout-new",
+    level: "pareto",
     category: "git",
     prompt: "Create a branch named `feature` and switch to it in one command.",
     answer: "git checkout -b feature",
@@ -1893,6 +2159,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-switch-branch",
+    level: "pareto",
     category: "git",
     prompt: "Switch to the existing branch `main`.",
     answer: "git checkout main",
@@ -1902,6 +2169,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-delete",
+    level: "pareto",
     category: "git",
     prompt: "Delete the fully merged branch `feature`.",
     answer: "git branch -d feature",
@@ -1910,6 +2178,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-delete-force",
+    level: "core",
     category: "git",
     prompt: "Force-delete the branch `feature` even though it isn't merged.",
     answer: "git branch -D feature",
@@ -1918,6 +2187,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-rename",
+    level: "core",
     category: "git",
     prompt: "Rename the current branch to `topic`.",
     answer: "git branch -m topic",
@@ -1926,6 +2196,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-merge",
+    level: "pareto",
     category: "git",
     prompt: "Merge the branch `feature` into the current branch.",
     answer: "git merge feature",
@@ -1934,6 +2205,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-merge-abort",
+    level: "workflow",
     category: "git",
     prompt: "Abort a merge that ran into conflicts.",
     answer: "git merge --abort",
@@ -1942,6 +2214,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-rebase",
+    level: "workflow",
     category: "git",
     prompt: "Replay the current branch's commits on top of `main`.",
     answer: "git rebase main",
@@ -1950,6 +2223,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-rebase-interactive",
+    level: "workflow",
     category: "git",
     prompt: "Squash, reword, or reorder the last 3 commits interactively.",
     answer: "git rebase -i HEAD~3",
@@ -1958,6 +2232,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-cherry-pick",
+    level: "workflow",
     category: "git",
     prompt: "Apply the changes of commit `abc1234` onto the current branch.",
     answer: "git cherry-pick abc1234",
@@ -1966,6 +2241,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-revert",
+    level: "workflow",
     category: "git",
     prompt: "Undo commit `abc1234` by creating a new commit that reverses it.",
     answer: "git revert abc1234",
@@ -1976,6 +2252,7 @@ export const gitQuestions: QuizQuestion[] = [
   // ── Undoing & recovery ────────────────────────────────────────────────────
   {
     id: "git-reset-soft",
+    level: "workflow",
     category: "git",
     prompt: "Move the branch pointer back one commit, keeping the changes staged.",
     answer: "git reset --soft HEAD~1",
@@ -1984,6 +2261,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-reset-hard",
+    level: "workflow",
     category: "git",
     prompt: "Throw away all uncommitted changes and reset to the last commit.",
     answer: "git reset --hard HEAD",
@@ -1992,6 +2270,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-restore-file",
+    level: "workflow",
     category: "git",
     prompt: "Discard the unstaged changes to `main.py`, restoring it to the last commit.",
     answer: "git checkout -- main.py",
@@ -2001,6 +2280,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-restore-staged",
+    level: "workflow",
     category: "git",
     prompt: "Unstage `main.py` but keep its changes in the working tree.",
     answer: "git restore --staged main.py",
@@ -2010,6 +2290,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-reflog",
+    level: "workflow",
     category: "git",
     prompt: "See the history of where HEAD has been — the way to recover a lost commit.",
     answer: "git reflog",
@@ -2018,6 +2299,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-clean-dry",
+    level: "workflow",
     category: "git",
     prompt: "Preview which untracked files would be deleted.",
     answer: "git clean -n",
@@ -2027,6 +2309,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-clean",
+    level: "workflow",
     category: "git",
     prompt: "Delete untracked files and directories.",
     answer: "git clean -fd",
@@ -2035,6 +2318,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-stash",
+    level: "pareto",
     category: "git",
     prompt: "Set aside all uncommitted changes without committing them.",
     answer: "git stash",
@@ -2043,6 +2327,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-stash-list",
+    level: "core",
     category: "git",
     prompt: "List all saved stashes.",
     answer: "git stash list",
@@ -2050,6 +2335,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-stash-pop",
+    level: "workflow",
     category: "git",
     prompt: "Restore the most recent stash and remove it from the stash list.",
     answer: "git stash pop",
@@ -2057,6 +2343,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-stash-apply",
+    level: "workflow",
     category: "git",
     prompt: "Restore the most recent stash but keep it in the stash list.",
     answer: "git stash apply",
@@ -2065,6 +2352,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-stash-drop",
+    level: "core",
     category: "git",
     prompt: "Delete the most recent stash.",
     answer: "git stash drop",
@@ -2075,6 +2363,7 @@ export const gitQuestions: QuizQuestion[] = [
   // ── Remotes & publishing ──────────────────────────────────────────────────
   {
     id: "git-remote-list",
+    level: "core",
     category: "git",
     prompt: "List all configured remotes and their URLs.",
     answer: "git remote -v",
@@ -2083,6 +2372,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-remote-add",
+    level: "core",
     category: "git",
     prompt: "Add a remote named `origin` pointing at `https://github.com/user/repo.git`.",
     answer: "git remote add origin https://github.com/user/repo.git",
@@ -2091,6 +2381,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-remote-remove",
+    level: "core",
     category: "git",
     prompt: "Remove the remote named `origin`.",
     answer: "git remote remove origin",
@@ -2099,6 +2390,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-fetch",
+    level: "pareto",
     category: "git",
     prompt: "Download new commits from the remote without merging them.",
     answer: "git fetch",
@@ -2107,6 +2399,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-pull",
+    level: "pareto",
     category: "git",
     prompt: "Fetch and merge the remote changes into your current branch.",
     answer: "git pull",
@@ -2114,6 +2407,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-pull-rebase",
+    level: "workflow",
     category: "git",
     prompt: "Fetch remote changes and rebase your local commits on top of them.",
     answer: "git pull --rebase",
@@ -2122,6 +2416,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-push-upstream",
+    level: "pareto",
     category: "git",
     prompt: "Push the `main` branch to `origin` and remember it as the upstream.",
     answer: "git push -u origin main",
@@ -2130,6 +2425,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-push-tags",
+    level: "core",
     category: "git",
     prompt: "Push all tags to the remote.",
     answer: "git push --tags",
@@ -2138,6 +2434,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-tag",
+    level: "core",
     category: "git",
     prompt: "Tag the current commit as `v1.0.0`.",
     answer: "git tag v1.0.0",
@@ -2145,6 +2442,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-tag-annotated",
+    level: "core",
     category: "git",
     prompt: "Create an annotated tag `v1.0.0` with the message `release`.",
     answer: "git tag -a v1.0.0 -m \"release\"",
@@ -2155,6 +2453,7 @@ export const gitQuestions: QuizQuestion[] = [
   // ── Advanced workflows ────────────────────────────────────────────────────
   {
     id: "git-bisect-start",
+    level: "workflow",
     category: "git",
     prompt: "Start a binary search to find the commit that introduced a bug.",
     answer: "git bisect start",
@@ -2163,6 +2462,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-bisect-bad",
+    level: "workflow",
     category: "git",
     prompt: "Tell git the current commit is the one with the bug.",
     answer: "git bisect bad",
@@ -2170,6 +2470,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-bisect-good",
+    level: "workflow",
     category: "git",
     prompt: "Tell git the current commit is known to be fine.",
     answer: "git bisect good",
@@ -2178,6 +2479,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-config-name",
+    level: "core",
     category: "git",
     prompt: "Set your commit author name to `Alice` for every repository.",
     answer: "git config --global user.name Alice",
@@ -2186,6 +2488,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-config-email",
+    level: "core",
     category: "git",
     prompt: "Set your commit email globally to `alice@example.com`.",
     answer: "git config --global user.email alice@example.com",
@@ -2194,6 +2497,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-config-list",
+    level: "core",
     category: "git",
     prompt: "Show all current git configuration.",
     answer: "git config --list",
@@ -2202,6 +2506,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-diff-branches",
+    level: "core",
     category: "git",
     prompt: "Show the difference between branch `main` and branch `feature`.",
     answer: "git diff main feature",
@@ -2210,6 +2515,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-worktree",
+    level: "workflow",
     category: "git",
     prompt: "Create a linked worktree for branch `fix` in the folder `../fix`.",
     answer: "git worktree add ../fix fix",
@@ -2218,6 +2524,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-commit-am",
+    level: "pareto",
     category: "git",
     prompt: "Stage all tracked changes and commit them in one step with the message `typo`.",
     answer: "git commit -am \"typo\"",
@@ -2227,6 +2534,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-commit-amend-noedit",
+    level: "core",
     category: "git",
     prompt: "Amend the last commit without changing its message.",
     answer: "git commit --amend --no-edit",
@@ -2235,6 +2543,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-fixup",
+    level: "workflow",
     category: "git",
     prompt: "Mark this change as a fixup for commit abc1234, to be squashed in later.",
     answer: "git commit --fixup abc1234",
@@ -2243,6 +2552,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-autosquash",
+    level: "workflow",
     category: "git",
     prompt: "Rebase onto main and automatically fold any fixup commits into their targets.",
     answer: "git rebase -i --autosquash main",
@@ -2251,6 +2561,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-rebase-continue",
+    level: "workflow",
     category: "git",
     prompt: "Resume the rebase after resolving a conflict.",
     answer: "git rebase --continue",
@@ -2259,6 +2570,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-rebase-abort",
+    level: "workflow",
     category: "git",
     prompt: "Abandon the current rebase entirely and return to the pre-rebase state.",
     answer: "git rebase --abort",
@@ -2267,6 +2579,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-add-updated",
+    level: "core",
     category: "git",
     prompt: "Stage the modifications and deletions of already-tracked files only.",
     answer: "git add -u",
@@ -2275,6 +2588,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-add-intent",
+    level: "core",
     category: "git",
     prompt: "Start tracking file.txt without staging its content yet.",
     answer: "git add -N file.txt",
@@ -2284,6 +2598,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-diff-stat",
+    level: "core",
     category: "git",
     prompt: "Show a summary of changed files with line counts, not the full diff.",
     answer: "git diff --stat",
@@ -2291,6 +2606,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-restore-commit",
+    level: "core",
     category: "git",
     prompt: "Restore main.py to how it looked at HEAD~1, discarding current working changes.",
     answer: "git checkout HEAD~1 -- main.py",
@@ -2300,6 +2616,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-rm-cached",
+    level: "workflow",
     category: "git",
     prompt: "Stop tracking secret.env but keep the file on disk.",
     answer: "git rm --cached secret.env",
@@ -2308,6 +2625,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-remote",
+    level: "core",
     category: "git",
     prompt: "List only the remote-tracking branches (origin/*).",
     answer: "git branch -r",
@@ -2315,6 +2633,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-all",
+    level: "core",
     category: "git",
     prompt: "List both local and remote-tracking branches.",
     answer: "git branch -a",
@@ -2322,6 +2641,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-vv",
+    level: "core",
     category: "git",
     prompt: "List branches with the upstream branch each one tracks.",
     answer: "git branch -vv",
@@ -2330,6 +2650,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-branch-merged",
+    level: "core",
     category: "git",
     prompt: "List branches that are already merged into the current branch.",
     answer: "git branch --merged",
@@ -2338,6 +2659,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-checkout-previous",
+    level: "core",
     category: "git",
     prompt: "Switch back to the branch you were on before this one.",
     answer: "git checkout -",
@@ -2346,6 +2668,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-push-delete",
+    level: "workflow",
     category: "git",
     prompt: "Delete the branch `fix` on the origin remote.",
     answer: "git push origin --delete fix",
@@ -2355,6 +2678,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-follow",
+    level: "core",
     category: "git",
     prompt: "Show the history of file.txt, following the file across renames.",
     answer: "git log --follow -- file.txt",
@@ -2363,6 +2687,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-grep",
+    level: "core",
     category: "git",
     prompt: "Show only commits whose message contains the word `typo`.",
     answer: "git log --grep=typo",
@@ -2371,6 +2696,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-pickaxe",
+    level: "core",
     category: "git",
     prompt: "Find commits that added or removed the string `deleteUser` anywhere.",
     answer: "git log -S\"deleteUser\"",
@@ -2380,6 +2706,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-show-file",
+    level: "core",
     category: "git",
     prompt: "Print file.txt as it existed at HEAD~1, without checking it out.",
     answer: "git show HEAD~1:file.txt",
@@ -2388,6 +2715,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-log-stat",
+    level: "core",
     category: "git",
     prompt: "Show the log together with which files each commit changed.",
     answer: "git log --stat",
@@ -2396,6 +2724,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-alias",
+    level: "core",
     category: "git",
     prompt: "Create a global alias `co` for the `checkout` command.",
     answer: "git config --global alias.co checkout",
@@ -2404,6 +2733,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-default-branch",
+    level: "core",
     category: "git",
     prompt: "Make new repositories initialize on `main` instead of `master`.",
     answer: "git config --global init.defaultBranch main",
@@ -2412,6 +2742,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-core-editor",
+    level: "core",
     category: "git",
     prompt: "Tell git to open VS Code when it needs you to type a commit message.",
     answer: "git config --global core.editor \"code --wait\"",
@@ -2421,6 +2752,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-config-get",
+    level: "core",
     category: "git",
     prompt: "Print the configured value of user.name.",
     answer: "git config user.name",
@@ -2429,6 +2761,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-fetch-prune",
+    level: "core",
     category: "git",
     prompt: "Fetch from origin and delete remote-tracking branches that no longer exist upstream.",
     answer: "git fetch --prune origin",
@@ -2438,6 +2771,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-pull-ffonly",
+    level: "workflow",
     category: "git",
     prompt: "Pull, but refuse to create a merge commit — fast-forward only.",
     answer: "git pull --ff-only",
@@ -2446,6 +2780,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-push-force-lease",
+    level: "workflow",
     category: "git",
     prompt: "Force-push, but abort if the remote branch has moved since you last fetched.",
     answer: "git push --force-with-lease",
@@ -2454,6 +2789,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-remote-show",
+    level: "core",
     category: "git",
     prompt: "Show detailed information about the origin remote.",
     answer: "git remote show origin",
@@ -2462,6 +2798,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-remote-get-url",
+    level: "core",
     category: "git",
     prompt: "Print the URL that origin points at.",
     answer: "git remote get-url origin",
@@ -2469,6 +2806,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-stash-untracked",
+    level: "workflow",
     category: "git",
     prompt: "Stash your changes together with untracked files.",
     answer: "git stash -u",
@@ -2477,6 +2815,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-stash-show",
+    level: "core",
     category: "git",
     prompt: "Show the full diff of the most recent stash.",
     answer: "git stash show -p",
@@ -2485,6 +2824,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-reset-mixed",
+    level: "workflow",
     category: "git",
     prompt: "Undo the last commit but keep its changes in the working directory, unstaged.",
     answer: "git reset --mixed HEAD~1",
@@ -2493,6 +2833,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-ls-files",
+    level: "core",
     category: "git",
     prompt: "List every file git is currently tracking.",
     answer: "git ls-files",
@@ -2501,6 +2842,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-rev-parse-branch",
+    level: "core",
     category: "git",
     prompt: "Print the name of the current branch (the short, symbolic form).",
     answer: "git rev-parse --abbrev-ref HEAD",
@@ -2509,6 +2851,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-cat-file",
+    level: "core",
     category: "git",
     prompt: "Show the raw contents of the git object abc1234.",
     answer: "git cat-file -p abc1234",
@@ -2517,6 +2860,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-archive",
+    level: "core",
     category: "git",
     prompt: "Package the repository at HEAD into a zip file called repo.zip.",
     answer: "git archive -o repo.zip HEAD",
@@ -2525,6 +2869,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-gc",
+    level: "core",
     category: "git",
     prompt: "Run garbage collection to compact the repository's objects.",
     answer: "git gc",
@@ -2533,6 +2878,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-describe",
+    level: "core",
     category: "git",
     prompt: "Print the most recent tag reachable from HEAD.",
     answer: "git describe --tags",
@@ -2541,6 +2887,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-submodule-add",
+    level: "core",
     category: "git",
     prompt: "Add https://github.com/user/lib.git as a submodule in the folder lib/.",
     answer: "git submodule add https://github.com/user/lib.git lib",
@@ -2549,6 +2896,7 @@ export const gitQuestions: QuizQuestion[] = [
   },
   {
     id: "git-submodule-update",
+    level: "core",
     category: "git",
     prompt: "Initialize all submodules and pull their pinned commits recursively.",
     answer: "git submodule update --init --recursive",
@@ -2561,6 +2909,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Files & navigation ────────────────────────────────────────────────────
   {
     id: "shell-pwd",
+    level: "pareto",
     category: "shell",
     prompt: "Print the full path of the current working directory.",
     answer: "pwd",
@@ -2568,6 +2917,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ls",
+    level: "pareto",
     category: "shell",
     prompt: "List the files in the current directory.",
     answer: "ls",
@@ -2575,6 +2925,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ls-all",
+    level: "core",
     category: "shell",
     prompt: "List all files, including hidden ones that start with a dot.",
     answer: "ls -a",
@@ -2582,6 +2933,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ls-la",
+    level: "pareto",
     category: "shell",
     prompt: "List every file with full details — permissions, sizes, dates.",
     answer: "ls -la",
@@ -2590,6 +2942,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-cd-home",
+    level: "pareto",
     category: "shell",
     prompt: "Go to your home directory.",
     answer: "cd ~",
@@ -2598,6 +2951,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-cd-up",
+    level: "pareto",
     category: "shell",
     prompt: "Go up one directory level.",
     answer: "cd ..",
@@ -2605,6 +2959,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-cd-back",
+    level: "pareto",
     category: "shell",
     prompt: "Jump back to the directory you were just in.",
     answer: "cd -",
@@ -2613,6 +2968,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-mkdir-p",
+    level: "pareto",
     category: "shell",
     prompt: "Create the nested path `a/b/c`, making any missing parents.",
     answer: "mkdir -p a/b/c",
@@ -2620,6 +2976,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-touch",
+    level: "pareto",
     category: "shell",
     prompt: "Create a new empty file named `notes.txt`.",
     answer: "touch notes.txt",
@@ -2628,6 +2985,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-cp",
+    level: "pareto",
     category: "shell",
     prompt: "Copy `notes.txt` to a new file named `backup.txt`.",
     answer: "cp notes.txt backup.txt",
@@ -2635,6 +2993,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-mv",
+    level: "pareto",
     category: "shell",
     prompt: "Rename `old.txt` to `new.txt`.",
     answer: "mv old.txt new.txt",
@@ -2642,6 +3001,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-rm",
+    level: "pareto",
     category: "shell",
     prompt: "Delete the file `temp.txt`.",
     answer: "rm temp.txt",
@@ -2649,6 +3009,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-rm-rf",
+    level: "core",
     category: "shell",
     prompt: "Force-delete the directory `build` and everything inside it.",
     answer: "rm -rf build",
@@ -2657,6 +3018,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ln",
+    level: "core",
     category: "shell",
     prompt: "Create a symlink named `current` that points at the directory `data`.",
     answer: "ln -s data current",
@@ -2667,6 +3029,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Viewing & searching ───────────────────────────────────────────────────
   {
     id: "shell-cat",
+    level: "pareto",
     category: "shell",
     prompt: "Print the entire contents of `file.txt` to the terminal.",
     answer: "cat file.txt",
@@ -2674,6 +3037,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-less",
+    level: "core",
     category: "shell",
     prompt: "View `file.txt` one screen at a time, with scrolling.",
     answer: "less file.txt",
@@ -2682,6 +3046,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-head",
+    level: "core",
     category: "shell",
     prompt: "Show only the first 5 lines of `file.txt`.",
     answer: "head -n 5 file.txt",
@@ -2690,6 +3055,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-tail",
+    level: "pareto",
     category: "shell",
     prompt: "Show only the last 10 lines of `file.txt`.",
     answer: "tail -n 10 file.txt",
@@ -2697,6 +3063,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-tail-f",
+    level: "workflow",
     category: "shell",
     prompt: "Follow `app.log` and print new lines as they're appended.",
     answer: "tail -f app.log",
@@ -2705,6 +3072,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-grep",
+    level: "pareto",
     category: "shell",
     prompt: "Print the lines of `file.txt` that contain `error`.",
     answer: "grep error file.txt",
@@ -2712,6 +3080,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-grep-i",
+    level: "core",
     category: "shell",
     prompt: "Search `file.txt` for `error`, ignoring case.",
     answer: "grep -i error file.txt",
@@ -2719,6 +3088,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-grep-v",
+    level: "core",
     category: "shell",
     prompt: "Show the lines of `file.txt` that do NOT contain `debug`.",
     answer: "grep -v debug file.txt",
@@ -2726,6 +3096,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-grep-rn",
+    level: "workflow",
     category: "shell",
     prompt: "Search every file under `src` for `TODO`, printing file names and line numbers.",
     answer: "grep -rn TODO src",
@@ -2734,6 +3105,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-find-name",
+    level: "workflow",
     category: "shell",
     prompt: "Find every file matching `*.log` under the current directory.",
     answer: "find . -name \"*.log\"",
@@ -2742,6 +3114,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-find-type",
+    level: "core",
     category: "shell",
     prompt: "Find every directory under the current directory.",
     answer: "find . -type d",
@@ -2749,6 +3122,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-wc-l",
+    level: "core",
     category: "shell",
     prompt: "Count how many lines `file.txt` has.",
     answer: "wc -l file.txt",
@@ -2756,6 +3130,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-sort-nr",
+    level: "core",
     category: "shell",
     prompt: "Sort `file.txt` numerically, largest first.",
     answer: "sort -nr file.txt",
@@ -2765,6 +3140,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Pipes, redirection & processes ────────────────────────────────────────
   {
     id: "shell-pipe-count",
+    level: "workflow",
     category: "shell",
     prompt: "Count how many files are in the current directory.",
     answer: "ls | wc -l",
@@ -2773,6 +3149,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ps-grep",
+    level: "workflow",
     category: "shell",
     prompt: "Find the process that's running `nginx`.",
     answer: "ps aux | grep nginx",
@@ -2781,6 +3158,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-redirect-overwrite",
+    level: "pareto",
     category: "shell",
     prompt: "Write the output of `ls` into `listing.txt`, replacing whatever was there.",
     answer: "ls > listing.txt",
@@ -2789,6 +3167,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-redirect-append",
+    level: "pareto",
     category: "shell",
     prompt: "Add the output of `ls` to the end of `listing.txt` without overwriting it.",
     answer: "ls >> listing.txt",
@@ -2796,6 +3175,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-redirect-both",
+    level: "workflow",
     category: "shell",
     prompt: "Capture both stdout and stderr of `ls` into `out.log`.",
     answer: "ls > out.log 2>&1",
@@ -2804,6 +3184,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-redirect-null",
+    level: "workflow",
     category: "shell",
     prompt: "Run `ls missing.txt` silently, discarding its error message.",
     answer: "ls missing.txt 2>/dev/null",
@@ -2812,6 +3193,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-tee",
+    level: "workflow",
     category: "shell",
     prompt: "Show `ls` output on screen AND save it to `listing.txt` at the same time.",
     answer: "ls | tee listing.txt",
@@ -2820,6 +3202,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-xargs",
+    level: "workflow",
     category: "shell",
     prompt: "Print the names of every Python file under `.` that contains `TODO`.",
     answer: "find . -name \"*.py\" | xargs grep -l TODO",
@@ -2828,6 +3211,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ps",
+    level: "core",
     category: "shell",
     prompt: "List every running process with its PID and CPU/memory usage.",
     answer: "ps aux",
@@ -2835,6 +3219,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-kill",
+    level: "workflow",
     category: "shell",
     prompt: "Send a termination request to the process with PID 1234.",
     answer: "kill 1234",
@@ -2842,6 +3227,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-kill-9",
+    level: "workflow",
     category: "shell",
     prompt: "Force-kill the process with PID 1234 immediately.",
     answer: "kill -9 1234",
@@ -2849,6 +3235,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-pkill",
+    level: "workflow",
     category: "shell",
     prompt: "Kill every process whose name matches `chrome`.",
     answer: "pkill chrome",
@@ -2856,6 +3243,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-background",
+    level: "workflow",
     category: "shell",
     prompt: "Run `sleep 30` in the background so the prompt returns immediately.",
     answer: "sleep 30 &",
@@ -2863,6 +3251,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-history",
+    level: "pareto",
     category: "shell",
     prompt: "Show your command history.",
     answer: "history",
@@ -2870,6 +3259,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-rerun-last",
+    level: "core",
     category: "shell",
     prompt: "Re-run the last command you typed.",
     answer: "!!",
@@ -2877,6 +3267,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-exit-status",
+    level: "core",
     category: "shell",
     prompt: "Print the exit status of the last command (0 means success).",
     answer: "echo $?",
@@ -2886,6 +3277,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Interactive shortcuts ─────────────────────────────────────────────────
   {
     id: "shell-ctrl-c",
+    level: "pareto",
     category: "shell",
     prompt: "Interrupt the command currently running and get your prompt back.",
     answer: "Ctrl+c",
@@ -2893,6 +3285,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ctrl-d",
+    level: "core",
     category: "shell",
     prompt: "Send end-of-input to close the shell.",
     answer: "Ctrl+d",
@@ -2901,6 +3294,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ctrl-z",
+    level: "core",
     category: "shell",
     prompt: "Suspend the running foreground job so you can resume it later.",
     answer: "Ctrl+z",
@@ -2908,6 +3302,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ctrl-l",
+    level: "pareto",
     category: "shell",
     prompt: "Clear the terminal screen.",
     answer: "Ctrl+l",
@@ -2917,6 +3312,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ctrl-r",
+    level: "pareto",
     category: "shell",
     prompt: "Search your command history interactively as you type.",
     answer: "Ctrl+r",
@@ -2925,6 +3321,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ctrl-a",
+    level: "core",
     category: "shell",
     prompt: "Jump the cursor to the start of the line while editing a command.",
     answer: "Ctrl+a",
@@ -2932,6 +3329,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ctrl-e",
+    level: "core",
     category: "shell",
     prompt: "Jump the cursor to the end of the line while editing a command.",
     answer: "Ctrl+e",
@@ -2939,6 +3337,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ctrl-u",
+    level: "core",
     category: "shell",
     prompt: "Delete everything before the cursor on the current line.",
     answer: "Ctrl+u",
@@ -2948,6 +3347,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Permissions & ownership ───────────────────────────────────────────────
   {
     id: "shell-chmod-x",
+    level: "core",
     category: "shell",
     prompt: "Make `deploy.sh` executable.",
     answer: "chmod +x deploy.sh",
@@ -2956,6 +3356,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-chmod-755",
+    level: "core",
     category: "shell",
     prompt: "Set `deploy.sh` to rwx for the owner and rx for everyone else.",
     answer: "chmod 755 deploy.sh",
@@ -2964,6 +3365,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-chown",
+    level: "core",
     category: "shell",
     prompt: "Give ownership of `file.txt` to the user `alice` and the group `dev`.",
     answer: "chown alice:dev file.txt",
@@ -2971,6 +3373,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-whoami",
+    level: "core",
     category: "shell",
     prompt: "Show the name of the current user.",
     answer: "whoami",
@@ -2980,6 +3383,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Environment & configuration ───────────────────────────────────────────
   {
     id: "shell-echo-path",
+    level: "core",
     category: "shell",
     prompt: "Print the value of the `PATH` variable.",
     answer: "echo $PATH",
@@ -2988,6 +3392,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-export",
+    level: "core",
     category: "shell",
     prompt: "Set the environment variable `EDITOR` to `vim` for this session.",
     answer: "export EDITOR=vim",
@@ -2996,6 +3401,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-source",
+    level: "workflow",
     category: "shell",
     prompt: "Apply the changes in `~/.bashrc` to the current shell without restarting.",
     answer: "source ~/.bashrc",
@@ -3005,6 +3411,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-alias",
+    level: "core",
     category: "shell",
     prompt: "Create an alias `ll` that runs `ls -l`.",
     answer: "alias ll='ls -l'",
@@ -3013,6 +3420,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-type",
+    level: "core",
     category: "shell",
     prompt: "Show what kind of thing the shell considers `cd` to be.",
     answer: "type cd",
@@ -3020,6 +3428,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-which",
+    level: "core",
     category: "shell",
     prompt: "Show the full path of the `git` executable that would run.",
     answer: "which git",
@@ -3028,6 +3437,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-man",
+    level: "core",
     category: "shell",
     prompt: "Open the manual page for `ls`.",
     answer: "man ls",
@@ -3037,6 +3447,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Text processing ───────────────────────────────────────────────────────
   {
     id: "shell-cut",
+    level: "core",
     category: "shell",
     prompt: "Extract the second comma-separated field of every line in `data.csv`.",
     answer: "cut -d, -f2 data.csv",
@@ -3044,6 +3455,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-awk",
+    level: "core",
     category: "shell",
     prompt: "Print the first word of every line of `file.txt`.",
     answer: "awk '{print $1}' file.txt",
@@ -3052,6 +3464,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-sed",
+    level: "workflow",
     category: "shell",
     prompt: "Replace every `foo` with `bar` in `file.txt`, editing the file in place.",
     answer: "sed -i 's/foo/bar/g' file.txt",
@@ -3060,6 +3473,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-tr",
+    level: "core",
     category: "shell",
     prompt: "Convert every lowercase letter in `file.txt` to uppercase.",
     answer: "tr 'a-z' 'A-Z' < file.txt",
@@ -3068,6 +3482,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-diff-u",
+    level: "core",
     category: "shell",
     prompt: "Show the differences between `a.txt` and `b.txt` as a unified diff.",
     answer: "diff -u a.txt b.txt",
@@ -3078,6 +3493,7 @@ export const shellQuestions: QuizQuestion[] = [
   // ── Archives & system info ────────────────────────────────────────────────
   {
     id: "shell-tar-c",
+    level: "workflow",
     category: "shell",
     prompt: "Create `backup.tar.gz` from the `src` directory, gzip-compressed.",
     answer: "tar -czf backup.tar.gz src",
@@ -3086,6 +3502,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-tar-x",
+    level: "workflow",
     category: "shell",
     prompt: "Extract `backup.tar.gz` in the current directory.",
     answer: "tar -xzf backup.tar.gz",
@@ -3093,6 +3510,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-df",
+    level: "core",
     category: "shell",
     prompt: "Show disk space usage for every filesystem in human-readable form.",
     answer: "df -h",
@@ -3100,6 +3518,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-du",
+    level: "core",
     category: "shell",
     prompt: "Show the total size of the current directory, human-readable.",
     answer: "du -sh .",
@@ -3107,6 +3526,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-watch",
+    level: "workflow",
     category: "shell",
     prompt: "Re-run `ls` every 2 seconds to watch a directory change live.",
     answer: "watch -n 2 ls",
@@ -3114,6 +3534,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-curl",
+    level: "core",
     category: "shell",
     prompt: "Download `https://example.com/file.zip` to the current folder, keeping its filename.",
     answer: "curl -O https://example.com/file.zip",
@@ -3122,6 +3543,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-ping",
+    level: "core",
     category: "shell",
     prompt: "Check whether `google.com` is reachable.",
     answer: "ping google.com",
@@ -3129,6 +3551,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-shebang",
+    level: "core",
     category: "shell",
     prompt: "Start a bash script with the shebang line that selects the interpreter.",
     answer: "#!/bin/bash",
@@ -3137,6 +3560,7 @@ export const shellQuestions: QuizQuestion[] = [
   },
   {
     id: "shell-arg-first",
+    level: "core",
     category: "shell",
     prompt: "Reference the first argument passed to a script.",
     answer: "$1",
@@ -3148,6 +3572,7 @@ export const dockerQuestions: QuizQuestion[] = [
   // ── Images & containers ───────────────────────────────────────────────────
   {
     id: "docker-pull",
+    level: "pareto",
     category: "docker",
     prompt: "Download the ubuntu image from Docker Hub.",
     answer: "docker pull ubuntu",
@@ -3156,6 +3581,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-images",
+    level: "pareto",
     category: "docker",
     prompt: "List all images stored on your machine.",
     answer: "docker images",
@@ -3164,6 +3590,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-ps",
+    level: "pareto",
     category: "docker",
     prompt: "List all currently running containers.",
     answer: "docker ps",
@@ -3171,6 +3598,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-ps-all",
+    level: "pareto",
     category: "docker",
     prompt: "List every container, including stopped ones.",
     answer: "docker ps -a",
@@ -3178,6 +3606,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run",
+    level: "pareto",
     category: "docker",
     prompt: "Start a container from the hello-world image.",
     answer: "docker run hello-world",
@@ -3186,6 +3615,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run-it",
+    level: "pareto",
     category: "docker",
     prompt: "Start an interactive bash session inside a ubuntu container.",
     answer: "docker run -it ubuntu bash",
@@ -3194,6 +3624,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run-detached",
+    level: "pareto",
     category: "docker",
     prompt: "Run an nginx container in the background (detached).",
     answer: "docker run -d nginx",
@@ -3202,6 +3633,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run-rm",
+    level: "workflow",
     category: "docker",
     prompt: "Run a one-off container that removes itself automatically when it exits.",
     answer: "docker run --rm alpine",
@@ -3210,6 +3642,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run-port",
+    level: "pareto",
     category: "docker",
     prompt: "Publish container port 80 as host port 8080.",
     answer: "docker run -p 8080:80 nginx",
@@ -3218,6 +3651,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run-volume",
+    level: "workflow",
     category: "docker",
     prompt: "Mount the host directory ./data into the container at /app.",
     answer: "docker run -v ./data:/app ubuntu",
@@ -3226,6 +3660,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run-name",
+    level: "core",
     category: "docker",
     prompt: "Give the container a custom name, myapp, when starting it.",
     answer: "docker run --name myapp nginx",
@@ -3234,6 +3669,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-run-env",
+    level: "workflow",
     category: "docker",
     prompt: "Set the environment variable ENV=prod when starting a container.",
     answer: "docker run -e ENV=prod nginx",
@@ -3242,6 +3678,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-stop",
+    level: "pareto",
     category: "docker",
     prompt: "Gracefully stop the running container myapp.",
     answer: "docker stop myapp",
@@ -3250,6 +3687,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-start",
+    level: "pareto",
     category: "docker",
     prompt: "Start the previously stopped container myapp again.",
     answer: "docker start myapp",
@@ -3258,6 +3696,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-restart",
+    level: "workflow",
     category: "docker",
     prompt: "Restart the container myapp.",
     answer: "docker restart myapp",
@@ -3265,6 +3704,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-rm",
+    level: "pareto",
     category: "docker",
     prompt: "Delete the stopped container myapp.",
     answer: "docker rm myapp",
@@ -3273,6 +3713,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-rmi",
+    level: "pareto",
     category: "docker",
     prompt: "Delete the nginx image from your machine.",
     answer: "docker rmi nginx",
@@ -3281,6 +3722,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-rm-force",
+    level: "workflow",
     category: "docker",
     prompt: "Force-delete the running container myapp.",
     answer: "docker rm -f myapp",
@@ -3290,6 +3732,7 @@ export const dockerQuestions: QuizQuestion[] = [
   // ── Container lifecycle ───────────────────────────────────────────────────
   {
     id: "docker-exec",
+    level: "pareto",
     category: "docker",
     prompt: "Run the command ls inside the running container myapp.",
     answer: "docker exec myapp ls",
@@ -3298,6 +3741,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-exec-it",
+    level: "pareto",
     category: "docker",
     prompt: "Open an interactive shell inside the running container myapp.",
     answer: "docker exec -it myapp bash",
@@ -3306,6 +3750,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-logs",
+    level: "pareto",
     category: "docker",
     prompt: "See the logs printed by container myapp so far.",
     answer: "docker logs myapp",
@@ -3313,6 +3758,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-logs-follow",
+    level: "workflow",
     category: "docker",
     prompt: "Watch the logs of myapp live as they stream in.",
     answer: "docker logs -f myapp",
@@ -3320,6 +3766,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-cp",
+    level: "workflow",
     category: "docker",
     prompt: "Copy notes.txt from container myapp into the current directory.",
     answer: "docker cp myapp:/notes.txt .",
@@ -3328,6 +3775,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-stats",
+    level: "workflow",
     category: "docker",
     prompt: "Watch live CPU and memory usage of all running containers.",
     answer: "docker stats",
@@ -3336,6 +3784,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-top",
+    level: "core",
     category: "docker",
     prompt: "Show the processes running inside container myapp.",
     answer: "docker top myapp",
@@ -3343,6 +3792,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-port",
+    level: "core",
     category: "docker",
     prompt: "Show the host port mappings of container myapp.",
     answer: "docker port myapp",
@@ -3350,6 +3800,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-inspect",
+    level: "core",
     category: "docker",
     prompt: "Show detailed low-level configuration of container myapp.",
     answer: "docker inspect myapp",
@@ -3358,6 +3809,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-attach",
+    level: "core",
     category: "docker",
     prompt: "Re-attach your terminal to the main process of container myapp.",
     answer: "docker attach myapp",
@@ -3366,6 +3818,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-rename",
+    level: "core",
     category: "docker",
     prompt: "Rename the container myapp to web.",
     answer: "docker rename myapp web",
@@ -3373,6 +3826,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-commit",
+    level: "workflow",
     category: "docker",
     prompt: "Save the current state of container myapp as an image named myapp:v1.",
     answer: "docker commit myapp myapp:v1",
@@ -3383,6 +3837,7 @@ export const dockerQuestions: QuizQuestion[] = [
   // ── Building & registries ─────────────────────────────────────────────────
   {
     id: "docker-build",
+    level: "pareto",
     category: "docker",
     prompt: "Build an image from the Dockerfile in the current directory.",
     answer: "docker build .",
@@ -3391,6 +3846,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-build-tag",
+    level: "pareto",
     category: "docker",
     prompt: "Build the current directory as an image tagged myapp:1.0.",
     answer: "docker build -t myapp:1.0 .",
@@ -3398,6 +3854,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-tag",
+    level: "workflow",
     category: "docker",
     prompt: "Tag the image myapp:1.0 as registry.example.com/myapp:latest.",
     answer: "docker tag myapp:1.0 registry.example.com/myapp:latest",
@@ -3406,6 +3863,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-push",
+    level: "pareto",
     category: "docker",
     prompt: "Upload the image myapp:1.0 to its registry.",
     answer: "docker push myapp:1.0",
@@ -3413,6 +3871,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-history",
+    level: "core",
     category: "docker",
     prompt: "Show the layer history of the nginx image.",
     answer: "docker history nginx",
@@ -3421,6 +3880,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-save",
+    level: "workflow",
     category: "docker",
     prompt: "Export the nginx image to a tar archive called nginx.tar.",
     answer: "docker save -o nginx.tar nginx",
@@ -3429,6 +3889,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-load",
+    level: "workflow",
     category: "docker",
     prompt: "Import the image stored in nginx.tar.",
     answer: "docker load -i nginx.tar",
@@ -3436,6 +3897,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-export",
+    level: "core",
     category: "docker",
     prompt: "Export the filesystem of container myapp as myapp.tar.",
     answer: "docker export -o myapp.tar myapp",
@@ -3444,6 +3906,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-import",
+    level: "core",
     category: "docker",
     prompt: "Create an image from the filesystem tarball myapp.tar.",
     answer: "docker import myapp.tar myapp:imported",
@@ -3451,6 +3914,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-search",
+    level: "core",
     category: "docker",
     prompt: "Search Docker Hub for images matching 'redis'.",
     answer: "docker search redis",
@@ -3461,6 +3925,7 @@ export const dockerQuestions: QuizQuestion[] = [
   // ── Dockerfile instructions ───────────────────────────────────────────────
   {
     id: "dockerfile-from",
+    level: "core",
     category: "docker",
     prompt: "Start a Dockerfile by selecting the node:20 base image.",
     answer: "FROM node:20",
@@ -3469,6 +3934,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-run",
+    level: "core",
     category: "docker",
     prompt: "Install dependencies while the image is being built.",
     answer: "RUN npm install",
@@ -3477,6 +3943,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-cmd",
+    level: "core",
     category: "docker",
     prompt: "Set the default command a container runs on start.",
     answer: "CMD [\"npm\", \"start\"]",
@@ -3485,6 +3952,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-entrypoint",
+    level: "core",
     category: "docker",
     prompt: "Set the fixed executable the container always runs.",
     answer: "ENTRYPOINT [\"node\"]",
@@ -3493,6 +3961,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-copy",
+    level: "core",
     category: "docker",
     prompt: "Copy the build context's contents into the image at /app.",
     answer: "COPY . /app",
@@ -3500,6 +3969,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-workdir",
+    level: "core",
     category: "docker",
     prompt: "Set the working directory for all following Dockerfile instructions.",
     answer: "WORKDIR /app",
@@ -3507,6 +3977,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-expose",
+    level: "core",
     category: "docker",
     prompt: "Declare that the container listens on port 3000.",
     answer: "EXPOSE 3000",
@@ -3515,6 +3986,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-env",
+    level: "core",
     category: "docker",
     prompt: "Set NODE_ENV=production as an environment variable in the image.",
     answer: "ENV NODE_ENV=production",
@@ -3523,6 +3995,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-user",
+    level: "core",
     category: "docker",
     prompt: "Run the container as the non-root user node.",
     answer: "USER node",
@@ -3531,6 +4004,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-volume",
+    level: "core",
     category: "docker",
     prompt: "Declare a volume mount point at /data.",
     answer: "VOLUME /data",
@@ -3539,6 +4013,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-arg",
+    level: "core",
     category: "docker",
     prompt: "Declare a build-time variable named VERSION.",
     answer: "ARG VERSION",
@@ -3547,6 +4022,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "dockerfile-multistage",
+    level: "core",
     category: "docker",
     prompt: "Copy the built app from an earlier build stage named builder.",
     answer: "COPY --from=builder /app/dist /app",
@@ -3557,6 +4033,7 @@ export const dockerQuestions: QuizQuestion[] = [
   // ── Compose ───────────────────────────────────────────────────────────────
   {
     id: "compose-up",
+    level: "workflow",
     category: "docker",
     prompt: "Start all services defined in docker-compose.yml (in the foreground).",
     answer: "docker compose up",
@@ -3566,6 +4043,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-up-detached",
+    level: "pareto",
     category: "docker",
     prompt: "Start all compose services in the background.",
     answer: "docker compose up -d",
@@ -3574,6 +4052,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-down",
+    level: "pareto",
     category: "docker",
     prompt: "Stop and remove all services and networks of the compose project.",
     answer: "docker compose down",
@@ -3583,6 +4062,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-ps",
+    level: "workflow",
     category: "docker",
     prompt: "List the services of the compose project and their status.",
     answer: "docker compose ps",
@@ -3591,6 +4071,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-logs",
+    level: "workflow",
     category: "docker",
     prompt: "Follow the logs of all compose services as they stream.",
     answer: "docker compose logs -f",
@@ -3599,6 +4080,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-build",
+    level: "workflow",
     category: "docker",
     prompt: "Build all images used by the compose file.",
     answer: "docker compose build",
@@ -3607,6 +4089,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-pull",
+    level: "core",
     category: "docker",
     prompt: "Pull all images referenced by the compose file.",
     answer: "docker compose pull",
@@ -3615,6 +4098,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-config",
+    level: "core",
     category: "docker",
     prompt: "Validate the compose file and print the fully resolved config.",
     answer: "docker compose config",
@@ -3624,6 +4108,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-exec",
+    level: "workflow",
     category: "docker",
     prompt: "Open a shell in the web service of the compose project.",
     answer: "docker compose exec web bash",
@@ -3633,6 +4118,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "compose-restart",
+    level: "workflow",
     category: "docker",
     prompt: "Restart all services of the compose project.",
     answer: "docker compose restart",
@@ -3643,6 +4129,7 @@ export const dockerQuestions: QuizQuestion[] = [
   // ── Networks & volumes ────────────────────────────────────────────────────
   {
     id: "docker-network-ls",
+    level: "core",
     category: "docker",
     prompt: "List all Docker networks on the machine.",
     answer: "docker network ls",
@@ -3651,6 +4138,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-network-create",
+    level: "workflow",
     category: "docker",
     prompt: "Create a network named mynet.",
     answer: "docker network create mynet",
@@ -3659,6 +4147,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-network-connect",
+    level: "core",
     category: "docker",
     prompt: "Connect the running container myapp to the network mynet.",
     answer: "docker network connect mynet myapp",
@@ -3666,6 +4155,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-network-disconnect",
+    level: "core",
     category: "docker",
     prompt: "Disconnect container myapp from the network mynet.",
     answer: "docker network disconnect mynet myapp",
@@ -3673,6 +4163,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-network-inspect",
+    level: "core",
     category: "docker",
     prompt: "Show detailed configuration of the network mynet.",
     answer: "docker network inspect mynet",
@@ -3680,6 +4171,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-network-prune",
+    level: "core",
     category: "docker",
     prompt: "Delete all unused Docker networks.",
     answer: "docker network prune",
@@ -3687,6 +4179,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-volume-ls",
+    level: "core",
     category: "docker",
     prompt: "List all Docker volumes.",
     answer: "docker volume ls",
@@ -3694,6 +4187,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-volume-create",
+    level: "core",
     category: "docker",
     prompt: "Create a named volume called data.",
     answer: "docker volume create data",
@@ -3702,6 +4196,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-volume-inspect",
+    level: "core",
     category: "docker",
     prompt: "Show where the volume data lives on the host.",
     answer: "docker volume inspect data",
@@ -3709,6 +4204,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-volume-rm",
+    level: "core",
     category: "docker",
     prompt: "Delete the volume data.",
     answer: "docker volume rm data",
@@ -3716,6 +4212,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-volume-prune",
+    level: "core",
     category: "docker",
     prompt: "Delete all volumes not used by any container.",
     answer: "docker volume prune",
@@ -3726,6 +4223,7 @@ export const dockerQuestions: QuizQuestion[] = [
   // ── System & cleanup ──────────────────────────────────────────────────────
   {
     id: "docker-system-df",
+    level: "core",
     category: "docker",
     prompt: "Show how much disk space images, containers, and volumes use.",
     answer: "docker system df",
@@ -3733,6 +4231,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-system-prune",
+    level: "workflow",
     category: "docker",
     prompt: "Remove all unused containers, networks, images, and build cache.",
     answer: "docker system prune -a",
@@ -3741,6 +4240,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-container-prune",
+    level: "core",
     category: "docker",
     prompt: "Remove all stopped containers.",
     answer: "docker container prune",
@@ -3748,6 +4248,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-image-prune",
+    level: "core",
     category: "docker",
     prompt: "Remove all dangling (untagged) images.",
     answer: "docker image prune",
@@ -3756,6 +4257,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-builder-prune",
+    level: "core",
     category: "docker",
     prompt: "Clear the Docker build cache.",
     answer: "docker builder prune",
@@ -3763,6 +4265,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-version",
+    level: "core",
     category: "docker",
     prompt: "Show both the Docker client and server versions.",
     answer: "docker version",
@@ -3771,6 +4274,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-info",
+    level: "core",
     category: "docker",
     prompt: "Show system-wide Docker information.",
     answer: "docker info",
@@ -3779,6 +4283,7 @@ export const dockerQuestions: QuizQuestion[] = [
   },
   {
     id: "docker-login",
+    level: "core",
     category: "docker",
     prompt: "Log in to a container registry.",
     answer: "docker login",
@@ -3790,6 +4295,7 @@ export const regexQuestions: QuizQuestion[] = [
   // ── Anchors ───────────────────────────────────────────────────────────────
   {
     id: "regex-anchor-start",
+    level: "pareto",
     category: "regex",
     prompt: "Match the start of a line.",
     answer: "^",
@@ -3797,6 +4303,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-anchor-end",
+    level: "pareto",
     category: "regex",
     prompt: "Match the end of a line.",
     answer: "$",
@@ -3804,6 +4311,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-word-boundary",
+    level: "pareto",
     category: "regex",
     prompt: "Match a word boundary (where a word meets non-word characters).",
     answer: "\\b",
@@ -3811,6 +4319,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-not-word-boundary",
+    level: "core",
     category: "regex",
     prompt: "Match a position that is NOT a word boundary.",
     answer: "\\B",
@@ -3818,6 +4327,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-any-char",
+    level: "pareto",
     category: "regex",
     prompt: "Match any single character except a newline.",
     answer: ".",
@@ -3827,6 +4337,7 @@ export const regexQuestions: QuizQuestion[] = [
   // ── Character classes & ranges ───────────────────────────────────────────
   {
     id: "regex-digit",
+    level: "pareto",
     category: "regex",
     prompt: "Match a single digit (0–9).",
     answer: "\\d",
@@ -3834,6 +4345,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-word-char",
+    level: "pareto",
     category: "regex",
     prompt: "Match a single word character (letter, digit, or underscore).",
     answer: "\\w",
@@ -3841,6 +4353,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-whitespace",
+    level: "pareto",
     category: "regex",
     prompt: "Match a single whitespace character (space, tab, newline).",
     answer: "\\s",
@@ -3848,6 +4361,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-non-digit",
+    level: "core",
     category: "regex",
     prompt: "Match any single character that is NOT a digit.",
     answer: "\\D",
@@ -3855,6 +4369,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-class-set",
+    level: "pareto",
     category: "regex",
     prompt: "Match exactly one of the characters a, b, or c.",
     answer: "[abc]",
@@ -3862,6 +4377,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-class-range",
+    level: "pareto",
     category: "regex",
     prompt: "Match any lowercase letter from a to z.",
     answer: "[a-z]",
@@ -3869,6 +4385,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-class-negated",
+    level: "pareto",
     category: "regex",
     prompt: "Match any character EXCEPT the digits 0–9.",
     answer: "[^0-9]",
@@ -3876,6 +4393,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-class-word",
+    level: "core",
     category: "regex",
     prompt: "Match a letter or digit using an explicit class (not the `\\w` shorthand).",
     answer: "[A-Za-z0-9]",
@@ -3885,6 +4403,7 @@ export const regexQuestions: QuizQuestion[] = [
   // ── Quantifiers ──────────────────────────────────────────────────────────
   {
     id: "regex-quant-zero-or-more",
+    level: "pareto",
     category: "regex",
     prompt: "Match the letter `a` zero or more times.",
     answer: "a*",
@@ -3892,6 +4411,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-quant-one-or-more",
+    level: "pareto",
     category: "regex",
     prompt: "Match the letter `a` one or more times.",
     answer: "a+",
@@ -3899,6 +4419,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-quant-optional",
+    level: "pareto",
     category: "regex",
     prompt: "Match the letter `a` zero or one time (make it optional).",
     answer: "a?",
@@ -3906,6 +4427,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-quant-exactly",
+    level: "pareto",
     category: "regex",
     prompt: "Match exactly three digits in a row.",
     answer: "\\d{3}",
@@ -3913,6 +4435,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-quant-range",
+    level: "pareto",
     category: "regex",
     prompt: "Match between 2 and 4 lowercase letters.",
     answer: "[a-z]{2,4}",
@@ -3920,6 +4443,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-quant-lazy",
+    level: "core",
     category: "regex",
     prompt: "Match as few characters as possible (a lazy match) with `a` repeated.",
     answer: "a*?",
@@ -3929,6 +4453,7 @@ export const regexQuestions: QuizQuestion[] = [
   // ── Groups & alternation ─────────────────────────────────────────────────
   {
     id: "regex-group-capture",
+    level: "pareto",
     category: "regex",
     prompt: "Capture `ab` as a numbered group so you can reference it later.",
     answer: "(ab)",
@@ -3936,6 +4461,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-group-noncapture",
+    level: "core",
     category: "regex",
     prompt: "Group `ab` WITHOUT capturing it (no backreference).",
     answer: "(?:ab)",
@@ -3943,6 +4469,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-alternation",
+    level: "pareto",
     category: "regex",
     prompt: "Match either the word `cat` or the word `dog`.",
     answer: "cat|dog",
@@ -3950,6 +4477,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-lookahead",
+    level: "core",
     category: "regex",
     prompt: "Match `foo` only when it is immediately followed by `bar` (lookahead).",
     answer: "foo(?=bar)",
@@ -3957,6 +4485,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-lookahead-neg",
+    level: "core",
     category: "regex",
     prompt: "Match `foo` only when it is NOT followed by `bar`.",
     answer: "foo(?!bar)",
@@ -3964,6 +4493,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-lookbehind",
+    level: "core",
     category: "regex",
     prompt: "Match `foo` only when it is preceded by `bar` (lookbehind).",
     answer: "(?<=bar)foo",
@@ -3971,6 +4501,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-backreference",
+    level: "core",
     category: "regex",
     prompt: "Refer back to whatever group 1 matched, requiring it again.",
     answer: "\\1",
@@ -3980,6 +4511,7 @@ export const regexQuestions: QuizQuestion[] = [
   // ── Escapes & literals ───────────────────────────────────────────────────
   {
     id: "regex-escape-dot",
+    level: "pareto",
     category: "regex",
     prompt: "Match a literal period (not the any-character wildcard).",
     answer: "\\.",
@@ -3987,6 +4519,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-escape-backslash",
+    level: "core",
     category: "regex",
     prompt: "Match a literal backslash character.",
     answer: "\\\\",
@@ -3994,6 +4527,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-escape-star",
+    level: "core",
     category: "regex",
     prompt: "Match a literal asterisk (not the quantifier).",
     answer: "\\*",
@@ -4001,6 +4535,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-escape-plus",
+    level: "core",
     category: "regex",
     prompt: "Match a literal plus sign (not the quantifier).",
     answer: "\\+",
@@ -4008,6 +4543,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-escape-tab",
+    level: "core",
     category: "regex",
     prompt: "Match a tab character.",
     answer: "\\t",
@@ -4015,6 +4551,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-escape-newline",
+    level: "core",
     category: "regex",
     prompt: "Match a newline character.",
     answer: "\\n",
@@ -4024,6 +4561,7 @@ export const regexQuestions: QuizQuestion[] = [
   // ── Common patterns ──────────────────────────────────────────────────────
   {
     id: "regex-pattern-email",
+    level: "workflow",
     category: "regex",
     prompt: "Match a simple email address like alice@example.com.",
     answer: "\\w+@\\w+\\.\\w+",
@@ -4032,6 +4570,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-ipv4",
+    level: "workflow",
     category: "regex",
     prompt: "Match an IPv4 address like 192.168.1.1.",
     answer: "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}",
@@ -4040,6 +4579,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-date",
+    level: "workflow",
     category: "regex",
     prompt: "Match a date in YYYY-MM-DD format like 2026-08-07.",
     answer: "\\d{4}-\\d{2}-\\d{2}",
@@ -4047,6 +4587,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-time",
+    level: "core",
     category: "regex",
     prompt: "Match a 24-hour time in HH:MM format like 23:59.",
     answer: "\\d{2}:\\d{2}",
@@ -4054,6 +4595,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-hexcolor",
+    level: "workflow",
     category: "regex",
     prompt: "Match a hex color like #a3f5c1 (6 hex digits after the hash).",
     answer: "#[0-9a-fA-F]{6}",
@@ -4061,6 +4603,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-url",
+    level: "workflow",
     category: "regex",
     prompt: "Match an http or https URL.",
     answer: "https?://\\S+",
@@ -4068,6 +4611,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-empty-line",
+    level: "workflow",
     category: "regex",
     prompt: "Match a blank line (a line containing only whitespace).",
     answer: "^\\s*$",
@@ -4075,6 +4619,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-username",
+    level: "workflow",
     category: "regex",
     prompt: "Match a username of 3–16 lowercase letters, digits, or underscores.",
     answer: "[a-z0-9_]{3,16}",
@@ -4082,6 +4627,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-pattern-decimal",
+    level: "workflow",
     category: "regex",
     prompt: "Match a decimal number with a fractional part like 3.14.",
     answer: "\\d+\\.\\d+",
@@ -4089,6 +4635,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-escape-hex",
+    level: "core",
     category: "regex",
     prompt: "Match the character with hex code 41 (the letter A).",
     answer: "\\x41",
@@ -4096,6 +4643,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-flag-global",
+    level: "pareto",
     category: "regex",
     prompt: "In JavaScript, find every match instead of stopping at the first one.",
     answer: "g",
@@ -4103,6 +4651,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-flag-case-insensitive",
+    level: "pareto",
     category: "regex",
     prompt: "Make a regex match letters case-insensitively.",
     answer: "i",
@@ -4110,6 +4659,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-flag-multiline",
+    level: "core",
     category: "regex",
     prompt: "Make `^` and `$` match at every line, not just the string's ends.",
     answer: "m",
@@ -4117,6 +4667,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-flag-dotall",
+    level: "core",
     category: "regex",
     prompt: "Make the dot match newlines too, not just other characters.",
     answer: "s",
@@ -4124,6 +4675,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-anchor-optional-group",
+    level: "core",
     category: "regex",
     prompt: "Match `co` plus an optional `l`, so both `color` and `colour` match.",
     answer: "colou?r",
@@ -4131,6 +4683,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-anchor-greedy-contrast",
+    level: "workflow",
     category: "regex",
     prompt: "Match the content between two quotes, stopping at the first closing quote.",
     answer: "\"[^\"]*\"",
@@ -4140,6 +4693,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-replace-groups",
+    level: "workflow",
     category: "regex",
     prompt: "In a sed replacement, reference the text captured by the first group.",
     answer: "\\1",
@@ -4147,6 +4701,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-escape-special-set",
+    level: "core",
     category: "regex",
     prompt: "Match a literal opening parenthesis.",
     answer: "\\(",
@@ -4154,6 +4709,7 @@ export const regexQuestions: QuizQuestion[] = [
   },
   {
     id: "regex-anchor-start-end-full",
+    level: "core",
     category: "regex",
     prompt: "Match a whole line consisting of only the word `yes`.",
     answer: "^yes$",
@@ -4164,6 +4720,7 @@ export const regexQuestions: QuizQuestion[] = [
 export const sshQuestions: QuizQuestion[] = [
   {
     id: "ssh-connect",
+    level: "pareto",
     category: "ssh",
     prompt: "Connect to the host `example.com` as user `alice`.",
     answer: "ssh alice@example.com",
@@ -4172,6 +4729,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-port",
+    level: "pareto",
     category: "ssh",
     prompt: "Connect to `example.com` as `alice` over port `2222`.",
     answer: "ssh -p 2222 alice@example.com",
@@ -4180,6 +4738,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-l",
+    level: "core",
     category: "ssh",
     prompt: "Connect to `example.com`, logging in as user `bob`.",
     answer: "ssh -l bob example.com",
@@ -4189,6 +4748,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-command",
+    level: "pareto",
     category: "ssh",
     prompt: "Run the command `uptime` on `example.com` and print its output, without opening an interactive shell.",
     answer: "ssh example.com uptime",
@@ -4197,6 +4757,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-verbose",
+    level: "core",
     category: "ssh",
     prompt: "Connect to `example.com` with verbose output to debug a failing connection.",
     answer: "ssh -v alice@example.com",
@@ -4206,6 +4767,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-identity",
+    level: "pareto",
     category: "ssh",
     prompt: "Connect to `example.com` as `alice` using the private key at `~/.ssh/deploy`.",
     answer: "ssh -i ~/.ssh/deploy alice@example.com",
@@ -4214,6 +4776,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-alias",
+    level: "pareto",
     category: "ssh",
     prompt: "Connect to the host defined as `myserver` in your SSH config file.",
     answer: "ssh myserver",
@@ -4222,6 +4785,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-jump",
+    level: "workflow",
     category: "ssh",
     prompt: "Connect to `internal.example.com` as `alice`, hopping through the jump host `bastion.example.com`.",
     answer: "ssh -J bastion.example.com alice@internal.example.com",
@@ -4230,6 +4794,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-tty",
+    level: "workflow",
     category: "ssh",
     prompt: "Run `top` on `example.com` with a pseudo-terminal so its interactive UI works.",
     answer: "ssh -t example.com top",
@@ -4238,6 +4803,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-options",
+    level: "core",
     category: "ssh",
     prompt: "Connect to `example.com` and skip the host-key prompt for this session only, using a one-off option.",
     answer: "ssh -o StrictHostKeyChecking=no alice@example.com",
@@ -4246,6 +4812,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen",
+    level: "pareto",
     category: "ssh",
     prompt: "Generate a new SSH key pair with the default settings.",
     answer: "ssh-keygen",
@@ -4254,6 +4821,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-ed25519",
+    level: "pareto",
     category: "ssh",
     prompt: "Generate an SSH key pair using the modern `ed25519` algorithm.",
     answer: "ssh-keygen -t ed25519",
@@ -4262,6 +4830,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-rsa",
+    level: "core",
     category: "ssh",
     prompt: "Generate an RSA SSH key pair with 4096-bit keys.",
     answer: "ssh-keygen -t rsa -b 4096",
@@ -4270,6 +4839,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-passphrase",
+    level: "workflow",
     category: "ssh",
     prompt: "Add or change the passphrase protecting your existing private key.",
     answer: "ssh-keygen -p",
@@ -4278,6 +4848,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-file",
+    level: "workflow",
     category: "ssh",
     prompt: "Generate an ed25519 key pair and save it as `~/.ssh/deploy` instead of the default name.",
     answer: "ssh-keygen -t ed25519 -f ~/.ssh/deploy",
@@ -4286,6 +4857,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-comment",
+    level: "workflow",
     category: "ssh",
     prompt: "Generate an ed25519 key pair with the comment `deploy key` so you can tell it apart later.",
     answer: "ssh-keygen -t ed25519 -C \"deploy key\"",
@@ -4294,6 +4866,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-pub",
+    level: "workflow",
     category: "ssh",
     prompt: "Print the public key that corresponds to your private key `~/.ssh/id_ed25519`.",
     answer: "ssh-keygen -y -f ~/.ssh/id_ed25519",
@@ -4302,6 +4875,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-fingerprint",
+    level: "workflow",
     category: "ssh",
     prompt: "Print the fingerprint of the public key `~/.ssh/id_ed25519.pub`.",
     answer: "ssh-keygen -lf ~/.ssh/id_ed25519.pub",
@@ -4310,6 +4884,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-copy-id",
+    level: "pareto",
     category: "ssh",
     prompt: "Install your public key on `example.com` so you can log in without a password.",
     answer: "ssh-copy-id alice@example.com",
@@ -4318,6 +4893,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-authorized-keys",
+    level: "pareto",
     category: "ssh",
     prompt: "Name the file on the server where you append public keys allowed to log in.",
     answer: "~/.ssh/authorized_keys",
@@ -4326,6 +4902,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-known-hosts",
+    level: "pareto",
     category: "ssh",
     prompt: "Name the local file where SSH remembers the host keys of servers you've connected to.",
     answer: "~/.ssh/known_hosts",
@@ -4334,6 +4911,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keyscan",
+    level: "core",
     category: "ssh",
     prompt: "Fetch the public host key of `example.com` without opening a session.",
     answer: "ssh-keyscan example.com",
@@ -4342,6 +4920,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-keygen-remove-host",
+    level: "workflow",
     category: "ssh",
     prompt: "Remove `example.com` from your known_hosts after its host key changed.",
     answer: "ssh-keygen -R example.com",
@@ -4350,6 +4929,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-agent-start",
+    level: "pareto",
     category: "ssh",
     prompt: "Start the ssh-agent so you can load keys into it.",
     answer: "eval $(ssh-agent)",
@@ -4359,6 +4939,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-add",
+    level: "pareto",
     category: "ssh",
     prompt: "Load your default private key (`~/.ssh/id_ed25519` or `id_rsa`) into the agent.",
     answer: "ssh-add",
@@ -4367,6 +4948,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-add-key",
+    level: "core",
     category: "ssh",
     prompt: "Load the private key `~/.ssh/deploy` into the agent.",
     answer: "ssh-add ~/.ssh/deploy",
@@ -4375,6 +4957,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-add-list",
+    level: "core",
     category: "ssh",
     prompt: "List all the keys currently loaded in your ssh-agent.",
     answer: "ssh-add -l",
@@ -4384,6 +4967,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-add-clear",
+    level: "core",
     category: "ssh",
     prompt: "Remove all keys from the ssh-agent.",
     answer: "ssh-add -D",
@@ -4392,6 +4976,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-add-timeout",
+    level: "core",
     category: "ssh",
     prompt: "Load `~/.ssh/id_ed25519` into the agent, set to expire after 1 hour (3600 seconds).",
     answer: "ssh-add -t 3600 ~/.ssh/id_ed25519",
@@ -4400,6 +4985,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-agent-forward",
+    level: "workflow",
     category: "ssh",
     prompt: "Connect to `example.com` and let the remote host use your local agent's keys (agent forwarding).",
     answer: "ssh -A alice@example.com",
@@ -4408,6 +4994,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-agent-disable",
+    level: "core",
     category: "ssh",
     prompt: "Connect to `example.com` with agent forwarding explicitly disabled.",
     answer: "ssh -a alice@example.com",
@@ -4416,6 +5003,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-tunnel-local",
+    level: "workflow",
     category: "ssh",
     prompt: "Tunnel local port `8080` on your machine to port `80` on `example.com` (local forwarding).",
     answer: "ssh -L 8080:localhost:80 alice@example.com",
@@ -4424,6 +5012,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-tunnel-remote",
+    level: "workflow",
     category: "ssh",
     prompt: "Expose your local port `3000` on `example.com`'s port `8080` so others can reach it (remote forwarding).",
     answer: "ssh -R 8080:localhost:3000 alice@example.com",
@@ -4432,6 +5021,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-tunnel-dynamic",
+    level: "workflow",
     category: "ssh",
     prompt: "Set up a SOCKS proxy on local port `1080` routed through `example.com` (dynamic forwarding).",
     answer: "ssh -D 1080 alice@example.com",
@@ -4440,6 +5030,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-tunnel-noexec",
+    level: "workflow",
     category: "ssh",
     prompt: "Open a tunnel to `example.com` without starting a remote shell.",
     answer: "ssh -N -L 8080:localhost:80 alice@example.com",
@@ -4448,6 +5039,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-tunnel-background",
+    level: "workflow",
     category: "ssh",
     prompt: "Open a tunnel to `example.com` and run it in the background so you keep your terminal.",
     answer: "ssh -f -N -L 8080:localhost:80 alice@example.com",
@@ -4456,6 +5048,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-x11",
+    level: "core",
     category: "ssh",
     prompt: "Connect to `example.com` with X11 forwarding so remote GUI apps can display locally.",
     answer: "ssh -X alice@example.com",
@@ -4464,6 +5057,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-escape-exit",
+    level: "workflow",
     category: "ssh",
     prompt: "Force-close a stuck SSH session by typing the escape sequence.",
     answer: "~.",
@@ -4472,6 +5066,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "scp-put",
+    level: "pareto",
     category: "ssh",
     prompt: "Copy the local file `notes.txt` to `alice@example.com`'s home directory.",
     answer: "scp notes.txt alice@example.com:~/",
@@ -4480,6 +5075,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "scp-get",
+    level: "pareto",
     category: "ssh",
     prompt: "Copy the remote file `/etc/nginx.conf` from `alice@example.com` into the current directory.",
     answer: "scp alice@example.com:/etc/nginx.conf .",
@@ -4488,6 +5084,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "scp-recursive",
+    level: "pareto",
     category: "ssh",
     prompt: "Copy the whole directory `public/` from your machine to `alice@example.com`, including subdirectories.",
     answer: "scp -r public/ alice@example.com:~/",
@@ -4496,6 +5093,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "scp-port",
+    level: "core",
     category: "ssh",
     prompt: "Copy `backup.tar` to `alice@example.com` whose SSH server listens on port `2222`.",
     answer: "scp -P 2222 backup.tar alice@example.com:~/",
@@ -4504,6 +5102,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "sftp-session",
+    level: "pareto",
     category: "ssh",
     prompt: "Start an interactive sftp session with `alice@example.com`.",
     answer: "sftp alice@example.com",
@@ -4512,6 +5111,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "sftp-get",
+    level: "core",
     category: "ssh",
     prompt: "Inside an sftp session, download the remote file `notes.txt`.",
     answer: "get notes.txt",
@@ -4520,6 +5120,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "sftp-put",
+    level: "core",
     category: "ssh",
     prompt: "Inside an sftp session, upload your local file `report.pdf`.",
     answer: "put report.pdf",
@@ -4528,6 +5129,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-file",
+    level: "core",
     category: "ssh",
     prompt: "Name the per-user file where SSH host aliases and options are defined.",
     answer: "~/.ssh/config",
@@ -4536,6 +5138,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-host",
+    level: "core",
     category: "ssh",
     prompt: "In `~/.ssh/config`, start a block that aliases `myserver` to `example.com`.",
     answer: "Host myserver",
@@ -4545,6 +5148,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-hostname",
+    level: "core",
     category: "ssh",
     prompt: "In the `myserver` block, set the real hostname to `example.com`.",
     answer: "HostName example.com",
@@ -4554,6 +5158,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-user",
+    level: "core",
     category: "ssh",
     prompt: "In the `myserver` block, default the login user to `alice`.",
     answer: "User alice",
@@ -4563,6 +5168,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-port",
+    level: "core",
     category: "ssh",
     prompt: "In the `myserver` block, connect on port `2222` by default.",
     answer: "Port 2222",
@@ -4572,6 +5178,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-identity",
+    level: "core",
     category: "ssh",
     prompt: "In the `myserver` block, always use the key `~/.ssh/deploy`.",
     answer: "IdentityFile ~/.ssh/deploy",
@@ -4581,6 +5188,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-config-preview",
+    level: "workflow",
     category: "ssh",
     prompt: "Print the effective config SSH would use for `myserver`, without connecting.",
     answer: "ssh -G myserver",
@@ -4589,6 +5197,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-hardening-password",
+    level: "core",
     category: "ssh",
     prompt: "In `sshd_config`, disable password authentication so only keys work.",
     answer: "PasswordAuthentication no",
@@ -4598,6 +5207,7 @@ export const sshQuestions: QuizQuestion[] = [
   },
   {
     id: "ssh-hardening-root",
+    level: "core",
     category: "ssh",
     prompt: "In `sshd_config`, forbid direct root logins over SSH.",
     answer: "PermitRootLogin no",
@@ -4611,6 +5221,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   // ── Cluster & context ────────────────────────────────────────────────────
   {
     id: "k8s-cluster-info",
+    level: "core",
     category: "kubernetes",
     prompt: "Show basic info about the cluster you're talking to.",
     answer: "kubectl cluster-info",
@@ -4619,6 +5230,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-version",
+    level: "core",
     category: "kubernetes",
     prompt: "Print the kubectl client version and the server version.",
     answer: "kubectl version",
@@ -4626,6 +5238,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-nodes",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List all nodes in the cluster.",
     answer: "kubectl get nodes",
@@ -4634,6 +5247,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-nodes-wide",
+    level: "core",
     category: "kubernetes",
     prompt: "List nodes with extra details like internal IP and OS image.",
     answer: "kubectl get nodes -o wide",
@@ -4642,6 +5256,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-current-context",
+    level: "core",
     category: "kubernetes",
     prompt: "Show the name of the cluster context you're currently using.",
     answer: "kubectl config current-context",
@@ -4650,6 +5265,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-contexts",
+    level: "core",
     category: "kubernetes",
     prompt: "List every context defined in your kubeconfig.",
     answer: "kubectl config get-contexts",
@@ -4658,6 +5274,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-use-context",
+    level: "core",
     category: "kubernetes",
     prompt: "Switch to the `dev` context.",
     answer: "kubectl config use-context dev",
@@ -4666,6 +5283,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-context-namespace",
+    level: "core",
     category: "kubernetes",
     prompt: "Make `prod` the default namespace for the `dev` context.",
     answer: "kubectl config set-context dev --namespace=prod",
@@ -4674,6 +5292,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-pods",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List the pods in the current namespace.",
     answer: "kubectl get pods",
@@ -4682,6 +5301,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-pods-all",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List pods across all namespaces.",
     answer: "kubectl get pods -A",
@@ -4691,6 +5311,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-pod-yaml",
+    level: "core",
     category: "kubernetes",
     prompt: "Show the full YAML definition of the pod `my-pod`.",
     answer: "kubectl get pod my-pod -o yaml",
@@ -4699,6 +5320,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-pod-describe",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Get a detailed human-readable summary of `my-pod`, including events.",
     answer: "kubectl describe pod my-pod",
@@ -4707,6 +5329,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-logs",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Print the logs of the pod `my-pod`.",
     answer: "kubectl logs my-pod",
@@ -4715,6 +5338,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-logs-follow",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Stream the logs of `my-pod` live, like `tail -f`.",
     answer: "kubectl logs -f my-pod",
@@ -4723,6 +5347,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-logs-container",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Print the logs of the `sidecar` container inside `my-pod`.",
     answer: "kubectl logs my-pod -c sidecar",
@@ -4731,6 +5356,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-logs-previous",
+    level: "workflow",
     category: "kubernetes",
     prompt: "See the logs from `my-pod`'s previous (crashed) container instance.",
     answer: "kubectl logs my-pod --previous",
@@ -4739,6 +5365,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-exec",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Open an interactive bash shell inside `my-pod`.",
     answer: "kubectl exec -it my-pod -- bash",
@@ -4747,6 +5374,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-exec-command",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Run a one-off command, `ls /app`, inside `my-pod` without a shell.",
     answer: "kubectl exec my-pod -- ls /app",
@@ -4755,6 +5383,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-run",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Imperatively launch a workload named `web` from the `nginx` image.",
     answer: "kubectl run web --image=nginx",
@@ -4763,6 +5392,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-delete-pod",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Delete the pod `my-pod`.",
     answer: "kubectl delete pod my-pod",
@@ -4771,6 +5401,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-delete-force",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Force-delete `my-pod` immediately, skipping the graceful grace period.",
     answer: "kubectl delete pod my-pod --force --grace-period=0",
@@ -4779,6 +5410,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-port-forward",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Forward local port `8080` to `my-pod`'s port `80`.",
     answer: "kubectl port-forward my-pod 8080:80",
@@ -4787,6 +5419,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-cp",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Copy the file `/tmp/notes.txt` out of `my-pod` to your current directory.",
     answer: "kubectl cp my-pod:/tmp/notes.txt ./notes.txt",
@@ -4796,6 +5429,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   // ── Workloads & rollouts ─────────────────────────────────────────────────
   {
     id: "k8s-create-deployment",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Create a Deployment named `web` running the `nginx` image.",
     answer: "kubectl create deployment web --image=nginx",
@@ -4804,6 +5438,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-deployments",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List the Deployments in the current namespace.",
     answer: "kubectl get deployments",
@@ -4812,6 +5447,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-replicasets",
+    level: "core",
     category: "kubernetes",
     prompt: "List the ReplicaSets in the current namespace.",
     answer: "kubectl get rs",
@@ -4820,6 +5456,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-statefulsets",
+    level: "core",
     category: "kubernetes",
     prompt: "List the StatefulSets in the current namespace.",
     answer: "kubectl get statefulsets",
@@ -4828,6 +5465,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-daemonsets",
+    level: "core",
     category: "kubernetes",
     prompt: "List the DaemonSets in the current namespace.",
     answer: "kubectl get daemonsets",
@@ -4836,6 +5474,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-cronjobs",
+    level: "core",
     category: "kubernetes",
     prompt: "List the CronJobs in the current namespace.",
     answer: "kubectl get cronjobs",
@@ -4844,6 +5483,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-scale",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Scale the Deployment `web` to 5 replicas.",
     answer: "kubectl scale deployment web --replicas=5",
@@ -4852,6 +5492,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-rollout-status",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Check the status of `web`'s in-progress rollout.",
     answer: "kubectl rollout status deployment/web",
@@ -4860,6 +5501,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-rollout-history",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Show the rollout history of the Deployment `web`.",
     answer: "kubectl rollout history deployment/web",
@@ -4868,6 +5510,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-rollout-undo",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Roll back the Deployment `web` to its previous revision.",
     answer: "kubectl rollout undo deployment/web",
@@ -4876,6 +5519,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-rollout-restart",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Force the Deployment `web` to restart all its pods (e.g. to pick up a new configmap).",
     answer: "kubectl rollout restart deployment/web",
@@ -4884,6 +5528,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-set-image",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Update the `nginx` container of Deployment `web` to image `nginx:1.25`.",
     answer: "kubectl set image deployment/web nginx=nginx:1.25",
@@ -4892,6 +5537,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-edit-deployment",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Open the live spec of Deployment `web` in your editor and apply changes on save.",
     answer: "kubectl edit deployment web",
@@ -4901,6 +5547,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   // ── Services & networking ────────────────────────────────────────────────
   {
     id: "k8s-expose",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Expose Deployment `web`'s port `80` as a LoadBalancer Service.",
     answer: "kubectl expose deployment web --port=80 --type=LoadBalancer",
@@ -4909,6 +5556,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-services",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List the Services in the current namespace.",
     answer: "kubectl get svc",
@@ -4917,6 +5565,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-endpoints",
+    level: "core",
     category: "kubernetes",
     prompt: "List the Endpoints (the pod IPs a Service routes to) in the current namespace.",
     answer: "kubectl get endpoints",
@@ -4925,6 +5574,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-ingress",
+    level: "core",
     category: "kubernetes",
     prompt: "List the Ingress resources in the current namespace.",
     answer: "kubectl get ingress",
@@ -4933,6 +5583,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-networkpolicies",
+    level: "core",
     category: "kubernetes",
     prompt: "List the NetworkPolicies in the current namespace.",
     answer: "kubectl get networkpolicies",
@@ -4942,6 +5593,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   // ── Config & secrets ─────────────────────────────────────────────────────
   {
     id: "k8s-create-configmap",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Create a ConfigMap named `app-config` from the file `config.json`.",
     answer: "kubectl create configmap app-config --from-file=config.json",
@@ -4950,6 +5602,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-configmaps",
+    level: "core",
     category: "kubernetes",
     prompt: "List the ConfigMaps in the current namespace.",
     answer: "kubectl get configmaps",
@@ -4958,6 +5611,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-create-secret",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Create a generic Secret named `db-secret` with the literal `password=sup3rs3cret`.",
     answer: "kubectl create secret generic db-secret --from-literal=password=sup3rs3cret",
@@ -4966,6 +5620,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-secrets",
+    level: "core",
     category: "kubernetes",
     prompt: "List the Secrets in the current namespace.",
     answer: "kubectl get secrets",
@@ -4975,6 +5630,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   // ── Namespaces ───────────────────────────────────────────────────────────
   {
     id: "k8s-get-namespaces",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List all namespaces.",
     answer: "kubectl get namespaces",
@@ -4983,6 +5639,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-create-namespace",
+    level: "core",
     category: "kubernetes",
     prompt: "Create a namespace called `dev`.",
     answer: "kubectl create namespace dev",
@@ -4991,6 +5648,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-delete-namespace",
+    level: "core",
     category: "kubernetes",
     prompt: "Delete the namespace `dev` and everything in it.",
     answer: "kubectl delete namespace dev",
@@ -4999,6 +5657,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-pods-namespace",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List the pods specifically in the `dev` namespace.",
     answer: "kubectl get pods -n dev",
@@ -5008,6 +5667,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   // ── Resource management & manifests ──────────────────────────────────────
   {
     id: "k8s-apply",
+    level: "pareto",
     category: "kubernetes",
     prompt: "Apply the resources defined in `deploy.yaml` to the cluster.",
     answer: "kubectl apply -f deploy.yaml",
@@ -5016,6 +5676,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-delete-f",
+    level: "core",
     category: "kubernetes",
     prompt: "Delete all resources defined in `deploy.yaml` from the cluster.",
     answer: "kubectl delete -f deploy.yaml",
@@ -5024,6 +5685,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-get-all",
+    level: "pareto",
     category: "kubernetes",
     prompt: "List all common resource types in the current namespace at once.",
     answer: "kubectl get all",
@@ -5032,6 +5694,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-api-resources",
+    level: "core",
     category: "kubernetes",
     prompt: "List every resource type the cluster's API server supports.",
     answer: "kubectl api-resources",
@@ -5040,6 +5703,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-explain",
+    level: "core",
     category: "kubernetes",
     prompt: "Read the field-by-field documentation for the `pod` resource right from the CLI.",
     answer: "kubectl explain pod",
@@ -5049,6 +5713,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-label",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Add the label `env=prod` to the pod `my-pod`.",
     answer: "kubectl label pod my-pod env=prod",
@@ -5057,6 +5722,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-annotate",
+    level: "core",
     category: "kubernetes",
     prompt: "Add the annotation `description=legacy-app` to the pod `my-pod`.",
     answer: "kubectl annotate pod my-pod description=legacy-app",
@@ -5065,6 +5731,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-top-nodes",
+    level: "core",
     category: "kubernetes",
     prompt: "Show live CPU and memory usage for all nodes.",
     answer: "kubectl top nodes",
@@ -5073,6 +5740,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-top-pods",
+    level: "core",
     category: "kubernetes",
     prompt: "Show live CPU and memory usage for the pods in the current namespace.",
     answer: "kubectl top pods",
@@ -5081,6 +5749,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-events",
+    level: "core",
     category: "kubernetes",
     prompt: "Show recent cluster events for the current namespace.",
     answer: "kubectl get events",
@@ -5090,6 +5759,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-drain",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Safely drain `node-1` so its pods move to other nodes before maintenance.",
     answer: "kubectl drain node-1",
@@ -5099,6 +5769,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-cordon",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Mark `node-1` as unschedulable so no new pods land on it.",
     answer: "kubectl cordon node-1",
@@ -5107,6 +5778,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-uncordon",
+    level: "workflow",
     category: "kubernetes",
     prompt: "Mark `node-1` as schedulable again.",
     answer: "kubectl uncordon node-1",
@@ -5115,6 +5787,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-manifest-apiVersion",
+    level: "core",
     category: "kubernetes",
     prompt: "In a manifest, what's the first line that declares the API version of a `v1` Pod?",
     answer: "apiVersion: v1",
@@ -5123,6 +5796,7 @@ export const kubernetesQuestions: QuizQuestion[] = [
   },
   {
     id: "k8s-manifest-kind",
+    level: "core",
     category: "kubernetes",
     prompt: "In a manifest, which line declares that the resource is a Pod?",
     answer: "kind: Pod",
@@ -5148,49 +5822,49 @@ export const questionSets: Record<Category, QuestionSet> = {
     category: "vim",
     label: "vim",
     description: "the modal text editor — commands, motions, and text objects",
-    questions: vimQuestions,
+    questions: [...vimQuestions, ...vimWorkflowQuestions],
   },
   tmux: {
     category: "tmux",
     label: "tmux",
     description: "terminal multiplexer — sessions, panes, windows, buffers",
-    questions: tmuxQuestions,
+    questions: [...tmuxQuestions, ...tmuxWorkflowQuestions],
   },
   shell: {
     category: "shell",
     label: "shell",
     description: "files, pipes, redirection, and processes",
-    questions: shellQuestions,
+    questions: [...shellQuestions, ...shellWorkflowQuestions],
   },
   git: {
     category: "git",
     label: "git",
     description: "staging, history, branches, and remotes",
-    questions: gitQuestions,
+    questions: [...gitQuestions, ...gitWorkflowQuestions],
   },
   docker: {
     category: "docker",
     label: "docker",
     description: "containers, images, and compose",
-    questions: dockerQuestions,
+    questions: [...dockerQuestions, ...dockerWorkflowQuestions],
   },
   regex: {
     category: "regex",
     label: "regex",
     description: "patterns for search and replace",
-    questions: regexQuestions,
+    questions: [...regexQuestions, ...regexWorkflowQuestions],
   },
   ssh: {
     category: "ssh",
     label: "ssh",
     description: "remote shells, keys, and tunneling",
-    questions: sshQuestions,
+    questions: [...sshQuestions, ...sshWorkflowQuestions],
   },
   kubernetes: {
     category: "kubernetes",
     label: "k8s",
     description: "pods, deployments, and cluster basics",
-    questions: kubernetesQuestions,
+    questions: [...kubernetesQuestions, ...kubernetesWorkflowQuestions],
   },
 };
 

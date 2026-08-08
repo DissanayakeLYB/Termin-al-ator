@@ -13,6 +13,18 @@ const RESTART_COMMANDS = new Set(["restart", "r", ":restart", "again"]);
 /** Commands that jump back to the practice picker, ending the current session. */
 const MENU_COMMANDS = new Set(["menu", ":menu", "switch", ":switch", "practice", "choose"]);
 
+/** Commands that step back from the level picker to the tool picker. */
+const BACK_COMMANDS = new Set([
+  "menu",
+  ":menu",
+  "back",
+  ":back",
+  "tools",
+  ":tools",
+  "categories",
+  ":categories",
+]);
+
 function normalizeCommand(input: string): string {
   return normalizeAnswer(input).toLowerCase();
 }
@@ -27,4 +39,8 @@ export function isRestartCommand(input: string): boolean {
 
 export function isMenuCommand(input: string): boolean {
   return MENU_COMMANDS.has(normalizeCommand(input));
+}
+
+export function isBackCommand(input: string): boolean {
+  return BACK_COMMANDS.has(normalizeCommand(input));
 }

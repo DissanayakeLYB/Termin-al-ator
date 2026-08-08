@@ -22,6 +22,17 @@ npm run preview    # preview the production build
 - **Choose your practice** — the boot menu lists every available category
   (vim, tmux, …) with question counts; pick by number, name, or click. Categories
   without questions yet show as *coming soon*.
+- **Choose a level** — after picking a tool you pick *what kind of practice*
+  you want. Levels are never a difficulty rating; each one exercises a
+  different kind of knowledge:
+  - **pareto** — the ~20% of commands used most in real life. Repetitive on
+    purpose, to build muscle memory fast. The best starting point.
+  - **core** — the essential foundation every regular user should know.
+    Broader than pareto, still nothing obscure.
+  - **workflow** — realistic scenarios where you decide which commands to use
+    (set up a workspace, recover from a mistake, ship a change).
+  - **chaos** — every question from every level, shuffled with no hints about
+    which command or concept is coming next.
 - **Infinite randomized session** — questions are shuffled, and when the deck
   runs out it reshuffles and keeps going. There are no fixed rounds.
 - Each task appears as plain terminal text (e.g. *Save the current file*);
@@ -39,35 +50,42 @@ npm run preview    # preview the production build
 - The results screen shows session stats, a verdict, and a review list of every
   question you missed — type `restart` (or click the button) to play again.
 
-The dataset currently contains **163 Vim questions** (modes, movement, editing,
+The dataset currently contains **167 Vim questions** (modes, movement, editing,
 search & replace, visual mode, windows & tabs, text objects, macros, marks,
-filters, buffers, formatting), **50 tmux questions** (sessions, panes, windows,
-copy mode & buffers, configuration), **104 git questions** (staging, history,
-branches & merging, undoing & recovery, history rewriting, remotes, config &
-aliases, internals, and submodules), and
-**76 shell questions** (files & navigation, searching, pipes & redirection,
+filters, buffers, formatting), **55 tmux questions** (sessions, panes, windows,
+copy mode & buffers, configuration, workspace scenarios), **110 git questions**
+(staging, history, branches & merging, undoing & recovery, history rewriting,
+remotes, config & aliases, internals, submodules, and scenario workflows), and
+**81 shell questions** (files & navigation, searching, pipes & redirection,
 processes, interactive shortcuts, permissions, environment, text processing,
-and archives), **81 docker questions** (images & containers, container
-lifecycle, building & registries, Dockerfile instructions, compose, networks,
-volumes, and cleanup), **51 regex questions** (anchors, character classes,
-quantifiers, groups & alternation, escapes, common patterns, and flags), and
-**54 ssh questions** (connecting, keys & authentication, the agent, tunneling,
-file transfer, config & hardening), and **64 kubernetes questions** (cluster &
-context, pods, workloads & rollouts, services & networking, config & secrets,
-namespaces, resource management, and manifests).
+archives, and pipelines), **85 docker questions** (images & containers,
+container lifecycle, building & registries, Dockerfile instructions, compose,
+networks, volumes, cleanup, and dev workflows), **55 regex questions**
+(anchors, character classes, quantifiers, groups & alternation, escapes,
+common patterns, flags, and pattern-building tasks), **57 ssh questions**
+(connecting, keys & authentication, the agent, tunneling, file transfer,
+config & hardening, and tunnel/backup workflows), and **68 kubernetes
+questions** (cluster & context, pods, workloads & rollouts, services &
+networking, config & secrets, namespaces, resource management, manifests, and
+rollout/access workflows).
+
+Every question is tagged with a level (pareto / core / workflow), and new
+scenario questions for the workflow level live in `src/data/workflowQuestions.ts`.
 
 ## Project structure
 
 ```
 src/
-  data/questions.ts      # question types, datasets, questionSets registry
-  hooks/useQuiz.ts       # infinite-session quiz state machine
-  utils/validate.ts      # answer normalization + exact-match validation
-  utils/commands.ts      # reserved session commands (:quit, :menu, restart)
-  components/            # presentational UI (Button, InputBar, BootBanner, …)
-  pages/                 # CategoryPage (picker) + QuizPage + ResultPage
-  App.tsx                # full-page terminal shell + category routing
-  index.css              # Tailwind v4 theme tokens + CRT/terminal styling
+  data/questions.ts         # question types, datasets, questionSets registry
+  data/levels.ts            # level metadata + pool selection (questionsForLevel)
+  data/workflowQuestions.ts # scenario questions for the workflow level
+  hooks/useQuiz.ts          # infinite-session quiz state machine
+  utils/validate.ts         # answer normalization + exact-match validation
+  utils/commands.ts         # reserved session commands (:quit, :menu, back, restart)
+  components/               # presentational UI (Button, InputBar, BootBanner, …)
+  pages/                    # CategoryPage + LevelPage + QuizPage + ResultPage
+  App.tsx                   # full-page terminal shell + category/level routing
+  index.css                 # Tailwind v4 theme tokens + CRT/terminal styling
 ```
 
 ## Adding a new category (Shell, Git, Docker, Regex, …)
@@ -77,6 +95,8 @@ src/
 3. Add an entry to the `questionSets` registry with a label and description.
 4. The category picker picks it up automatically — no other wiring needed.
 
-Each `QuizQuestion` is `{ id, category, prompt, answer, explanation, aliases? }`.
-Keep prompts phrased as a task ("Save the current file") — they render directly
-as terminal output, with no added prefix.
+Each `QuizQuestion` is
+`{ id, category, level, prompt, answer, explanation, aliases? }` where `level`
+is `"pareto" | "core" | "workflow"` (chaos is a session-level mix of all three,
+not a per-question tag). Keep prompts phrased as a task ("Save the current
+file") — they render directly as terminal output, with no added prefix.
