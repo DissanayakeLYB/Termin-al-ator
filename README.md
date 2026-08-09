@@ -30,7 +30,8 @@ npm run build      # typecheck + production build
    `:menu` jumps back to the picker.
 
 Questions are shuffled into an infinite session, so the deck reshuffles when it
-runs out. The dataset covers **678 questions across 8 tools**.
+runs out. The dataset covers **1,846 questions across 8 tools** (200+ per
+tool), all in local TypeScript files you can extend.
 
 ## Contributing
 

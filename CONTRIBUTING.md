@@ -7,7 +7,10 @@ database involved.
 ## Adding a question
 
 Questions are defined in `src/data/questions.ts` inside per-category arrays
-(`vimQuestions`, `gitQuestions`, …).
+(`vimQuestions`, `gitQuestions`, …). Category-specific extras live in
+`src/data/extra<Vim|Tmux|Shell|Git|Docker|Regex|Ssh|Kubernetes>Questions.ts`
+(merged automatically via the `questionSets` registry) — adding there keeps
+diffs small. **Every question id must be unique across all files.**
 
 A `QuizQuestion` looks like this:
 
@@ -48,6 +51,9 @@ Guidelines:
 2. Export a `xxxQuestions: QuizQuestion[]` array for it in the same file.
 3. Add an entry to the `questionSets` registry (label + description).
 4. The category picker picks it up automatically — no other wiring needed.
+
+Each category should stay at **200+ questions** — see `src/data/extraQuestions.ts`
+for where per-category top-ups live.
 
 ## Adding a level
 

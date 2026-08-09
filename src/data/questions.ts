@@ -8,6 +8,16 @@ import {
   sshWorkflowQuestions,
   kubernetesWorkflowQuestions,
 } from "./workflowQuestions";
+import {
+  vimExtraQuestions,
+  tmuxExtraQuestions,
+  gitExtraQuestions,
+  shellExtraQuestions,
+  dockerExtraQuestions,
+  regexExtraQuestions,
+  sshExtraQuestions,
+  kubernetesExtraQuestions,
+} from "./extraQuestions";
 
 /**
  * Question dataset for the termin(al)ator trainer.
@@ -5827,49 +5837,49 @@ export const questionSets: Record<Category, QuestionSet> = {
     category: "vim",
     label: "vim",
     description: "the modal text editor — commands, motions, and text objects",
-    questions: [...vimQuestions, ...vimWorkflowQuestions],
+    questions: [...vimQuestions, ...vimWorkflowQuestions, ...vimExtraQuestions],
   },
   tmux: {
     category: "tmux",
     label: "tmux",
     description: "terminal multiplexer — sessions, panes, windows, buffers",
-    questions: [...tmuxQuestions, ...tmuxWorkflowQuestions],
+    questions: [...tmuxQuestions, ...tmuxWorkflowQuestions, ...tmuxExtraQuestions],
   },
   shell: {
     category: "shell",
     label: "shell",
     description: "files, pipes, redirection, and processes",
-    questions: [...shellQuestions, ...shellWorkflowQuestions],
+    questions: [...shellQuestions, ...shellWorkflowQuestions, ...shellExtraQuestions],
   },
   git: {
     category: "git",
     label: "git",
     description: "staging, history, branches, and remotes",
-    questions: [...gitQuestions, ...gitWorkflowQuestions],
+    questions: [...gitQuestions, ...gitWorkflowQuestions, ...gitExtraQuestions],
   },
   docker: {
     category: "docker",
     label: "docker",
     description: "containers, images, and compose",
-    questions: [...dockerQuestions, ...dockerWorkflowQuestions],
+    questions: [...dockerQuestions, ...dockerWorkflowQuestions, ...dockerExtraQuestions],
   },
   regex: {
     category: "regex",
     label: "regex",
     description: "patterns for search and replace",
-    questions: [...regexQuestions, ...regexWorkflowQuestions],
+    questions: [...regexQuestions, ...regexWorkflowQuestions, ...regexExtraQuestions],
   },
   ssh: {
     category: "ssh",
     label: "ssh",
     description: "remote shells, keys, and tunneling",
-    questions: [...sshQuestions, ...sshWorkflowQuestions],
+    questions: [...sshQuestions, ...sshWorkflowQuestions, ...sshExtraQuestions],
   },
   kubernetes: {
     category: "kubernetes",
     label: "k8s",
     description: "pods, deployments, and cluster basics",
-    questions: [...kubernetesQuestions, ...kubernetesWorkflowQuestions],
+    questions: [...kubernetesQuestions, ...kubernetesWorkflowQuestions, ...kubernetesExtraQuestions],
   },
 };
 
