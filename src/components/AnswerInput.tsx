@@ -26,7 +26,7 @@ export function AnswerInput({
       className={`flex items-center gap-3 rounded-md border bg-term-bg px-4 py-3 transition-colors ${
         readOnly || disabled
           ? "border-term-edge opacity-70"
-          : "border-term-edge2 focus-within:border-term-green focus-within:shadow-[0_0_0_1px_rgba(74,222,128,0.35)]"
+          : "border-term-edge2 focus-within:border-term-green focus-within:shadow-[0_0_0_1px_rgb(var(--term-accent-rgb)/0.35)]"
       } ${className}`}
     >
       <span

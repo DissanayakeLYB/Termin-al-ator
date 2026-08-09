@@ -37,7 +37,7 @@ export function InputBar({
         />
         {actions}
       </div>
-      {hint && <p className="mt-2 text-[11px] text-term-dim">{hint}</p>}
+      {hint && <p className="mt-2 text-[0.6875rem] text-term-dim">{hint}</p>}
     </div>
   );
 }

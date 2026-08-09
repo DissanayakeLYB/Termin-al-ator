@@ -7,11 +7,14 @@ export function StatusBar({
   quiz,
   level,
   reviewing = false,
+  onSettings,
 }: {
   quiz: QuizApi;
   level?: Level;
   /** When true (review panel open), `back` returns to the current task. */
   reviewing?: boolean;
+  /** Opens the terminal settings overlay (font size + theme). */
+  onSettings?: () => void;
 }) {
   const { score, answered, accuracy, distinctSeen, totalQuestions, allSeen } = quiz;
   const lvl = level ? levelInfo(level) : null;
@@ -56,6 +59,17 @@ export function StatusBar({
         )}
         <span className="text-term-amber">:quit</span> end · <span className="text-term-amber">:menu</span> switch
       </span>
+      {onSettings && (
+        <button
+          type="button"
+          onClick={onSettings}
+          aria-label="settings"
+          title="settings: font size + theme"
+          className="ml-auto cursor-pointer rounded-md border border-term-edge2 px-2 py-0.5 leading-none text-term-dim transition-colors hover:border-term-green/60 hover:text-term-green md:ml-0"
+        >
+          ⚙
+        </button>
+      )}
     </div>
   );
 }

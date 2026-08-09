@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "../data/questions";
 import { availableQuestionSets, comingSoonSets } from "../data/questions";
+import { isSettingsCommand } from "../utils/commands";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
 
 interface CategoryPageProps {
   onSelect: (category: Category) => void;
+  onSettings?: () => void;
 }
 
 /** Full-page terminal menu: pick what to practice. */
-export function CategoryPage({ onSelect }: CategoryPageProps) {
+export function CategoryPage({ onSelect, onSettings }: CategoryPageProps) {
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,6 +31,12 @@ export function CategoryPage({ onSelect }: CategoryPageProps) {
     const raw = value.trim();
     if (!raw) return;
     const lower = raw.toLowerCase();
+
+    if (isSettingsCommand(raw)) {
+      setValue("");
+      onSettings?.();
+      return;
+    }
 
     // A number picks the nth available category.
     if (/^\d+$/.test(lower)) {
@@ -101,7 +109,7 @@ export function CategoryPage({ onSelect }: CategoryPageProps) {
 
           {comingSoonSets.length > 0 && (
             <div className="mt-6 border-t border-term-edge/60 pt-4">
-              <p className="text-[10px] uppercase tracking-widest text-term-dim">
+              <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
                 coming soon
               </p>
               <div className="mt-2">
@@ -136,12 +144,24 @@ export function CategoryPage({ onSelect }: CategoryPageProps) {
           `available: ${availableQuestionSets.map((s) => s.label).join(" · ")}`
         }
         actions={
-          <Button
-            variant="primary"
-            onClick={() => handleSelect(availableQuestionSets[0].category)}
-          >
-            start →
-          </Button>
+          <>
+            {onSettings && (
+              <Button
+                variant="ghost"
+                onClick={onSettings}
+                aria-label="settings"
+                title="settings: font size + theme"
+              >
+                ⚙
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              onClick={() => handleSelect(availableQuestionSets[0].category)}
+            >
+              start →
+            </Button>
+          </>
         }
       />
     </div>

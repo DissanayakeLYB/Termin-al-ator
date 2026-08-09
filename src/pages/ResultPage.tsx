@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { QuizApi } from "../hooks/useQuiz";
 import { categoryLabels, type Level } from "../data/questions";
 import { levelInfo } from "../data/levels";
-import { isMenuCommand, isRestartCommand } from "../utils/commands";
+import { isMenuCommand, isRestartCommand, isSettingsCommand } from "../utils/commands";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
 
@@ -38,10 +38,12 @@ export function ResultPage({
   quiz,
   level,
   onMenu,
+  onSettings,
 }: {
   quiz: QuizApi;
   level: Level;
   onMenu: () => void;
+  onSettings?: () => void;
 }) {
   const { attempts, score, answered, accuracy, distinctSeen, totalQuestions, hintsUsed, restart } = quiz;
   const missed = latestMissed(attempts);
@@ -74,7 +76,13 @@ export function ResultPage({
         onMenu();
         return;
       }
-      setNotice(`unknown command: ${cmd} — type restart, r, or menu`);
+      if (isSettingsCommand(cmd)) {
+        setNotice(null);
+        setValue("");
+        onSettings?.();
+        return;
+      }
+      setNotice(`unknown command: ${cmd} — type restart, r, menu, or settings`);
     }
     setValue("");
   };
@@ -166,6 +174,16 @@ export function ResultPage({
             <Button variant="ghost" onClick={onMenu}>
               ⌂ menu
             </Button>
+            {onSettings && (
+              <Button
+                variant="ghost"
+                onClick={onSettings}
+                aria-label="settings"
+                title="settings: font size + theme"
+              >
+                ⚙
+              </Button>
+            )}
             <Button variant="primary" onClick={restart}>
               ↻ restart
             </Button>

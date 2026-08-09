@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Category, Level } from "../data/questions";
 import { categoryLabels, questionSets } from "../data/questions";
 import { countForLevel, levelInfos } from "../data/levels";
-import { isBackCommand } from "../utils/commands";
+import { isBackCommand, isSettingsCommand } from "../utils/commands";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
@@ -11,6 +11,7 @@ interface LevelPageProps {
   category: Category;
   onSelect: (level: Level) => void;
   onBack: () => void;
+  onSettings?: () => void;
 }
 
 /**
@@ -18,7 +19,7 @@ interface LevelPageProps {
  * practice* they want. Each level has a distinct purpose — never a
  * difficulty rating.
  */
-export function LevelPage({ category, onSelect, onBack }: LevelPageProps) {
+export function LevelPage({ category, onSelect, onBack, onSettings }: LevelPageProps) {
   const set = questionSets[category];
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -38,6 +39,12 @@ export function LevelPage({ category, onSelect, onBack }: LevelPageProps) {
     const raw = value.trim();
     if (!raw) return;
     const lower = raw.toLowerCase();
+
+    if (isSettingsCommand(raw)) {
+      setValue("");
+      onSettings?.();
+      return;
+    }
 
     if (isBackCommand(raw)) {
       onBack();
@@ -88,7 +95,7 @@ export function LevelPage({ category, onSelect, onBack }: LevelPageProps) {
             <Button variant="ghost" onClick={onBack} className="text-xs">
               ⌂ tools
             </Button>
-            <span className="text-[11px] text-term-dim">
+            <span className="text-[0.6875rem] text-term-dim">
               change tool with <span className="text-term-amber">menu</span> or{" "}
               <span className="text-term-amber">back</span>
             </span>
@@ -120,7 +127,7 @@ export function LevelPage({ category, onSelect, onBack }: LevelPageProps) {
                       </span>
                       <span className="text-xs text-term-dim">{info.tagline}</span>
                       {info.recommended && (
-                        <span className="rounded border border-term-green/40 bg-term-green/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-term-green">
+                        <span className="rounded border border-term-green/40 bg-term-green/10 px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wider text-term-green">
                           start here
                         </span>
                       )}
@@ -156,6 +163,16 @@ export function LevelPage({ category, onSelect, onBack }: LevelPageProps) {
             <Button variant="ghost" onClick={onBack}>
               ⌂ tools
             </Button>
+            {onSettings && (
+              <Button
+                variant="ghost"
+                onClick={onSettings}
+                aria-label="settings"
+                title="settings: font size + theme"
+              >
+                ⚙
+              </Button>
+            )}
             <Button
               variant="primary"
               onClick={() => handleSelect(levelInfos[0].id)}

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* Matrix green — the default look. */
   --color-term-bg: #070b09;
   --color-term-panel: #0c120e;
   --color-term-panel2: #111a15;
@@ -18,9 +19,73 @@
     Consolas, "Courier New", monospace;
 }
 
+/*
+ * Theme overrides.
+ *
+ * Tailwind emits the @theme variables in a cascade layer; these plain (i.e.
+ * unlayered) `[data-theme]` rules win over layered styles regardless of order,
+ * so flipping `data-theme` on <html> retints the whole app instantly.
+ * The matrix palette above is the default; other themes only override what
+ * differs. `--term-accent-rgb` powers the glows/grid/selection below.
+ */
+:root {
+  --term-accent-rgb: 74 222 128; /* matrix green */
+}
+
+[data-theme="amber"] {
+  --color-term-bg: #0d0a03;
+  --color-term-panel: #151004;
+  --color-term-panel2: #1e1708;
+  --color-term-edge: #332a11;
+  --color-term-edge2: #4a3d18;
+  --color-term-fg: #ffe4b3;
+  --color-term-dim: #a1895e;
+  --color-term-green: #ffb000;
+  --color-term-bright: #ffdc94;
+  --color-term-red: #ff6b5e;
+  --color-term-amber: #ffc94d;
+  --color-term-blue: #8fc9ea;
+  --term-accent-rgb: 255 176 0; /* amber */
+}
+
+[data-theme="ocean"] {
+  --color-term-bg: #04090d;
+  --color-term-panel: #07111a;
+  --color-term-panel2: #0a1a26;
+  --color-term-edge: #123043;
+  --color-term-edge2: #1d4c66;
+  --color-term-fg: #d0ecf8;
+  --color-term-dim: #6f93a6;
+  --color-term-green: #22d3ee;
+  --color-term-bright: #a5f3fc;
+  --color-term-red: #fb7185;
+  --color-term-amber: #fbbf24;
+  --color-term-blue: #38bdf8;
+  --term-accent-rgb: 34 211 238; /* cyan */
+}
+
+[data-theme="mono"] {
+  --color-term-bg: #060606;
+  --color-term-panel: #0c0c0c;
+  --color-term-panel2: #121212;
+  --color-term-edge: #202020;
+  --color-term-edge2: #343434;
+  --color-term-fg: #e8e8e8;
+  --color-term-dim: #8f8f8f;
+  --color-term-green: #e8e8e8;
+  --color-term-bright: #ffffff;
+  --color-term-red: #ff5f56;
+  --color-term-amber: #ffbd2e;
+  --color-term-blue: #6fb3ff;
+  --term-accent-rgb: 232 232 232; /* white */
+}
+
 @layer base {
   html {
     color-scheme: dark;
+    /* Slightly larger base type so all rem-based Tailwind sizes scale up.
+       The settings hook overrides this inline with the chosen size. */
+    font-size: 17px;
   }
 
   body {
@@ -32,16 +97,16 @@
   }
 
   ::selection {
-    background: rgba(74, 222, 128, 0.28);
+    background: rgb(var(--term-accent-rgb) / 0.28);
   }
 }
 
-/* Faint CRT grid + green glow, terminal vibe */
+/* Faint CRT grid + accent glow, terminal vibe — tinted by the theme. */
 .crt-grid {
   background-image:
-    radial-gradient(900px 420px at 50% -8%, rgba(74, 222, 128, 0.09), transparent 70%),
-    linear-gradient(rgba(74, 222, 128, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(74, 222, 128, 0.035) 1px, transparent 1px);
+    radial-gradient(900px 420px at 50% -8%, rgb(var(--term-accent-rgb) / 0.09), transparent 70%),
+    linear-gradient(rgb(var(--term-accent-rgb) / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--term-accent-rgb) / 0.035) 1px, transparent 1px);
   background-size:
     100% 100%,
     34px 34px,
@@ -79,10 +144,10 @@
 @keyframes pulse-glow {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.35);
+    box-shadow: 0 0 0 0 rgb(var(--term-accent-rgb) / 0.35);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(74, 222, 128, 0);
+    box-shadow: 0 0 0 5px rgb(var(--term-accent-rgb) / 0);
   }
 }
 .animate-glow {

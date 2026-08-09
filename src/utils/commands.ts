@@ -21,6 +21,19 @@ const HINT_COMMANDS = new Set(["hint", ":hint", "clue", ":clue"]);
 // answer anywhere); keep it that way if new questions are added.
 const REVIEW_COMMANDS = new Set(["back", ":back"]);
 
+/** Commands that open the terminal settings overlay (font size + theme). */
+// Verified collision-free against the dataset (no bare "settings"/
+// "config"/"prefs" answers); answers like "git config --global ..."
+// are full commands and never match a whole input.
+const SETTINGS_COMMANDS = new Set([
+  "settings",
+  ":settings",
+  "config",
+  ":config",
+  "prefs",
+  ":prefs",
+]);
+
 /** Commands that step back from the level picker to the tool picker. */
 const BACK_COMMANDS = new Set([
   "menu",
@@ -55,6 +68,10 @@ export function isHintCommand(input: string): boolean {
 
 export function isReviewCommand(input: string): boolean {
   return REVIEW_COMMANDS.has(normalizeCommand(input));
+}
+
+export function isSettingsCommand(input: string): boolean {
+  return SETTINGS_COMMANDS.has(normalizeCommand(input));
 }
 
 export function isBackCommand(input: string): boolean {

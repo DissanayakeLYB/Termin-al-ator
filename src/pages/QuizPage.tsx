@@ -7,6 +7,7 @@ import {
   isHintCommand,
   isMenuCommand,
   isReviewCommand,
+  isSettingsCommand,
 } from "../utils/commands";
 import { getHints } from "../utils/hints";
 import { BootBanner } from "../components/BootBanner";
@@ -22,7 +23,7 @@ function ReviewLine({ attempt, index }: { attempt: Attempt; index: number }) {
   const hints = getHints(question);
   return (
     <div className="space-y-1">
-      <p className="text-[10px] uppercase tracking-widest text-term-dim">
+      <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
         task {index + 1} · {categoryLabels[question.category]} ·{" "}
         <span className={lvl.accent}>{lvl.name}</span>
         {hintsUsed > 0 && (
@@ -65,10 +66,12 @@ export function QuizPage({
   quiz,
   level,
   onMenu,
+  onSettings,
 }: {
   quiz: QuizApi;
   level: Level;
   onMenu: () => void;
+  onSettings?: () => void;
 }) {
   const {
     current,
@@ -122,6 +125,11 @@ export function QuizPage({
     }
     if (isMenuCommand(input)) {
       onMenu();
+      return;
+    }
+    if (isSettingsCommand(input)) {
+      setValue("");
+      onSettings?.();
       return;
     }
     if (reviewing) {
@@ -186,7 +194,7 @@ export function QuizPage({
             /* Review panel — every past answer with its explanation + hints. */
             <div className="mt-6">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[10px] uppercase tracking-widest text-term-amber">
+                <p className="text-[0.625rem] uppercase tracking-widest text-term-amber">
                   review — past answers
                 </p>
                 <Button
@@ -214,7 +222,7 @@ export function QuizPage({
             /* Current task — one question per screen. */
             <div className="mt-6 border-l-2 border-term-green pl-4">
               <div className="flex items-start justify-between gap-3">
-                <p className="text-[10px] uppercase tracking-widest text-term-dim">
+                <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
                   task {taskNumber} · {categoryLabels[current.category]} ·{" "}
                   <span className={lvl.accent}>{lvl.name}</span> ·{" "}
                   <span className="tabular-nums">
@@ -274,7 +282,7 @@ export function QuizPage({
                       no-hint attempts don't need them. */}
                   {result.hintsUsed > 0 && !result.correct && hints.length > 0 && (
                     <div className="rounded-md border border-term-amber/30 bg-term-amber/5 p-3">
-                      <p className="text-[10px] uppercase tracking-widest text-term-amber">
+                      <p className="text-[0.625rem] uppercase tracking-widest text-term-amber">
                         hints for this question
                       </p>
                       <ul className="mt-1.5 space-y-1">
@@ -304,7 +312,12 @@ export function QuizPage({
         </div>
       </div>
 
-      <StatusBar quiz={quiz} level={level} reviewing={reviewing} />
+      <StatusBar
+        quiz={quiz}
+        level={level}
+        reviewing={reviewing}
+        onSettings={onSettings}
+      />
 
       <InputBar
         inputRef={inputRef}
