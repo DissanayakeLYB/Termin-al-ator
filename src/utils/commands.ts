@@ -16,6 +16,11 @@ const MENU_COMMANDS = new Set(["menu", ":menu", "switch", ":switch", "practice",
 /** Commands that reveal the next progressive hint instead of submitting. */
 const HINT_COMMANDS = new Set(["hint", ":hint", "clue", ":clue"]);
 
+/** Commands that open the review of past answers within a session. */
+// Verified collision-free against the current dataset ("back" is not an
+// answer anywhere); keep it that way if new questions are added.
+const REVIEW_COMMANDS = new Set(["back", ":back"]);
+
 /** Commands that step back from the level picker to the tool picker. */
 const BACK_COMMANDS = new Set([
   "menu",
@@ -46,6 +51,10 @@ export function isMenuCommand(input: string): boolean {
 
 export function isHintCommand(input: string): boolean {
   return HINT_COMMANDS.has(normalizeCommand(input));
+}
+
+export function isReviewCommand(input: string): boolean {
+  return REVIEW_COMMANDS.has(normalizeCommand(input));
 }
 
 export function isBackCommand(input: string): boolean {
