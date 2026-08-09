@@ -134,7 +134,7 @@ export function QuizPage({
         ref={scrollRef}
         className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
       >
-        <div className="max-w-3xl">
+        <div className="w-full">
           {/* Boot banner */}
           <BootBanner
             tag={`${categoryLabels[current.category]} · ${lvl.name} trainer`}

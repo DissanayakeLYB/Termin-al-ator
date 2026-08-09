@@ -75,7 +75,7 @@ export function LevelPage({ category, onSelect, onBack }: LevelPageProps) {
       onClick={() => inputRef.current?.focus()}
     >
       <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="max-w-3xl">
+        <div className="w-full">
           <BootBanner tag={`${categoryLabels[category]} — pick a level`}>
             What kind of practice do you want right now? Levels are about{" "}
             <span className="text-term-amber">how you practice</span>, not how

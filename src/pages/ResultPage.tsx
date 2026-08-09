@@ -88,7 +88,7 @@ export function ResultPage({
         ref={scrollRef}
         className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
       >
-        <div className="max-w-3xl">
+        <div className="w-full">
           <p className="text-sm uppercase tracking-[0.3em] text-term-amber">
             — {label} · <span className={lvl.accent}>{lvl.name}</span> session
             complete —

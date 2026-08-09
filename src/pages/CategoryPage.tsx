@@ -68,7 +68,7 @@ export function CategoryPage({ onSelect }: CategoryPageProps) {
       onClick={() => inputRef.current?.focus()}
     >
       <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="max-w-3xl">
+        <div className="w-full">
           <BootBanner tag="practice menu">
             pick what to practice — type a number or name, or click a row. You can
             switch anytime from inside a session with{" "}

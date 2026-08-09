@@ -1,4 +1,19 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Env & local files
 *.local
+.env
+.env.*
+!.env.example
 .DS_Store
+
+# Freebuff desktop app state (local DB, preview logs, run docs)
+.freebuff/
+
+# Logs
+*.log
+npm-debug.log*
