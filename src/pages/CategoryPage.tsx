@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "../data/questions";
 import { availableQuestionSets, comingSoonSets } from "../data/questions";
-import { isSettingsCommand } from "../utils/commands";
+import { isSettingsCommand, isTimedCommand } from "../utils/commands";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
 
 interface CategoryPageProps {
   onSelect: (category: Category) => void;
+  /** Opens the timed daily-practice sprint setup. */
+  onTimed: () => void;
+  /** Current daily sprint streak, shown on the sprint card. */
+  streak?: number;
   onSettings?: () => void;
 }
 
 /** Full-page terminal menu: pick what to practice. */
-export function CategoryPage({ onSelect, onSettings }: CategoryPageProps) {
+export function CategoryPage({ onSelect, onTimed, streak = 0, onSettings }: CategoryPageProps) {
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,6 +39,12 @@ export function CategoryPage({ onSelect, onSettings }: CategoryPageProps) {
     if (isSettingsCommand(raw)) {
       setValue("");
       onSettings?.();
+      return;
+    }
+
+    if (isTimedCommand(raw)) {
+      setValue("");
+      onTimed();
       return;
     }
 
@@ -83,7 +93,40 @@ export function CategoryPage({ onSelect, onSettings }: CategoryPageProps) {
             <span className="text-term-amber">:menu</span>.
           </BootBanner>
 
-          <div className="mt-6">
+          {/* Timed daily-practice sprint — a routine, not a test. */}
+          <button
+            type="button"
+            onClick={onTimed}
+            className="group mt-6 flex w-full items-center gap-3 rounded-md border border-term-amber/40 bg-term-amber/5 p-4 text-left transition-colors hover:border-term-amber/70 hover:bg-term-amber/10 sm:gap-4"
+          >
+            <span className="shrink-0 text-xl" aria-hidden="true">
+              ⏱
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="font-bold text-term-amber transition-colors group-hover:text-term-bright">
+                  10 minute practice
+                </span>
+                {streak > 0 && (
+                  <span className="text-xs text-term-amber">🔥 {streak}-day streak</span>
+                )}
+              </span>
+              <span className="mt-1 block text-sm leading-relaxed text-term-fg/70">
+                a timed daily sprint — mixed questions from every tool and
+                level, weighted toward what you've missed. no score pressure,
+                just reps. pick a length or go with 10.
+              </span>
+            </span>
+            <span className="shrink-0 rounded-md border border-term-amber/40 px-3 py-1.5 text-xs font-semibold text-term-amber transition-colors group-hover:bg-term-amber/15">
+              start →
+            </span>
+          </button>
+
+          <p className="mt-8 text-[0.625rem] uppercase tracking-widest text-term-dim">
+            pick a tool
+          </p>
+
+          <div className="mt-3">
             {availableQuestionSets.map((set, i) => (
               <button
                 key={set.category}

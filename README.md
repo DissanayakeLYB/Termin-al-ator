@@ -29,6 +29,12 @@ npm run build      # typecheck + production build
 4. **Finish or switch anytime** — `:quit` ends the session and shows results;
    `:menu` jumps back to the picker.
 
+Prefer a quick routine? **10 minute practice** on the menu starts a timed
+sprint: a continuous stream of mixed questions from every tool and level,
+weighted toward the commands you've missed. The clock freezes with `:pause`
+(or automatically when you open settings or switch tabs), and you get a short
+summary and a daily streak at the end.
+
 Questions are shuffled into an infinite session, so the deck reshuffles when it
 runs out. The dataset covers **1,846 questions across 8 tools** (200+ per
 tool), all in local TypeScript files you can extend.

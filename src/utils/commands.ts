@@ -34,6 +34,35 @@ const SETTINGS_COMMANDS = new Set([
   ":prefs",
 ]);
 
+/** Commands that open the timed daily-practice sprint setup (from the menu). */
+// Verified collision-free against the dataset (no bare "daily"/"timed"/
+// "sprint"/"timer"/"10min" answers); keep it that way if questions are added.
+const TIMED_COMMANDS = new Set([
+  "daily",
+  ":daily",
+  "timed",
+  ":timed",
+  "sprint",
+  ":sprint",
+  "timer",
+  ":timer",
+  "10min",
+  ":10min",
+]);
+
+/** Commands that freeze / resume the timed sprint clock (toggle). */
+// Verified collision-free against the dataset.
+const PAUSE_COMMANDS = new Set([
+  "pause",
+  ":pause",
+  "resume",
+  ":resume",
+  "continue",
+  ":continue",
+  "unpause",
+  ":unpause",
+]);
+
 /** Commands that step back from the level picker to the tool picker. */
 const BACK_COMMANDS = new Set([
   "menu",
@@ -76,4 +105,12 @@ export function isSettingsCommand(input: string): boolean {
 
 export function isBackCommand(input: string): boolean {
   return BACK_COMMANDS.has(normalizeCommand(input));
+}
+
+export function isTimedCommand(input: string): boolean {
+  return TIMED_COMMANDS.has(normalizeCommand(input));
+}
+
+export function isPauseCommand(input: string): boolean {
+  return PAUSE_COMMANDS.has(normalizeCommand(input));
 }
