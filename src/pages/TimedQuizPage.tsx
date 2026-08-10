@@ -14,6 +14,7 @@ import {
 } from "../utils/commands";
 import { getHints } from "../utils/hints";
 import { formatClock } from "../utils/timed";
+import { answerCaseMatters } from "../utils/validate";
 import { EXIT_REVIEW_KEY, isHintKey } from "../utils/shortcuts";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
@@ -444,6 +445,9 @@ export function TimedQuizPage({
                   <span className={lvl.accent}>{lvl.name}</span>
                   {practice.missCount(current.id) > 0 && (
                     <span className="text-term-amber"> · 🔁 needs practice</span>
+                  )}
+                  {answerCaseMatters(current) && (
+                    <span className="text-term-amber"> · case matters</span>
                   )}
                 </p>
                 {attempts.length > 0 && (

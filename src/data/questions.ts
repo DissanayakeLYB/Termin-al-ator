@@ -79,6 +79,17 @@ export interface QuizQuestion {
   hints?: string[];
   /** Optional extra accepted spellings, matched exactly. */
   aliases?: string[];
+  /**
+   * Whether the answer's capitalization must match exactly. Defaults to
+   * `true` (answers are case-sensitive, like real commands — "LS" is not
+   * "ls"). Set to `false` when any capitalization should pass (e.g. a
+   * command the user might type with caps on).
+   *
+   * Note: `Ctrl+` key-combo answers are always matched case-insensitively
+   * regardless of this flag, and `aliases` can already accept other case
+   * variants (e.g. "esc" for "Esc").
+   */
+  caseSensitive?: boolean;
 }
 
 

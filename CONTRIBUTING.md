@@ -24,6 +24,7 @@ A `QuizQuestion` looks like this:
   explanation:
     "`git commit --amend -m …` rewrites the most recent commit with a new message.",
   aliases: ["git commit --amend"],      // optional extra accepted answers
+  caseSensitive: false,                 // optional: accept any capitalization
   hints: [                              // optional, up to 3
     "It rewrites the latest commit, not a new one.",
     "It's `git commit` with a flag.",
@@ -42,8 +43,10 @@ Guidelines:
 - If `hints` is omitted, three progressive hints are derived automatically from
   the question's own data (see `src/utils/hints.ts`). Write custom hints when the
   derived ones would be weak — especially for workflow questions.
-- Keep `answer` and `aliases` exact; validation is whitespace-tolerant and
-  case-insensitive for `Ctrl` combos.
+- Keep `answer` and `aliases` exact; validation is whitespace-tolerant. Answers
+  are **case-sensitive by default** — set `caseSensitive: false` when any
+  capitalization should pass (the UI then omits its "case matters" tag).
+  `Ctrl` key combos are always matched case-insensitively.
 
 ## Adding a new category
 

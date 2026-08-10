@@ -10,6 +10,7 @@ import {
   isSettingsCommand,
 } from "../utils/commands";
 import { getHints } from "../utils/hints";
+import { answerCaseMatters } from "../utils/validate";
 import { EXIT_REVIEW_KEY, isHintKey } from "../utils/shortcuts";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
@@ -195,6 +196,11 @@ export function QuizPage({
                   <span className="tabular-nums">
                     {distinctSeen}/{totalQuestions} seen
                   </span>
+                  {answerCaseMatters(current) && (
+                    <>
+                      {" "}· <span className="text-term-amber">case matters</span>
+                    </>
+                  )}
                 </p>
                 {attempts.length > 0 && (
                   <Button

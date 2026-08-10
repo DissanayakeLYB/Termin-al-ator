@@ -24,10 +24,12 @@ npm run build      # typecheck + production build
    - **workflow** — realistic scenarios where you decide which commands to use.
    - **chaos** — everything mixed, no hints about what's coming.
 3. **Type the command** — each task asks for one thing (e.g. *Save the current file*).
-   Type the exact command (`:w`) and press Enter. Stuck? Press **Tab** (or type
-   `:hint`) for progressively stronger clues. Everything is keyboard-first:
-   **Enter** submits / advances / starts, **Esc** leaves review, and the command
-   bar at the bottom of each screen shows what's available.
+   Type the exact command (`:w`) and press Enter. Answers are case-sensitive by
+   default — when a task shows a **case matters** tag, capitalization counts.
+   Stuck? Press **Tab** (or type `:hint`) for progressively stronger clues.
+   Everything is keyboard-first: **Enter** submits / advances / starts, **Esc**
+   leaves review, and the command bar at the bottom of each screen shows what's
+   available.
 4. **Finish or switch anytime** — `:quit` ends the session and shows results;
    `:menu` jumps back to the picker.
 
