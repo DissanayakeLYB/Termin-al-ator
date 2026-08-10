@@ -9,6 +9,15 @@ export const SPRINT_PRESET_MINUTES = [5, 10, 15, 20, 30];
 const MIN_SECONDS = 60; // 1 minute
 const MAX_SECONDS = 60 * 60; // 1 hour
 
+/** Default blitz pace — seconds allowed per question. */
+export const DEFAULT_BLITZ_SECONDS = 15;
+
+/** One-tap blitz pace presets, in seconds per question. */
+export const BLITZ_PRESET_SECONDS = [10, 15, 20, 30, 45];
+
+const BLITZ_MIN = 5;
+const BLITZ_MAX = 300; // 5 minutes per question
+
 /**
  * Parse a user-typed sprint duration into seconds, or null if invalid.
  *
@@ -46,6 +55,24 @@ export function parseDuration(input: string): number | null {
 
 function clampSeconds(seconds: number): number {
   return Math.min(MAX_SECONDS, Math.max(MIN_SECONDS, seconds));
+}
+
+function clampBlitz(seconds: number): number {
+  return Math.min(BLITZ_MAX, Math.max(BLITZ_MIN, Math.round(seconds)));
+}
+
+/**
+ * Parse a blitz pace: seconds allowed per question.
+ *
+ * Accepted forms: "15" or "15s" (bare numbers mean seconds here, unlike the
+ * session timer where they mean minutes). Clamped to [5s, 5min].
+ */
+export function parseSeconds(input: string): number | null {
+  const raw = input.trim().toLowerCase();
+  if (!raw) return null;
+  const m = raw.match(/^(\d{1,4})s?$/);
+  if (!m) return null;
+  return clampBlitz(Number.parseInt(m[1], 10));
 }
 
 /** Format a duration as mm:ss (ceil, so 0.4s remaining still shows 00:01). */

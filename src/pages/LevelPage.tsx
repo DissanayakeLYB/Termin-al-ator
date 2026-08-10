@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import type { Category, Level } from "../data/questions";
 import { categoryLabels, questionSets } from "../data/questions";
 import { countForLevel, levelInfos } from "../data/levels";
-import { isBackCommand, isSettingsCommand } from "../utils/commands";
+import {
+  isBackCommand,
+  isBlitzCommand,
+  isSettingsCommand,
+  isTimedCommand,
+} from "../utils/commands";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
@@ -11,6 +16,10 @@ interface LevelPageProps {
   category: Category;
   onSelect: (level: Level) => void;
   onBack: () => void;
+  /** Starts a timed session-timer sprint for this tool. */
+  onSprint: () => void;
+  /** Starts a per-question-timer blitz for this tool. */
+  onBlitz: () => void;
   onSettings?: () => void;
 }
 
@@ -19,7 +28,7 @@ interface LevelPageProps {
  * practice* they want. Each level has a distinct purpose — never a
  * difficulty rating.
  */
-export function LevelPage({ category, onSelect, onBack, onSettings }: LevelPageProps) {
+export function LevelPage({ category, onSelect, onBack, onSprint, onBlitz, onSettings }: LevelPageProps) {
   const set = questionSets[category];
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -51,6 +60,16 @@ export function LevelPage({ category, onSelect, onBack, onSettings }: LevelPageP
       return;
     }
 
+    if (isTimedCommand(raw)) {
+      onSprint();
+      return;
+    }
+
+    if (isBlitzCommand(raw)) {
+      onBlitz();
+      return;
+    }
+
     // A number picks the nth level.
     if (/^\d+$/.test(lower)) {
       const info = levelInfos[Number.parseInt(lower, 10) - 1];
@@ -71,7 +90,7 @@ export function LevelPage({ category, onSelect, onBack, onSettings }: LevelPageP
     }
 
     setNotice(
-      `unknown choice: ${raw} — type a number or a level name, or "menu" to change tool`
+      `unknown choice: ${raw} — type a number or a level name, or "sprint"/"blitz" for timed practice`
     );
     setValue("");
   };
@@ -101,7 +120,48 @@ export function LevelPage({ category, onSelect, onBack, onSettings }: LevelPageP
             </span>
           </div>
 
-          <div className="mt-4">
+          {/* Timed practice — per-tool session timer or per-question blitz. */}
+          <div className="mt-8">
+            <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+              timed practice
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={onSprint}
+                className="group rounded-md border border-term-amber/40 bg-term-amber/5 p-4 text-left transition-colors hover:border-term-amber/70 hover:bg-term-amber/10"
+              >
+                <span className="flex items-baseline gap-2">
+                  <span className="text-sm" aria-hidden="true">⏱</span>
+                  <span className="font-bold text-term-amber transition-colors group-hover:text-term-bright">
+                    sprint — session timer
+                  </span>
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-term-fg/70">
+                  one countdown for the whole run: answer as many as you can
+                  before it hits zero. mixed levels, weighted to your misses.
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={onBlitz}
+                className="group rounded-md border border-term-amber/40 bg-term-amber/5 p-4 text-left transition-colors hover:border-term-amber/70 hover:bg-term-amber/10"
+              >
+                <span className="flex items-baseline gap-2">
+                  <span className="text-sm" aria-hidden="true">⚡</span>
+                  <span className="font-bold text-term-amber transition-colors group-hover:text-term-bright">
+                    blitz — per-question timer
+                  </span>
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-term-fg/70">
+                  each question gets its own countdown — time out and it counts
+                  as a miss. ends when the pool runs out, no repeats.
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-8">
             {levelInfos.map((info, i) => {
               const count = countForLevel(set, info.id);
               const disabled = count === 0;
@@ -156,7 +216,7 @@ export function LevelPage({ category, onSelect, onBack, onSettings }: LevelPageP
         placeholder={`choose: 1–${levelInfos.length} or a name (e.g. workflow)`}
         hint={
           notice ??
-          `levels: ${levelInfos.map((l) => l.name).join(" · ")} · ${categoryLabels[category]} has ${set.questions.length} questions total`
+          `levels: ${levelInfos.map((l) => l.name).join(" · ")} · sprint/blitz: timed · ${categoryLabels[category]} has ${set.questions.length} questions`
         }
         actions={
           <>

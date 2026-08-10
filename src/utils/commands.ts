@@ -50,6 +50,10 @@ const TIMED_COMMANDS = new Set([
   ":10min",
 ]);
 
+/** Commands that start a per-question-timer blitz (from the level picker). */
+// Verified collision-free against the dataset.
+const BLITZ_COMMANDS = new Set(["blitz", ":blitz", "quickfire", ":quickfire"]);
+
 /** Commands that freeze / resume the timed sprint clock (toggle). */
 // Verified collision-free against the dataset.
 const PAUSE_COMMANDS = new Set([
@@ -113,4 +117,8 @@ export function isTimedCommand(input: string): boolean {
 
 export function isPauseCommand(input: string): boolean {
   return PAUSE_COMMANDS.has(normalizeCommand(input));
+}
+
+export function isBlitzCommand(input: string): boolean {
+  return BLITZ_COMMANDS.has(normalizeCommand(input));
 }

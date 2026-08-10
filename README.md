@@ -29,11 +29,12 @@ npm run build      # typecheck + production build
 4. **Finish or switch anytime** — `:quit` ends the session and shows results;
    `:menu` jumps back to the picker.
 
-Prefer a quick routine? **10 minute practice** on the menu starts a timed
-sprint: a continuous stream of mixed questions from every tool and level,
-weighted toward the commands you've missed. The clock freezes with `:pause`
-(or automatically when you open settings or switch tabs), and you get a short
-summary and a daily streak at the end.
+Prefer a timed routine? From the menu, **10 minute practice** runs a sprint
+across every tool and level. On a tool's level page, **sprint** times one
+session for that tool, and **blitz** gives every question its own countdown
+(`:pause` freezes whichever clock is running). All timed modes are weighted
+toward the commands you've missed, end when the question pool runs out (no
+repeats), and finish with a short summary and a daily streak.
 
 Questions are shuffled into an infinite session, so the deck reshuffles when it
 runs out. The dataset covers **1,846 questions across 8 tools** (200+ per

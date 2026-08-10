@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { categoryLabels } from "../data/questions";
 import { levelInfo } from "../data/levels";
 import type { QuizApi } from "../hooks/useQuiz";
+import { TIME_UP_SUBMITTED } from "../hooks/useQuiz";
 import type { PracticeHistory } from "../hooks/usePracticeHistory";
 import {
   isExitCommand,
@@ -19,35 +20,47 @@ import { Feedback } from "../components/Feedback";
 import { InputBar } from "../components/InputBar";
 import { ReviewLine } from "../components/ReviewLine";
 
-export type TimedFinishReason = "timeup" | "quit";
+export type TimedFinishReason = "timeup" | "quit" | "done";
 
 interface TimedQuizPageProps {
   quiz: QuizApi;
   practice: PracticeHistory;
-  durationSeconds: number;
+  /** Session mode: total sprint length. */
+  sessionSeconds?: number;
+  /** Blitz mode: seconds allowed per question. */
+  perQuestionSeconds?: number;
+  /** Total pool size (shown in the blitz progress counter). */
+  poolSize?: number;
   /** True while the settings overlay is open — the clock auto-pauses. */
   settingsOpen?: boolean;
-  /** Called exactly once when the sprint ends (time up or :quit). */
+  /** Called exactly once when the sprint ends (time up, :quit, or pool done). */
   onFinish: (reason: TimedFinishReason, elapsedSeconds: number) => void;
   onMenu: () => void;
   onSettings?: () => void;
 }
 
 /**
- * The timed daily-practice sprint: a countdown clock, a continuous stream of
- * weighted questions, and pause/resume — framed as a routine, not a test.
+ * Timed practice. Two clock shapes:
+ * - session mode: one countdown for the whole run (pause freezes it);
+ * - blitz mode: each question gets its own countdown; expiry records a miss.
+ * In both, the session ends (auto-summary) when the question pool runs out.
  */
 export function TimedQuizPage({
   quiz,
   practice,
-  durationSeconds,
+  sessionSeconds,
+  perQuestionSeconds,
+  poolSize,
   settingsOpen = false,
   onFinish,
   onMenu,
   onSettings,
 }: TimedQuizPageProps) {
-  const { current, taskNumber, attempts, result, submit, next } = quiz;
-  const [remaining, setRemaining] = useState(durationSeconds);
+  const { current, taskNumber, attempts, result, isLastQuestion, submit, timeUp, next } = quiz;
+  const isBlitz = perQuestionSeconds !== undefined;
+  const clockSeconds = isBlitz ? (perQuestionSeconds ?? 0) : (sessionSeconds ?? 0);
+
+  const [remaining, setRemaining] = useState(clockSeconds);
   const [paused, setPaused] = useState(false);
   const [hintCount, setHintCount] = useState(0);
   const [reviewing, setReviewing] = useState(false);
@@ -57,10 +70,16 @@ export function TimedQuizPage({
   const lockedRef = useRef(false);
 
   // Clock bookkeeping (refs so the interval never goes stale).
-  const remainingRef = useRef(durationSeconds);
+  const remainingRef = useRef(clockSeconds);
   const lastTickRef = useRef(Date.now());
   const pausedRef = useRef(false);
   const endedRef = useRef(false);
+  const hintCountRef = useRef(0);
+  /** Guards against the blitz clock firing a second time-up for one question. */
+  const timedOutRef = useRef(false);
+  /** Whether the current question already has a result (stops the blitz clock). */
+  const resultRef = useRef(result);
+  resultRef.current = result;
   // Restores the pre-settings pause state when the overlay closes.
   const wasPausedRef = useRef<boolean | null>(null);
 
@@ -69,31 +88,42 @@ export function TimedQuizPage({
   onFinishRef.current = onFinish;
   const quitRef = useRef(quiz.quit);
   quitRef.current = quiz.quit;
+  const timeUpRef = useRef(timeUp);
+  timeUpRef.current = timeUp;
 
   const lvl = levelInfo(current.level);
   const hints = getHints(current);
   const hintsExhausted = hintCount >= hints.length;
-  const lowTime = remaining <= 60;
-  const criticalTime = remaining <= 30;
+  const lowTime = isBlitz ? remaining <= 10 : remaining <= 60;
+  const criticalTime = isBlitz ? remaining <= 5 : remaining <= 30;
 
-  // Fresh input + focus for each new task, release the submit lock.
+  // Fresh input + focus for each new task, release the submit lock, and (blitz)
+  // reset the per-question clock.
   useEffect(() => {
     setValue("");
     setHintCount(0);
     setReviewing(false);
     lockedRef.current = false;
+    hintCountRef.current = 0;
+    timedOutRef.current = false;
     inputRef.current?.focus();
-  }, [current.id]);
+    if (isBlitz) {
+      remainingRef.current = perQuestionSeconds ?? 0;
+      lastTickRef.current = Date.now();
+      setRemaining(perQuestionSeconds ?? 0);
+    }
+  }, [current.id, isBlitz, perQuestionSeconds]);
 
   useEffect(() => {
     if (!result) lockedRef.current = false;
   }, [result]);
 
-  // The countdown itself — delta-based so throttled tabs never drift it.
+  // The countdown — delta-based so throttled tabs never drift it.
   useEffect(() => {
     lastTickRef.current = Date.now();
     const id = window.setInterval(() => {
       if (pausedRef.current || endedRef.current) return;
+      if (isBlitz && (resultRef.current || timedOutRef.current)) return;
       const now = Date.now();
       const delta = (now - lastTickRef.current) / 1000;
       if (delta < 0.05) return;
@@ -102,18 +132,27 @@ export function TimedQuizPage({
       remainingRef.current = nextRemaining;
       setRemaining(nextRemaining);
       if (nextRemaining <= 0) {
-        endedRef.current = true;
-        pausedRef.current = true;
-        setPaused(true);
-        onFinishRef.current("timeup", durationSeconds);
-        quitRef.current();
+        if (isBlitz) {
+          // Per-question clock expired: record it as a miss, show the answer.
+          timedOutRef.current = true;
+          remainingRef.current = 0;
+          setRemaining(0);
+          timeUpRef.current(hintCountRef.current);
+        } else {
+          // Session clock expired: wrap the whole sprint up.
+          endedRef.current = true;
+          pausedRef.current = true;
+          setPaused(true);
+          onFinishRef.current("timeup", clockSeconds);
+          quitRef.current();
+        }
       }
     }, 250);
     return () => window.clearInterval(id);
-    // The interval intentionally depends only on durationSeconds: every
-    // mutable value it reads lives in refs (remaining/paused/ended + the
-    // latest quit/onFinish callbacks), so it never goes stale.
-  }, [durationSeconds]);
+    // The interval intentionally depends only on the clock limit: every
+    // mutable value it reads lives in refs (remaining/paused/ended/result +
+    // the latest timeUp/quit/onFinish callbacks), so it never goes stale.
+  }, [clockSeconds, isBlitz]);
 
   // Auto-pause while the settings overlay is open; restore on close.
   useEffect(() => {
@@ -161,14 +200,16 @@ export function TimedQuizPage({
     if (endedRef.current) return;
     endedRef.current = true;
     const elapsed =
-      durationSeconds - Math.max(0, Math.round(remainingRef.current));
+      clockSeconds - Math.max(0, Math.round(remainingRef.current));
     onFinishRef.current(reason, elapsed);
     quitRef.current();
   };
 
   const revealHint = () => {
     if (result || hintsExhausted) return;
-    setHintCount((c) => c + 1);
+    const nextCount = hintCount + 1;
+    hintCountRef.current = nextCount;
+    setHintCount(nextCount);
     inputRef.current?.focus();
   };
 
@@ -218,10 +259,17 @@ export function TimedQuizPage({
       }
     }
     if (result) {
-      next();
+      // Last question in the pool: wrap up with the summary instead of
+      // showing repeats (the pool never reshuffles in timed modes).
+      if (isLastQuestion) {
+        endSession("done");
+      } else {
+        next();
+      }
       return;
     }
     if (lockedRef.current) return;
+    if (timedOutRef.current) return;
     if (!input.trim()) return;
     const accepted = submit(input, hintCount);
     if (accepted !== null) {
@@ -244,15 +292,29 @@ export function TimedQuizPage({
         className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
       >
         <div className="w-full">
-          <BootBanner tag="daily practice · timed sprint">
-            Mixed questions from every tool and level, weighted toward what
-            you've missed. Type <span className="text-term-amber">:hint</span>{" "}
-            for a clue, <span className="text-term-amber">:back</span> to
-            review, <span className="text-term-amber">:pause</span> to freeze
-            the clock, <span className="text-term-amber">:quit</span> to end.
+          <BootBanner tag={isBlitz ? "blitz · per-question timer" : "timed practice · session timer"}>
+            {isBlitz ? (
+              <>
+                Each question has its own countdown — when it hits zero it
+                counts as a miss and the next appears. The session ends when
+                the pool runs out, no repeats.{" "}
+                <span className="text-term-amber">:hint</span> for a clue,{" "}
+                <span className="text-term-amber">:pause</span> to freeze,
+                <span className="text-term-amber"> :quit</span> to end.
+              </>
+            ) : (
+              <>
+                Answer as many as you can before the clock runs out, weighted
+                toward what you've missed. Type{" "}
+                <span className="text-term-amber">:hint</span> for a clue,{" "}
+                <span className="text-term-amber">:back</span> to review,{" "}
+                <span className="text-term-amber">:pause</span> to freeze the
+                clock, <span className="text-term-amber">:quit</span> to end.
+              </>
+            )}
           </BootBanner>
 
-          {/* Countdown row — remaining time, elapsed bar, questions completed */}
+          {/* Countdown row — clock, progress bar, questions completed */}
           <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-term-edge bg-term-panel/60 px-4 py-3">
             <span
               className={`text-2xl font-bold tabular-nums leading-none ${
@@ -265,9 +327,9 @@ export function TimedQuizPage({
                       : "text-term-green"
               }`}
               role="timer"
-              aria-label={`${paused ? "paused at" : "time remaining"} ${formatClock(remaining)}`}
+              aria-label={`${paused ? "paused at" : isBlitz ? "seconds left on this question" : "time remaining"} ${formatClock(remaining)}`}
             >
-              {paused ? "⏸" : "⏱"} {formatClock(remaining)}
+              {paused ? "⏸" : isBlitz ? "⚡" : "⏱"} {formatClock(remaining)}
             </span>
             <div
               className="h-1.5 w-full max-w-56 overflow-hidden rounded-full border border-term-edge bg-term-bg sm:w-56"
@@ -275,12 +337,20 @@ export function TimedQuizPage({
             >
               <div
                 className="h-full bg-term-green transition-[width] duration-300 ease-linear"
-                style={{ width: `${(remaining / durationSeconds) * 100}%` }}
+                style={{ width: `${(remaining / clockSeconds) * 100}%` }}
               />
             </div>
             <span className="text-xs tabular-nums text-term-dim">
-              answered{" "}
-              <b className="text-term-fg">{taskNumber - 1}</b>
+              {isBlitz && poolSize ? (
+                <>
+                  answered <b className="text-term-fg">{taskNumber - 1}</b>
+                  <span className="text-term-dim">/{poolSize}</span>
+                </>
+              ) : (
+                <>
+                  answered <b className="text-term-fg">{taskNumber - 1}</b>
+                </>
+              )}
             </span>
             <span className="ml-auto flex items-center gap-2">
               {onSettings && (
@@ -410,7 +480,27 @@ export function TimedQuizPage({
 
               {result && (
                 <div className="mt-4 space-y-3">
-                  <Feedback result={result} question={current} />
+                  {result.submitted === TIME_UP_SUBMITTED ? (
+                    /* Per-question clock expired — the answer is revealed. */
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      className="rounded-md border-l-4 border-term-amber bg-term-amber/10 p-4"
+                    >
+                      <p className="font-bold text-term-amber">⏱ Time's up</p>
+                      <p className="mt-2 text-sm leading-relaxed text-term-fg/85">
+                        The answer was{" "}
+                        <code className="mx-1 inline-block rounded border border-term-green/40 bg-term-bg px-1.5 py-0.5 align-middle font-mono text-xs text-term-green">
+                          {current.answer}
+                        </code>
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-term-fg/65">
+                        {current.explanation}
+                      </p>
+                    </div>
+                  ) : (
+                    <Feedback result={result} question={current} />
+                  )}
 
                   {/* Reveal the hints only when they were requested AND it was
                       still wrong — right answers don't need them. */}
@@ -436,6 +526,33 @@ export function TimedQuizPage({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Command help bar — the same helpers the classic sessions show. */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-term-edge bg-term-bg px-4 py-2 text-xs text-term-dim sm:px-8">
+        <span
+          className={`font-semibold uppercase tracking-wider ${
+            isBlitz ? "text-term-amber" : "text-term-green"
+          }`}
+        >
+          {isBlitz ? "⚡ blitz" : "⏱ sprint"}
+        </span>
+        {paused ? (
+          <span className="text-term-amber">⏸ paused</span>
+        ) : (
+          <span className="tabular-nums">
+            {formatClock(remaining)} left
+          </span>
+        )}
+        <span className="ml-auto hidden md:inline">
+          enter: submit / next · <span className="text-term-amber">:hint</span>{" "}
+          clue · <span className="text-term-amber">back</span>{" "}
+          {reviewing ? "current task" : "review"} ·{" "}
+          <span className="text-term-amber">:pause</span>{" "}
+          {paused ? "resume" : "freeze"} ·{" "}
+          <span className="text-term-amber">:quit</span> end ·{" "}
+          <span className="text-term-amber">:menu</span> switch
+        </span>
       </div>
 
       <InputBar

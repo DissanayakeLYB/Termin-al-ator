@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import type { QuizApi } from "../hooks/useQuiz";
 import type { PracticeHistory } from "../hooks/usePracticeHistory";
 import type { TimedFinishReason } from "./TimedQuizPage";
+import { categoryLabels, type Category } from "../data/questions";
 import { isMenuCommand, isSettingsCommand } from "../utils/commands";
 import { formatClock } from "../utils/timed";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
 
-/** The latest attempt for each question answered wrong this sprint. */
+export type TimedRunKind = "daily" | "sprint" | "blitz";
+
+/** The latest attempt for each question answered wrong this session. */
 function latestMissed(attempts: QuizApi["attempts"]) {
   const byId = new Map<string, QuizApi["attempts"][number]>();
   for (const attempt of attempts) {
@@ -16,31 +19,43 @@ function latestMissed(attempts: QuizApi["attempts"]) {
   return [...byId.values()];
 }
 
-function sprintVerdict(accuracy: number, answered: number): string {
-  if (answered === 0) return "a blink and it's over — run another sprint and get some reps in.";
-  if (accuracy === 100) return "flawless sprint — every single one. 🔥";
+function runVerdict(accuracy: number, answered: number): string {
+  if (answered === 0) return "a blink and it's over — run another session and get some reps in.";
+  if (accuracy === 100) return "flawless — every single one. 🔥";
   if (accuracy >= 80) return "sharp — the reps are landing.";
   if (accuracy >= 60) return "solid grind. show up again tomorrow and it compounds.";
-  return "rough sprint — that's exactly what practice is for.";
+  return "rough session — that's exactly what practice is for.";
 }
 
 interface TimedResultPageProps {
   quiz: QuizApi;
   practice: PracticeHistory;
-  durationSeconds: number;
-  /** How the sprint ended; null if unknown (shouldn't happen). */
+  kind: TimedRunKind;
+  /** The tool practiced, if the run was per-tool. */
+  tool?: Category | null;
+  /** How the session ended; null if unknown (shouldn't happen). */
   finish: { kind: TimedFinishReason; elapsed: number } | null;
+  /** Session-mode length (drives the "of 10:00" phrasing). */
+  sessionSeconds?: number;
+  /** Blitz-mode pace per question. */
+  perQuestionSeconds?: number;
+  /** Pool size (blitz "answered N of M"). */
+  poolSize?: number;
   onRestart: () => void;
   onMenu: () => void;
   onSettings?: () => void;
 }
 
-/** Concise summary after a timed sprint — a daily-routine wrap-up, not a report card. */
+/** Concise summary after a timed session — a practice wrap-up, not a report card. */
 export function TimedResultPage({
   quiz,
   practice,
-  durationSeconds,
+  kind,
+  tool = null,
   finish,
+  sessionSeconds,
+  perQuestionSeconds,
+  poolSize,
   onRestart,
   onMenu,
   onSettings,
@@ -51,6 +66,12 @@ export function TimedResultPage({
   const [notice, setNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const isBlitz = kind === "blitz";
+  const label = tool ? categoryLabels[tool] : null;
+  const timedOut = finish?.kind === "timeup";
+  const elapsed = finish?.elapsed ?? 0;
+  const duration = sessionSeconds ?? 0;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -79,8 +100,24 @@ export function TimedResultPage({
     setValue("");
   };
 
-  const timedOut = finish?.kind === "timeup";
-  const elapsed = finish?.elapsed ?? durationSeconds;
+  const headline = isBlitz
+    ? finish?.kind === "done"
+      ? `blitz complete — all ${answered} questions done at ${perQuestionSeconds ?? 0}s each. 🔥`
+      : `blitz ended — you answered ${answered} of ${poolSize ?? "?"} questions at ${perQuestionSeconds ?? 0}s each.`
+    : timedOut
+      ? `time's up — a full ${formatClock(duration)} in the bank. Nice work.`
+      : finish?.kind === "done"
+        ? `pool finished — every question done in ${formatClock(elapsed)} of ${formatClock(duration)}. Great pace.`
+        : `session ended — you practiced ${formatClock(elapsed)} of ${formatClock(duration)}. Every rep counts.`;
+
+  const header =
+    kind === "daily"
+      ? "— ⏱ daily practice —"
+      : isBlitz
+        ? `— ⚡ ${label ?? "blitz"} blitz —`
+        : `— ⏱ ${label ?? "timed"} sprint —`;
+
+  const restartLabel = isBlitz ? "another blitz" : "another sprint";
 
   return (
     <div
@@ -93,26 +130,12 @@ export function TimedResultPage({
       >
         <div className="w-full">
           <p className="text-sm uppercase tracking-[0.3em] text-term-amber">
-            — ⏱ daily practice —
+            {header}
           </p>
 
-          {timedOut ? (
-            <p className="mt-4 text-base leading-relaxed text-term-bright sm:text-lg">
-              time's up — a full{" "}
-              <span className="font-bold text-term-green">
-                {formatClock(durationSeconds)}
-              </span>{" "}
-              sprint in the bank. Nice work.
-            </p>
-          ) : (
-            <p className="mt-4 text-base leading-relaxed text-term-bright sm:text-lg">
-              sprint ended — you practiced{" "}
-              <span className="font-bold text-term-green">
-                {formatClock(elapsed)}
-              </span>{" "}
-              of {formatClock(durationSeconds)}. Every rep counts.
-            </p>
-          )}
+          <p className="mt-4 text-base leading-relaxed text-term-bright sm:text-lg">
+            {headline}
+          </p>
 
           <div className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm">
             <p className="tabular-nums">
@@ -137,7 +160,7 @@ export function TimedResultPage({
             )}
           </div>
 
-          <p className="mt-4 text-term-bright">{sprintVerdict(accuracy, answered)}</p>
+          <p className="mt-4 text-term-bright">{runVerdict(accuracy, answered)}</p>
 
           {missed.length > 0 ? (
             <div className="mt-7">
@@ -174,14 +197,14 @@ export function TimedResultPage({
           ) : (
             answered > 0 && (
               <p className="mt-7 text-sm text-term-dim">
-                nothing to revisit — every answer this sprint was correct. 🔥
+                nothing to revisit — every answer this session was correct. 🔥
               </p>
             )
           )}
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Button variant="primary" onClick={onRestart}>
-              ↻ another sprint
+              ↻ {restartLabel}
             </Button>
             <Button variant="ghost" onClick={onMenu}>
               ⌂ menu
@@ -196,7 +219,7 @@ export function TimedResultPage({
         onChange={setValue}
         onSubmit={handleSubmit}
         placeholder='type "again" or "menu"'
-        hint={notice ?? "again · r · another sprint · menu: pick a tool"}
+        hint={notice ?? `again · r · ${isBlitz ? "another blitz" : "another sprint"} · menu: pick a tool`}
         actions={
           <>
             <Button variant="ghost" onClick={onMenu}>

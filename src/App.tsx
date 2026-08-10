@@ -12,7 +12,7 @@ import { ResultPage } from "./pages/ResultPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { TimedSetupPage } from "./pages/TimedSetupPage";
 import { TimedQuizPage, type TimedFinishReason } from "./pages/TimedQuizPage";
-import { TimedResultPage } from "./pages/TimedResultPage";
+import { TimedResultPage, type TimedRunKind } from "./pages/TimedResultPage";
 
 /** A full practice session for one category + level (fresh state per combo). */
 function PracticeSession({
@@ -40,30 +40,33 @@ function PracticeSession({
   );
 }
 
-/**
- * A timed daily-practice sprint: a weighted deck (misses first) streams
- * questions until the clock runs out or the user quits.
- */
+/** A timed practice run: daily sprint (all tools), per-tool sprint, or blitz. */
 function TimedSession({
   practice,
-  seconds,
+  run,
   settingsOpen,
   onMenu,
   onSettings,
 }: {
   practice: ReturnType<typeof usePracticeHistory>;
-  seconds: number;
+  run: TimedRun;
   settingsOpen: boolean;
   onMenu: () => void;
   onSettings: () => void;
 }) {
-  // Every question from every tool & level, for the whole-dataset sprint.
+  const { seconds, perQuestion, tool } = run;
+  const isBlitz = perQuestion !== null;
+
+  // Daily sprint draws from every tool; per-tool runs from one tool only.
   const allQuestions = useMemo(
-    () => Object.values(questionSets).flatMap((set) => set.questions),
-    []
+    () =>
+      tool === null
+        ? Object.values(questionSets).flatMap((set) => set.questions)
+        : questionSets[tool].questions,
+    [tool]
   );
 
-  // Build the weighted deck once per sprint (misses captured at start).
+  // Build the weighted deck once per run (misses captured at start).
   const [deck, setDeck] = useState(() =>
     buildPracticeDeck(allQuestions, practice.misses)
   );
@@ -72,27 +75,36 @@ function TimedSession({
     elapsed: number;
   } | null>(null);
 
-  const quiz = useQuiz({ questions: deck, shuffle: false });
+  // Timed runs end when the pool is exhausted — no reshuffling repeats.
+  const quiz = useQuiz({ questions: deck, shuffle: false, infinite: false });
 
-  // Record the daily streak once when the sprint ends. markDone is stable
-  // and idempotent, so this can't double-count a day.
+  // Record the daily streak once when the run ends.
   useEffect(() => {
     if (quiz.ended) practice.markDone();
   }, [quiz.ended, practice.markDone]);
+
+  const kind: TimedRunKind =
+    tool === null ? "daily" : isBlitz ? "blitz" : "sprint";
+
+  const restart = () => {
+    // Re-prioritize with the latest miss counts; useQuiz resets on the new
+    // deck identity.
+    setDeck(buildPracticeDeck(allQuestions, practice.misses));
+    setFinish(null);
+  };
 
   if (quiz.ended) {
     return (
       <TimedResultPage
         quiz={quiz}
         practice={practice}
-        durationSeconds={seconds}
+        kind={kind}
+        tool={tool}
         finish={finish}
-        onRestart={() => {
-          // Re-prioritize with the latest miss counts; useQuiz resets on the
-          // new deck identity.
-          setDeck(buildPracticeDeck(allQuestions, practice.misses));
-          setFinish(null);
-        }}
+        sessionSeconds={isBlitz ? undefined : seconds}
+        perQuestionSeconds={isBlitz ? perQuestion : undefined}
+        poolSize={deck.length}
+        onRestart={restart}
         onMenu={onMenu}
         onSettings={onSettings}
       />
@@ -103,7 +115,9 @@ function TimedSession({
     <TimedQuizPage
       quiz={quiz}
       practice={practice}
-      durationSeconds={seconds}
+      sessionSeconds={isBlitz ? undefined : seconds}
+      perQuestionSeconds={isBlitz ? perQuestion : undefined}
+      poolSize={deck.length}
       settingsOpen={settingsOpen}
       onFinish={(kind, elapsed) => setFinish({ kind, elapsed })}
       onMenu={onMenu}
@@ -112,13 +126,28 @@ function TimedSession({
   );
 }
 
+export type TimedRun = {
+  /** Session-mode length, or 0 for blitz. */
+  seconds: number;
+  /** Blitz pace per question; null for session mode. */
+  perQuestion: number | null;
+  /** Tool to practice; null = all tools (daily sprint). */
+  tool: Category | null;
+};
+
+export type TimedSetupRequest = {
+  mode: "session" | "blitz";
+  tool: Category | null;
+};
+
 export default function App() {
   const [category, setCategory] = useState<Category | null>(null);
   const [level, setLevel] = useState<Level | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  /** Sprint length in seconds; null when not in a timed session. */
-  const [timedSeconds, setTimedSeconds] = useState<number | null>(null);
-  const [showTimedSetup, setShowTimedSetup] = useState(false);
+  /** Pending timed setup (duration/pace picker). */
+  const [timedSetup, setTimedSetup] = useState<TimedSetupRequest | null>(null);
+  /** Running timed session. */
+  const [timedRun, setTimedRun] = useState<TimedRun | null>(null);
   const settings = useSettings();
   const practice = usePracticeHistory();
 
@@ -126,22 +155,28 @@ export default function App() {
 
   return (
     <div className="crt-grid flex h-dvh flex-col overflow-hidden bg-term-bg text-term-fg">
-      {showTimedSetup ? (
+      {timedSetup ? (
         <TimedSetupPage
+          mode={timedSetup.mode}
+          tool={timedSetup.tool}
           streak={practice.streak}
           onStart={(seconds) => {
-            setTimedSeconds(seconds);
-            setShowTimedSetup(false);
+            setTimedRun({
+              seconds: timedSetup.mode === "blitz" ? 0 : seconds,
+              perQuestion: timedSetup.mode === "blitz" ? seconds : null,
+              tool: timedSetup.tool,
+            });
+            setTimedSetup(null);
           }}
-          onBack={() => setShowTimedSetup(false)}
+          onBack={() => setTimedSetup(null)}
           onSettings={openSettings}
         />
-      ) : timedSeconds !== null ? (
+      ) : timedRun ? (
         <TimedSession
           practice={practice}
-          seconds={timedSeconds}
+          run={timedRun}
           settingsOpen={showSettings}
-          onMenu={() => setTimedSeconds(null)}
+          onMenu={() => setTimedRun(null)}
           onSettings={openSettings}
         />
       ) : category === null ? (
@@ -150,7 +185,7 @@ export default function App() {
             setCategory(c);
             setLevel(null);
           }}
-          onTimed={() => setShowTimedSetup(true)}
+          onTimed={() => setTimedSetup({ mode: "session", tool: null })}
           streak={practice.streak}
           onSettings={openSettings}
         />
@@ -159,6 +194,8 @@ export default function App() {
           category={category}
           onSelect={setLevel}
           onBack={() => setCategory(null)}
+          onSprint={() => setTimedSetup({ mode: "session", tool: category })}
+          onBlitz={() => setTimedSetup({ mode: "blitz", tool: category })}
           onSettings={openSettings}
         />
       ) : (
