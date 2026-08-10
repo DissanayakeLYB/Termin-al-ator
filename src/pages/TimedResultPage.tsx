@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import type { QuizApi } from "../hooks/useQuiz";
 import type { PracticeHistory } from "../hooks/usePracticeHistory";
 import type { TimedFinishReason } from "./TimedQuizPage";
+import type { TimedLevel } from "./TimedSetupPage";
 import { categoryLabels, type Category } from "../data/questions";
+import { levelInfo } from "../data/levels";
 import { isMenuCommand, isSettingsCommand } from "../utils/commands";
 import { formatClock } from "../utils/timed";
 import { Button } from "../components/Button";
@@ -33,6 +35,8 @@ interface TimedResultPageProps {
   kind: TimedRunKind;
   /** The tool practiced, if the run was per-tool. */
   tool?: Category | null;
+  /** Level filter chosen at setup; null/'all' when levels were mixed. */
+  level?: TimedLevel;
   /** How the session ended; null if unknown (shouldn't happen). */
   finish: { kind: TimedFinishReason; elapsed: number } | null;
   /** Session-mode length (drives the "of 10:00" phrasing). */
@@ -52,6 +56,7 @@ export function TimedResultPage({
   practice,
   kind,
   tool = null,
+  level = "all",
   finish,
   sessionSeconds,
   perQuestionSeconds,
@@ -69,6 +74,7 @@ export function TimedResultPage({
 
   const isBlitz = kind === "blitz";
   const label = tool ? categoryLabels[tool] : null;
+  const levelName = level === "all" ? null : levelInfo(level).name;
   const timedOut = finish?.kind === "timeup";
   const elapsed = finish?.elapsed ?? 0;
   const duration = sessionSeconds ?? 0;
@@ -110,12 +116,13 @@ export function TimedResultPage({
         ? `pool finished — every question done in ${formatClock(elapsed)} of ${formatClock(duration)}. Great pace.`
         : `session ended — you practiced ${formatClock(elapsed)} of ${formatClock(duration)}. Every rep counts.`;
 
+  const subject = label ? (levelName ? `${label} ${levelName}` : label) : null;
   const header =
     kind === "daily"
       ? "— ⏱ daily practice —"
       : isBlitz
-        ? `— ⚡ ${label ?? "blitz"} blitz —`
-        : `— ⏱ ${label ?? "timed"} sprint —`;
+        ? `— ⚡ ${subject ?? "blitz"} blitz —`
+        : `— ⏱ ${subject ?? "timed"} sprint —`;
 
   const restartLabel = isBlitz ? "another blitz" : "another sprint";
 

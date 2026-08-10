@@ -10,7 +10,7 @@ import { LevelPage } from "./pages/LevelPage";
 import { QuizPage } from "./pages/QuizPage";
 import { ResultPage } from "./pages/ResultPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { TimedSetupPage } from "./pages/TimedSetupPage";
+import { TimedSetupPage, type TimedLevel } from "./pages/TimedSetupPage";
 import { TimedQuizPage, type TimedFinishReason } from "./pages/TimedQuizPage";
 import { TimedResultPage, type TimedRunKind } from "./pages/TimedResultPage";
 
@@ -54,17 +54,18 @@ function TimedSession({
   onMenu: () => void;
   onSettings: () => void;
 }) {
-  const { seconds, perQuestion, tool } = run;
+  const { seconds, perQuestion, tool, level } = run;
   const isBlitz = perQuestion !== null;
 
-  // Daily sprint draws from every tool; per-tool runs from one tool only.
-  const allQuestions = useMemo(
-    () =>
+  // Daily sprint draws from every tool; per-tool runs from one tool, and a
+  // chosen level filters that tool's pool down to one practice kind.
+  const allQuestions = useMemo(() => {
+    const base =
       tool === null
         ? Object.values(questionSets).flatMap((set) => set.questions)
-        : questionSets[tool].questions,
-    [tool]
-  );
+        : questionSets[tool].questions;
+    return level === "all" ? base : base.filter((q) => q.level === level);
+  }, [tool, level]);
 
   // Build the weighted deck once per run (misses captured at start).
   const [deck, setDeck] = useState(() =>
@@ -100,6 +101,7 @@ function TimedSession({
         practice={practice}
         kind={kind}
         tool={tool}
+        level={level}
         finish={finish}
         sessionSeconds={isBlitz ? undefined : seconds}
         perQuestionSeconds={isBlitz ? perQuestion : undefined}
@@ -133,11 +135,14 @@ export type TimedRun = {
   perQuestion: number | null;
   /** Tool to practice; null = all tools (daily sprint). */
   tool: Category | null;
+  /** Level filter; "all" mixes every level of the tool. */
+  level: TimedLevel;
 };
 
 export type TimedSetupRequest = {
   mode: "session" | "blitz";
   tool: Category | null;
+  level: TimedLevel;
 };
 
 export default function App() {
@@ -160,11 +165,12 @@ export default function App() {
           mode={timedSetup.mode}
           tool={timedSetup.tool}
           streak={practice.streak}
-          onStart={(seconds) => {
+          onStart={(seconds, level) => {
             setTimedRun({
               seconds: timedSetup.mode === "blitz" ? 0 : seconds,
               perQuestion: timedSetup.mode === "blitz" ? seconds : null,
               tool: timedSetup.tool,
+              level,
             });
             setTimedSetup(null);
           }}
@@ -185,7 +191,7 @@ export default function App() {
             setCategory(c);
             setLevel(null);
           }}
-          onTimed={() => setTimedSetup({ mode: "session", tool: null })}
+          onTimed={() => setTimedSetup({ mode: "session", tool: null, level: "all" })}
           streak={practice.streak}
           onSettings={openSettings}
         />
@@ -194,8 +200,8 @@ export default function App() {
           category={category}
           onSelect={setLevel}
           onBack={() => setCategory(null)}
-          onSprint={() => setTimedSetup({ mode: "session", tool: category })}
-          onBlitz={() => setTimedSetup({ mode: "blitz", tool: category })}
+          onSprint={() => setTimedSetup({ mode: "session", tool: category, level: "all" })}
+          onBlitz={() => setTimedSetup({ mode: "blitz", tool: category, level: "all" })}
           onSettings={openSettings}
         />
       ) : (

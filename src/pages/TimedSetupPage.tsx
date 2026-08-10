@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import type { Category } from "../data/questions";
-import { categoryLabels } from "../data/questions";
+import type { Category, Level } from "../data/questions";
+import { categoryLabels, questionSets } from "../data/questions";
+import { countForLevel, levelInfo, levelInfos } from "../data/levels";
 import { isBackCommand, isSettingsCommand } from "../utils/commands";
 import {
   BLITZ_PRESET_SECONDS,
@@ -16,13 +17,19 @@ import { InputBar } from "../components/InputBar";
 
 type TimedSetupMode = "session" | "blitz";
 
+/**
+ * A practice level, or "all" to mix every level of the tool (the timed
+ * equivalent of the chaos session — hints stay available).
+ */
+export type TimedLevel = Level | "all";
+
 interface TimedSetupPageProps {
   mode: TimedSetupMode;
   /** The tool being practiced; null = all tools (daily sprint). */
   tool?: Category | null;
   /** Current daily-practice streak (0 when none yet). */
   streak: number;
-  onStart: (seconds: number) => void;
+  onStart: (seconds: number, level: TimedLevel) => void;
   onBack: () => void;
   onSettings?: () => void;
 }
@@ -44,11 +51,14 @@ export function TimedSetupPage({
   const [duration, setDuration] = useState(
     isBlitz ? DEFAULT_BLITZ_SECONDS : DEFAULT_SPRINT_SECONDS
   );
+  const [level, setLevel] = useState<TimedLevel>("all");
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const toolName = tool ? categoryLabels[tool] : null;
+  const levelName = level === "all" ? null : levelInfo(level).name;
+  const subject = toolName ? (levelName ? `${toolName} ${levelName}` : toolName) : null;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -57,7 +67,7 @@ export function TimedSetupPage({
   const startWith = (seconds: number) => {
     setNotice(null);
     setValue("");
-    onStart(seconds);
+    onStart(seconds, level);
   };
 
   const handleSubmit = () => {
@@ -88,16 +98,16 @@ export function TimedSetupPage({
     setValue("");
   };
 
-  const bannerTag = toolName
+  const bannerTag = subject
     ? isBlitz
-      ? `${toolName} blitz · per-question timer`
-      : `${toolName} sprint · timed session`
+      ? `${subject} blitz · per-question timer`
+      : `${subject} sprint · timed session`
     : "daily practice · timed sprint";
 
-  const bannerCopy = toolName
+  const bannerCopy = subject
     ? isBlitz
-      ? `Quick-fire ${toolName}: every question gets its own countdown. When it hits zero, it counts as a miss and the next one appears — and the session ends when the question pool runs out, no repeats.`
-      : `A timed ${toolName} session: questions from every level of the tool, weighted toward the commands you've missed. Pick a length or type your own.`
+      ? `Quick-fire ${subject}: every question gets its own countdown. When it hits zero, it counts as a miss and the next one appears — and the session ends when the question pool runs out, no repeats.`
+      : `A timed ${subject} session: questions weighted toward the commands you've missed. Pick a length or type your own.`
     : `A short, focused session: mixed questions from every tool and every level, weighted toward the commands you've missed — so the reps land where they matter. No score pressure, just steady practice. Pick a length or type your own.`;
 
   const presets = isBlitz ? BLITZ_PRESET_SECONDS : SPRINT_PRESET_MINUTES.map((m) => m * 60);
@@ -173,6 +183,59 @@ export function TimedSetupPage({
               )}
             </p>
           </div>
+
+          {/* Level filter — per-tool runs can target a single level. */}
+          {tool && (
+            <div className="mt-6">
+              <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+                level
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLevel("all")}
+                  aria-pressed={level === "all"}
+                  className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                    level === "all"
+                      ? "border-term-green bg-term-green/10 font-bold text-term-green"
+                      : "border-term-edge2 text-term-dim hover:border-term-green/50 hover:text-term-fg"
+                  }`}
+                >
+                  all levels{" "}
+                  <span className="tabular-nums opacity-70">
+                    ({questionSets[tool].questions.length})
+                  </span>
+                </button>
+                {levelInfos
+                  .filter((l) => l.id !== "chaos")
+                  .map((info) => {
+                    const count = countForLevel(questionSets[tool], info.id);
+                    const active = level === info.id;
+                    return (
+                      <button
+                        key={info.id}
+                        type="button"
+                        onClick={() => setLevel(info.id)}
+                        aria-pressed={active}
+                        className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                          active
+                            ? `${info.border} ${info.accent} bg-term-panel2 font-bold`
+                            : "border-term-edge2 text-term-dim hover:border-term-green/50 hover:text-term-fg"
+                        }`}
+                      >
+                        {info.name}{" "}
+                        <span className="tabular-nums opacity-70">{count}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-term-dim">
+                {level === "all"
+                  ? "every level of this tool, shuffled together"
+                  : `only ${levelName} questions — ${levelInfo(level).tagline}`}
+              </p>
+            </div>
+          )}
 
           {/* What you get */}
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
