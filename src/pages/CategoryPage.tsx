@@ -33,7 +33,11 @@ export function CategoryPage({ onSelect, onTimed, streak = 0, onSettings }: Cate
 
   const handleSubmit = () => {
     const raw = value.trim();
-    if (!raw) return;
+    if (!raw) {
+      // Just pressing enter starts the primary action — first tool up.
+      handleSelect(availableQuestionSets[0].category);
+      return;
+    }
     const lower = raw.toLowerCase();
 
     if (isSettingsCommand(raw)) {
@@ -184,7 +188,7 @@ export function CategoryPage({ onSelect, onTimed, streak = 0, onSettings }: Cate
         placeholder={`choose: 1–${availableQuestionSets.length} or a name (e.g. tmux)`}
         hint={
           notice ??
-          `available: ${availableQuestionSets.map((s) => s.label).join(" · ")}`
+          `available: ${availableQuestionSets.map((s) => s.label).join(" · ")} — enter: start`
         }
         actions={
           <>

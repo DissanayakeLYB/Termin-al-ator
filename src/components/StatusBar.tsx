@@ -47,7 +47,7 @@ export function StatusBar({
         )}
       </span>
       <span className="ml-auto hidden md:inline">
-        enter: submit / next · <span className="text-term-amber">:hint</span> clue ·{" "}
+        enter: submit / next · <span className="text-term-amber">tab: hint</span> ·{" "}
         {reviewing ? (
           <>
             <span className="text-term-amber">back</span> current task ·{" "}

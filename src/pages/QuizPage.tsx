@@ -10,6 +10,7 @@ import {
   isSettingsCommand,
 } from "../utils/commands";
 import { getHints } from "../utils/hints";
+import { EXIT_REVIEW_KEY, isHintKey } from "../utils/shortcuts";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { Feedback } from "../components/Feedback";
@@ -128,6 +129,17 @@ export function QuizPage({
         // Don't steal focus when the user is selecting/copying terminal text.
         if (window.getSelection()?.toString()) return;
         inputRef.current?.focus();
+      }}
+      onKeyDown={(e) => {
+        // Keyboard-first: Tab reveals the next hint, Escape leaves review.
+        if (isHintKey(e) && !result && !reviewing) {
+          e.preventDefault();
+          revealHint();
+        } else if (e.key === EXIT_REVIEW_KEY && reviewing) {
+          e.preventDefault();
+          setValue("");
+          setReviewing(false);
+        }
       }}
     >
       <div
@@ -289,8 +301,8 @@ export function QuizPage({
         readOnly={result !== null && !reviewing}
         hint={
           <span className="sm:hidden">
-            enter: submit / next · <span className="text-term-amber">:hint</span>{" "}
-            clue · <span className="text-term-amber">back</span>{" "}
+            enter: submit / next · <span className="text-term-amber">tab: hint</span> ·{" "}
+            <span className="text-term-amber">back</span>{" "}
             {reviewing ? "current task" : "review"} ·{" "}
             <span className="text-term-amber">:quit</span> end ·{" "}
             <span className="text-term-amber">:menu</span> switch

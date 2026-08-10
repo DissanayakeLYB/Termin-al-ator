@@ -66,27 +66,29 @@ export function ResultPage({
 
   const handleSubmit = () => {
     const cmd = value.trim();
-    if (cmd) {
-      if (isRestartCommand(cmd)) {
-        setNotice(null);
-        restart();
-        return;
-      }
-      if (isMenuCommand(cmd)) {
-        onMenu();
-        return;
-      }
-      if (isSettingsCommand(cmd)) {
-        setNotice(null);
-        setValue("");
-        onSettings?.();
-        return;
-      }
-      setNotice(`unknown command: ${cmd} — type restart, r, menu, or settings`);
+    if (!cmd) {
+      // Just pressing enter restarts the session (the primary action).
+      restart();
+      return;
     }
+    if (isRestartCommand(cmd)) {
+      setNotice(null);
+      restart();
+      return;
+    }
+    if (isMenuCommand(cmd)) {
+      onMenu();
+      return;
+    }
+    if (isSettingsCommand(cmd)) {
+      setNotice(null);
+      setValue("");
+      onSettings?.();
+      return;
+    }
+    setNotice(`unknown command: ${cmd} — type restart, r, menu, or settings`);
     setValue("");
   };
-
   return (
     <div
       className="flex min-h-0 flex-1 flex-col"
@@ -167,8 +169,8 @@ export function ResultPage({
         value={value}
         onChange={setValue}
         onSubmit={handleSubmit}
-        placeholder='type "restart" or "menu"'
-        hint={notice ?? "restart · r · again · menu: another practice"}
+        placeholder='press enter to restart, or type "menu"'
+        hint={notice ?? "enter: restart · restart · r · again · menu: another practice"}
         actions={
           <>
             <Button variant="ghost" onClick={onMenu}>

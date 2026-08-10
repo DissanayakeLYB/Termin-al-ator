@@ -90,19 +90,22 @@ export function TimedResultPage({
 
   const handleSubmit = () => {
     const cmd = value.trim();
-    if (cmd) {
-      if (isMenuCommand(cmd)) {
-        onMenu();
-        return;
-      }
-      if (isSettingsCommand(cmd)) {
-        setNotice(null);
-        setValue("");
-        onSettings?.();
-        return;
-      }
-      setNotice(`unknown command: ${cmd} — type menu, again, or settings`);
+    if (!cmd) {
+      // Just pressing enter runs it again (the primary action).
+      onRestart();
+      return;
     }
+    if (isMenuCommand(cmd)) {
+      onMenu();
+      return;
+    }
+    if (isSettingsCommand(cmd)) {
+      setNotice(null);
+      setValue("");
+      onSettings?.();
+      return;
+    }
+    setNotice(`unknown command: ${cmd} — type menu, again, or settings`);
     setValue("");
   };
 
@@ -225,8 +228,8 @@ export function TimedResultPage({
         value={value}
         onChange={setValue}
         onSubmit={handleSubmit}
-        placeholder='type "again" or "menu"'
-        hint={notice ?? `again · r · ${isBlitz ? "another blitz" : "another sprint"} · menu: pick a tool`}
+        placeholder={isBlitz ? 'press enter for another blitz' : 'press enter for another sprint'}
+        hint={notice ?? `enter: ${isBlitz ? "another blitz" : "another sprint"} · again · r · menu: pick a tool`}
         actions={
           <>
             <Button variant="ghost" onClick={onMenu}>

@@ -46,7 +46,12 @@ export function LevelPage({ category, onSelect, onBack, onSprint, onBlitz, onSet
 
   const handleSubmit = () => {
     const raw = value.trim();
-    if (!raw) return;
+    if (!raw) {
+      // Just pressing enter starts the primary action — pareto, the
+      // recommended first level.
+      handleSelect(levelInfos[0].id);
+      return;
+    }
     const lower = raw.toLowerCase();
 
     if (isSettingsCommand(raw)) {
@@ -216,7 +221,7 @@ export function LevelPage({ category, onSelect, onBack, onSprint, onBlitz, onSet
         placeholder={`choose: 1–${levelInfos.length} or a name (e.g. workflow)`}
         hint={
           notice ??
-          `levels: ${levelInfos.map((l) => l.name).join(" · ")} · sprint/blitz: timed · ${categoryLabels[category]} has ${set.questions.length} questions`
+          `levels: ${levelInfos.map((l) => l.name).join(" · ")} — enter: start · sprint/blitz: timed · ${categoryLabels[category]} has ${set.questions.length} questions`
         }
         actions={
           <>

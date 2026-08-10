@@ -14,6 +14,7 @@ import {
 } from "../utils/commands";
 import { getHints } from "../utils/hints";
 import { formatClock } from "../utils/timed";
+import { EXIT_REVIEW_KEY, isHintKey } from "../utils/shortcuts";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { Feedback } from "../components/Feedback";
@@ -286,6 +287,17 @@ export function TimedQuizPage({
         if (window.getSelection()?.toString()) return;
         inputRef.current?.focus();
       }}
+      onKeyDown={(e) => {
+        // Keyboard-first: Tab reveals the next hint, Escape leaves review.
+        if (isHintKey(e) && !result && !reviewing) {
+          e.preventDefault();
+          revealHint();
+        } else if (e.key === EXIT_REVIEW_KEY && reviewing) {
+          e.preventDefault();
+          setValue("");
+          setReviewing(false);
+        }
+      }}
     >
       <div
         ref={scrollRef}
@@ -545,8 +557,8 @@ export function TimedQuizPage({
           </span>
         )}
         <span className="ml-auto hidden md:inline">
-          enter: submit / next · <span className="text-term-amber">:hint</span>{" "}
-          clue · <span className="text-term-amber">back</span>{" "}
+          enter: submit / next · <span className="text-term-amber">tab: hint</span> ·{" "}
+          <span className="text-term-amber">back</span>{" "}
           {reviewing ? "current task" : "review"} ·{" "}
           <span className="text-term-amber">:pause</span>{" "}
           {paused ? "resume" : "freeze"} ·{" "}
@@ -572,8 +584,8 @@ export function TimedQuizPage({
         readOnly={result !== null && !reviewing && !paused}
         hint={
           <span className="sm:hidden">
-            enter: submit / next · <span className="text-term-amber">:hint</span>{" "}
-            clue · <span className="text-term-amber">back</span>{" "}
+            enter: submit / next · <span className="text-term-amber">tab: hint</span> ·{" "}
+            <span className="text-term-amber">back</span>{" "}
             {reviewing ? "current task" : "review"} ·{" "}
             <span className="text-term-amber">:pause</span>{" "}
             {paused ? "resume" : "freeze"} ·{" "}
