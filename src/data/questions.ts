@@ -87,10 +87,40 @@ export interface QuizQuestion {
    *
    * Note: `Ctrl+` key-combo answers are always matched case-insensitively
    * regardless of this flag, and `aliases` can already accept other case
-   * variants (e.g. "esc" for "Esc").
+   * variants (e.g. "esc" for "Esc"). Missions are always matched
+   * case-insensitively (they grade concepts, not capitalization).
    */
   caseSensitive?: boolean;
+  /**
+   * Question kind. Omit for a regular recall question. Set to `"mission"`
+   * to frame the prompt as a realistic developer situation with a goal —
+   * the user figures out which commands are needed instead of being told
+   * (see `required`). Missions live mostly in the "workflow" level and
+   * therefore also show up in "chaos" sessions (which mix every level).
+   */
+  kind?: "standard" | "mission";
+  /**
+   * For mission questions: the essential commands the solution must
+   * include, in any order. Each is matched case-insensitively against the
+   * user's submission, and trailing arguments are free — `"tmux new -s"`
+   * accepts `tmux new -s dev`. The user's submission is split into
+   * individual commands on `;`, `&&`, `||`, `|`, and newlines (pipeline
+   * stages count as separate commands; `$(...)` substitutions are also
+   * extracted). Omit to grade the mission like a normal question (exact
+   * `answer` match, aliases honored).
+   */
+  required?: string[];
 }
+
+/**
+ * A scenario question: a realistic situation + a goal, graded on the set of
+ * essential commands the user chains together. Author one per realistic task
+ * you want to add; see `src/data/missions.ts` and CONTRIBUTING.md.
+ */
+export type MissionQuestion = QuizQuestion & {
+  kind: "mission";
+  required: string[];
+};
 
 
 export const vimQuestions: QuizQuestion[] = [
