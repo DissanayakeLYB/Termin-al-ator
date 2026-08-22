@@ -66,7 +66,11 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Connect to `example.com` as user `alice` over port `2222`.",
             answer: "ssh -p 2222 alice@example.com",
-            aliases: ["ssh -p2222 alice@example.com"],
+            aliases: [
+              "ssh -p2222 alice@example.com",
+              "ssh alice@example.com -p 2222",
+              "ssh alice@example.com -p2222",
+            ],
             explanation:
               "`-p` sets the port. Watch the case: ssh uses lowercase `-p`, scp uses uppercase `-P`.",
           },
@@ -89,7 +93,10 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Run `df -h` on `example.com` without opening an interactive shell.",
             answer: "ssh example.com df -h",
-            aliases: ["ssh user@example.com df -h"],
+            aliases: [
+              "ssh user@example.com df -h",
+              "ssh example.com df\n",
+            ],
             explanation:
               "Anything after the host is run as a single remote command — SSH executes it and exits.",
           },
@@ -108,7 +115,10 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Connect to `example.com`, logging in as user `bob`.",
             answer: "ssh -l bob example.com",
-            aliases: ["ssh bob@example.com"],
+            aliases: [
+              "ssh bob@example.com",
+              "ssh example.com -l bob",
+            ],
             explanation:
               "`-l` is the flag form of the `user@` syntax.",
           },
@@ -173,6 +183,9 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Generate a 4096-bit RSA key for a legacy server.",
             answer: "ssh-keygen -t rsa -b 4096",
+            aliases: [
+              "ssh-keygen -b 4096 -t rsa",
+            ],
             explanation:
               "`-b 4096` sets the strength. Older servers may still require RSA.",
           },
@@ -195,6 +208,12 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Install your public key on `example.com` for passwordless login.",
             answer: "ssh-copy-id user@example.com",
+            aliases: [
+              "ssh-copy-id alice@example.com",
+              "ssh-copy-id bob@example.com",
+              "ssh-copy-id root@example.com",
+              "ssh-copy-id admin@example.com",
+            ],
             explanation:
               "`ssh-copy-id` appends your pubkey to the host's `~/.ssh/authorized_keys`.",
           },
@@ -216,6 +235,9 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Start an SSH agent in the background and export its env vars.",
             answer: "eval $(ssh-agent)",
+            aliases: [
+              "eval \"$(ssh-agent)\"",
+            ],
             explanation:
               "`eval $(ssh-agent)` starts the agent and exports `SSH_AUTH_SOCK` for this shell.",
           },
@@ -250,6 +272,11 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Fix permissions on your private key after copying it to a new machine.",
             answer: "chmod 600 ~/.ssh/id_ed25519",
+            aliases: [
+              "chmod 600 ~/.ssh/id_rsa",
+              "chmod 600 ~/.ssh/id_dsa",
+              "chmod 600 ~/.ssh/id_ecdsa",
+            ],
             explanation:
               "Private keys must be owner-only (600) or SSH rejects them.",
           },
@@ -386,6 +413,9 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Forward local port 8080 to remote `localhost:80` through the SSH connection.",
             answer: "ssh -L 8080:localhost:80 user@host",
+            aliases: [
+              "ssh user@host -L 8080:localhost:80",
+            ],
             explanation:
               "`-L local:remote` opens a tunnel — `localhost:8080` on your machine maps to `localhost:80` on the server.",
           },
@@ -407,6 +437,9 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Expose your local port 3000 to the remote host as port 9000.",
             answer: "ssh -R 9000:localhost:3000 user@host",
+            aliases: [
+              "ssh user@host -R 9000:localhost:3000",
+            ],
             explanation:
               "`-R remote:local` makes the server's port 9000 reach your local port 3000.",
           },
@@ -431,6 +464,9 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Open a SOCKS5 proxy on local port 1080 through the SSH connection.",
             answer: "ssh -D 1080 user@host",
+            aliases: [
+              "ssh user@host -D 1080",
+            ],
             explanation:
               "`-D` creates a dynamic SOCKS proxy — point your browser at `localhost:1080`.",
           },
@@ -457,6 +493,12 @@ export const sshGuides: GuideSection[] = [
             prompt:
               "Keep a tunnel alive in the background and suppress the remote shell.",
             answer: "ssh -fN -L 5432:localhost:5432 user@host",
+            aliases: [
+              "ssh user@host -fN -L 5432:localhost:5432",
+              "ssh -f -N -L 5432:localhost:5432 user@host",
+              "ssh -fNL -L 5432:localhost:5432 user@host",
+              "ssh user@host -fNL -L 5432:localhost:5432",
+            ],
             explanation:
               "`-f` backgrounds after auth, `-N` runs no command — a pure background tunnel.",
           },
@@ -499,6 +541,10 @@ export const sshGuides: GuideSection[] = [
           {
             prompt: "Upload `app.conf` to `user@host`'s home directory.",
             answer: "scp app.conf user@host:",
+            aliases: [
+              "scp app.conf user@host:.",
+              "scp app.conf user@host:~/",
+            ],
             explanation:
               "Remote path defaults to home when you use `user@host:` with no path after the colon.",
           },
@@ -592,6 +638,9 @@ export const sshGuides: GuideSection[] = [
             prompt:
               "Connect to `internal.host` as `alice`, jumping through `bastion.example.com`.",
             answer: "ssh -J bastion.example.com alice@internal.host",
+            aliases: [
+              "ssh alice@internal.host -J bastion.example.com",
+            ],
             explanation:
               "`-J` (ProxyJump) chains through the jump host.",
           },
@@ -753,6 +802,13 @@ Host internal
           {
             prompt: "Apply sshd_config changes without killing active sessions.",
             answer: "sudo systemctl reload ssh",
+            aliases: [
+              "systemctl reload ssh",
+              "sudo systemctl reload sshd",
+              "systemctl reload sshd",
+              "sudo service ssh reload",
+              "service ssh reload",
+            ],
             explanation:
               "`systemctl reload ssh` re-reads config gracefully; `restart` is heavier.",
           },
