@@ -10,13 +10,14 @@ interface GuidePageProps {
   tool: ToolGuide;
   onBack: () => void;
   onPractice?: () => void;
+  onSettings?: () => void;
 }
 
 /**
  * Interactive guide page for a tool: browse sections, read explanations,
  * and try exercises inline.
  */
-export function GuidePage({ tool, onBack, onPractice }: GuidePageProps) {
+export function GuidePage({ tool, onBack, onPractice, onSettings }: GuidePageProps) {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const sections = tool.sections;
   const section = sections.find((s) => s.id === activeSection) ?? null;
@@ -28,6 +29,7 @@ export function GuidePage({ tool, onBack, onPractice }: GuidePageProps) {
         sections={sections}
         onSelect={setActiveSection}
         onBack={onBack}
+        onSettings={onSettings}
       />
     );
   }
@@ -38,6 +40,7 @@ export function GuidePage({ tool, onBack, onPractice }: GuidePageProps) {
       section={section}
       onBack={() => setActiveSection(null)}
       onPractice={onPractice}
+      onSettings={onSettings}
     />
   );
 }
@@ -49,11 +52,13 @@ function SectionList({
   sections,
   onSelect,
   onBack,
+  onSettings,
 }: {
   toolLabel: string;
   sections: GuideSection[];
   onSelect: (id: string) => void;
   onBack: () => void;
+  onSettings?: () => void;
 }) {
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -154,9 +159,21 @@ function SectionList({
           `sections: ${sections.map((s) => s.title.toLowerCase()).join(" · ")} — enter: start`
         }
         actions={
-          <Button variant="primary" onClick={() => onSelect(sections[0].id)}>
-            start →
-          </Button>
+          <>
+            {onSettings && (
+              <Button
+                variant="ghost"
+                onClick={onSettings}
+                aria-label="settings"
+                title="settings: font size + theme"
+              >
+                ⚙
+              </Button>
+            )}
+            <Button variant="primary" onClick={() => onSelect(sections[0].id)}>
+              start →
+            </Button>
+          </>
         }
       />
     </div>
@@ -170,11 +187,13 @@ function SectionDetail({
   section,
   onBack,
   onPractice,
+  onSettings,
 }: {
   toolLabel: string;
   section: GuideSection;
   onBack: () => void;
   onPractice?: () => void;
+  onSettings?: () => void;
 }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -191,6 +210,17 @@ function SectionDetail({
             {onPractice && (
               <Button variant="ghost" onClick={onPractice} className="text-xs">
                 practice quiz →
+              </Button>
+            )}
+            {onSettings && (
+              <Button
+                variant="ghost"
+                onClick={onSettings}
+                className="text-xs"
+                aria-label="settings"
+                title="settings: font size + theme"
+              >
+                ⚙
               </Button>
             )}
           </div>

@@ -12,12 +12,14 @@ import { InputBar } from "../components/InputBar";
 interface TutorialPickerPageProps {
   onSelect: (tool: ToolGuide) => void;
   onBack: () => void;
+  onSettings?: () => void;
 }
 
 /** Full-page terminal menu: pick a tool to learn about. */
 export function TutorialPickerPage({
   onSelect,
   onBack,
+  onSettings,
 }: TutorialPickerPageProps) {
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -155,12 +157,24 @@ export function TutorialPickerPage({
           `available: ${availableGuides.map((g) => g.label).join(" · ")} — enter: start`
         }
         actions={
-          <Button
-            variant="primary"
-            onClick={() => onSelect(availableGuides[0])}
-          >
-            start →
-          </Button>
+          <>
+            {onSettings && (
+              <Button
+                variant="ghost"
+                onClick={onSettings}
+                aria-label="settings"
+                title="settings: font size + theme"
+              >
+                ⚙
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              onClick={() => onSelect(availableGuides[0])}
+            >
+              start →
+            </Button>
+          </>
         }
       />
     </div>

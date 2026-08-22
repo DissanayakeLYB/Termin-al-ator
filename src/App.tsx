@@ -175,6 +175,7 @@ export default function App() {
             setActiveGuide(null);
             setCategory(activeGuide.category);
           }}
+          onSettings={openSettings}
         />
       ) : showTutorialPicker ? (
         <TutorialPickerPage
@@ -183,6 +184,7 @@ export default function App() {
             setActiveGuide(guide);
           }}
           onBack={() => setShowTutorialPicker(false)}
+          onSettings={openSettings}
         />
       ) : timedSetup ? (
         <TimedSetupPage
