@@ -13,6 +13,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { TimedSetupPage, type TimedLevel } from "./pages/TimedSetupPage";
 import { TimedQuizPage, type TimedFinishReason } from "./pages/TimedQuizPage";
 import { TimedResultPage, type TimedRunKind } from "./pages/TimedResultPage";
+import { GuidePage } from "./pages/GuidePage";
 
 /** A full practice session for one category + level (fresh state per combo). */
 function PracticeSession({
@@ -149,6 +150,8 @@ export default function App() {
   const [category, setCategory] = useState<Category | null>(null);
   const [level, setLevel] = useState<Level | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  /** Show the SSH guide page. */
+  const [showGuide, setShowGuide] = useState(false);
   /** Pending timed setup (duration/pace picker). */
   const [timedSetup, setTimedSetup] = useState<TimedSetupRequest | null>(null);
   /** Running timed session. */
@@ -160,7 +163,15 @@ export default function App() {
 
   return (
     <div className="crt-grid flex h-dvh flex-col overflow-hidden bg-term-bg text-term-fg">
-      {timedSetup ? (
+      {showGuide ? (
+        <GuidePage
+          onBack={() => setShowGuide(false)}
+          onPractice={() => {
+            setShowGuide(false);
+            setCategory("ssh");
+          }}
+        />
+      ) : timedSetup ? (
         <TimedSetupPage
           mode={timedSetup.mode}
           tool={timedSetup.tool}
@@ -192,6 +203,7 @@ export default function App() {
             setLevel(null);
           }}
           onTimed={() => setTimedSetup({ mode: "session", tool: null, level: "all" })}
+          onGuide={() => setShowGuide(true)}
           streak={practice.streak}
           onSettings={openSettings}
         />

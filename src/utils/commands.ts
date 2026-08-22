@@ -54,6 +54,10 @@ const TIMED_COMMANDS = new Set([
 // Verified collision-free against the dataset.
 const BLITZ_COMMANDS = new Set(["blitz", ":blitz", "quickfire", ":quickfire"]);
 
+/** Commands that open the SSH guide page (from the menu). */
+// Verified collision-free against the dataset.
+const GUIDE_COMMANDS = new Set(["guide", ":guide", "learn", ":learn", "tutorial", ":tutorial"]);
+
 /** Commands that freeze / resume the timed sprint clock (toggle). */
 // Verified collision-free against the dataset.
 const PAUSE_COMMANDS = new Set([
@@ -121,4 +125,8 @@ export function isPauseCommand(input: string): boolean {
 
 export function isBlitzCommand(input: string): boolean {
   return BLITZ_COMMANDS.has(normalizeCommand(input));
+}
+
+export function isGuideCommand(input: string): boolean {
+  return GUIDE_COMMANDS.has(normalizeCommand(input));
 }

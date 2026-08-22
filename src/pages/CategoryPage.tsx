@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "../data/questions";
 import { availableQuestionSets, comingSoonSets } from "../data/questions";
-import { isSettingsCommand, isTimedCommand } from "../utils/commands";
+import { isGuideCommand, isSettingsCommand, isTimedCommand } from "../utils/commands";
 import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
@@ -10,13 +10,15 @@ interface CategoryPageProps {
   onSelect: (category: Category) => void;
   /** Opens the timed daily-practice sprint setup. */
   onTimed: () => void;
+  /** Opens the SSH guide page. */
+  onGuide?: () => void;
   /** Current daily sprint streak, shown on the sprint card. */
   streak?: number;
   onSettings?: () => void;
 }
 
 /** Full-page terminal menu: pick what to practice. */
-export function CategoryPage({ onSelect, onTimed, streak = 0, onSettings }: CategoryPageProps) {
+export function CategoryPage({ onSelect, onTimed, onGuide, streak = 0, onSettings }: CategoryPageProps) {
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,6 +51,12 @@ export function CategoryPage({ onSelect, onTimed, streak = 0, onSettings }: Cate
     if (isTimedCommand(raw)) {
       setValue("");
       onTimed();
+      return;
+    }
+
+    if (isGuideCommand(raw)) {
+      setValue("");
+      onGuide?.();
       return;
     }
 
@@ -96,6 +104,33 @@ export function CategoryPage({ onSelect, onTimed, streak = 0, onSettings }: Cate
             switch anytime from inside a session with{" "}
             <span className="text-term-amber">:menu</span>.
           </BootBanner>
+
+          {/* SSH guide — learn concepts before practicing. */}
+          {onGuide && (
+            <button
+              type="button"
+              onClick={onGuide}
+              className="group mt-6 flex w-full items-center gap-3 rounded-md border border-term-blue/40 bg-term-blue/5 p-4 text-left transition-colors hover:border-term-blue/70 hover:bg-term-blue/10 sm:gap-4"
+            >
+              <span className="shrink-0 text-xl" aria-hidden="true">
+                📖
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="font-bold text-term-blue transition-colors group-hover:text-term-bright">
+                    ssh guide
+                  </span>
+                </span>
+                <span className="mt-1 block text-sm leading-relaxed text-term-fg/70">
+                  step-by-step walkthroughs — learn SSH concepts with
+                  explanations and interactive exercises before quizzing.
+                </span>
+              </span>
+              <span className="shrink-0 rounded-md border border-term-blue/40 px-3 py-1.5 text-xs font-semibold text-term-blue transition-colors group-hover:bg-term-blue/15">
+                learn →
+              </span>
+            </button>
+          )}
 
           {/* Timed daily-practice sprint — a routine, not a test. */}
           <button
