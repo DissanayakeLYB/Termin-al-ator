@@ -179,7 +179,7 @@ function SectionDetail({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="w-full max-w-2xl">
+        <div className="w-full">
           <BootBanner tag={`${toolLabel.toLowerCase()} guide · ${section.title.toLowerCase()}`}>
             {section.description}
           </BootBanner>
