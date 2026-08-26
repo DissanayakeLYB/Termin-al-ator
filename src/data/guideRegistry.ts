@@ -1,6 +1,7 @@
 import type { Category } from "./questions";
 import type { GuideSection } from "./sshGuides";
 import { sshGuides } from "./sshGuides";
+import { vimGuides } from "./vimGuides";
 
 /** Metadata for each tool's tutorial content. */
 export interface ToolGuide {
@@ -36,8 +37,8 @@ export const guideRegistry: ToolGuide[] = [
     label: "Vim",
     description: "modal editing, motions, and text objects",
     icon: "📝",
-    sections: [],
-    available: false,
+    sections: vimGuides,
+    available: true,
   },
   {
     category: "tmux",
