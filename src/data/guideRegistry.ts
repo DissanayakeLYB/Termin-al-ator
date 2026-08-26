@@ -2,6 +2,7 @@ import type { Category } from "./questions";
 import type { GuideSection } from "./sshGuides";
 import { sshGuides } from "./sshGuides";
 import { vimGuides } from "./vimGuides";
+import { tmuxGuides } from "./tmuxGuides";
 
 /** Metadata for each tool's tutorial content. */
 export interface ToolGuide {
@@ -45,8 +46,8 @@ export const guideRegistry: ToolGuide[] = [
     label: "Tmux",
     description: "sessions, panes, windows, and buffers",
     icon: "🖥",
-    sections: [],
-    available: false,
+    sections: tmuxGuides,
+    available: true,
   },
   {
     category: "git",
