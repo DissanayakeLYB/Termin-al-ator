@@ -4,6 +4,7 @@ import { sshGuides } from "./sshGuides";
 import { vimGuides } from "./vimGuides";
 import { tmuxGuides } from "./tmuxGuides";
 import { gitGuides } from "./gitGuides";
+import { shellGuides } from "./shellGuides";
 
 /** Metadata for each tool's tutorial content. */
 export interface ToolGuide {
@@ -63,8 +64,8 @@ export const guideRegistry: ToolGuide[] = [
     label: "Shell",
     description: "files, pipes, redirection, and processes",
     icon: "🐚",
-    sections: [],
-    available: false,
+    sections: shellGuides,
+    available: true,
   },
   {
     category: "docker",
