@@ -3,6 +3,7 @@ import type { GuideSection } from "./sshGuides";
 import { sshGuides } from "./sshGuides";
 import { vimGuides } from "./vimGuides";
 import { tmuxGuides } from "./tmuxGuides";
+import { gitGuides } from "./gitGuides";
 
 /** Metadata for each tool's tutorial content. */
 export interface ToolGuide {
@@ -54,8 +55,8 @@ export const guideRegistry: ToolGuide[] = [
     label: "Git",
     description: "staging, history, branches, and remotes",
     icon: "🌿",
-    sections: [],
-    available: false,
+    sections: gitGuides,
+    available: true,
   },
   {
     category: "shell",
