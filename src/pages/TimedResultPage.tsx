@@ -9,6 +9,7 @@ import { isMenuCommand, isSettingsCommand } from "../utils/commands";
 import { formatClock } from "../utils/timed";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 
 export type TimedRunKind = "daily" | "sprint" | "blitz";
 
@@ -19,6 +20,19 @@ function latestMissed(attempts: QuizApi["attempts"]) {
     if (!attempt.correct) byId.set(attempt.question.id, attempt);
   }
   return [...byId.values()];
+}
+
+function TimedStat({ label, value, tone }: { label: string; value: string; tone?: string }) {
+  return (
+    <div className="rounded-xl border border-term-edge bg-term-panel/40 px-3.5 py-3">
+      <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
+        {label}
+      </p>
+      <p className={`mt-1 text-base font-bold tabular-nums ${tone ?? "text-term-fg"}`}>
+        {value}
+      </p>
+    </div>
+  );
 }
 
 function runVerdict(accuracy: number, answered: number): string {
@@ -122,10 +136,10 @@ export function TimedResultPage({
   const subject = label ? (levelName ? `${label} ${levelName}` : label) : null;
   const header =
     kind === "daily"
-      ? "— ⏱ daily practice —"
+      ? "Daily practice"
       : isBlitz
-        ? `— ⚡ ${subject ?? "blitz"} blitz —`
-        : `— ⏱ ${subject ?? "timed"} sprint —`;
+        ? `${subject ?? "Timed"} blitz`
+        : `${subject ?? "Timed"} sprint`;
 
   const restartLabel = isBlitz ? "another blitz" : "another sprint";
 
@@ -134,49 +148,48 @@ export function TimedResultPage({
       className="flex min-h-0 flex-1 flex-col"
       onClick={() => inputRef.current?.focus()}
     >
+      <PageHeader
+        title={header}
+        subtitle="Summary — no grades, just what you covered."
+        onBack={onMenu}
+        backLabel="⌂ menu"
+        onSettings={onSettings}
+        actions={
+          practice.streak > 0 ? (
+            <span className="rounded-full border border-term-amber/30 bg-term-amber/5 px-2.5 py-1 text-[0.6875rem] text-term-amber">
+              🔥 {practice.streak}
+            </span>
+          ) : null
+        }
+      />
+
       <div
         ref={scrollRef}
         className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
       >
-        <div className="w-full">
-          <p className="text-sm uppercase tracking-[0.3em] text-term-amber">
-            {header}
-          </p>
-
-          <p className="mt-4 text-base leading-relaxed text-term-bright sm:text-lg">
+        <div className="mx-auto w-full max-w-3xl">
+          <p className="text-base leading-relaxed text-term-bright sm:text-lg">
             {headline}
           </p>
 
-          <div className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm">
-            <p className="tabular-nums">
-              answered <b className="text-term-fg">{answered}</b>
-            </p>
-            <p className="tabular-nums">
-              correct <b className="text-term-green">{score}</b>
-            </p>
-            <p className="tabular-nums">
-              accuracy <b className="text-term-fg">{accuracy}%</b>
-            </p>
-            <p className="tabular-nums">
-              hints{" "}
-              <b className={hintsUsed > 0 ? "text-term-amber" : "text-term-dim"}>
-                {hintsUsed === 0 ? "none" : hintsUsed}
-              </b>
-            </p>
-            {practice.streak > 0 && (
-              <p className="tabular-nums text-term-amber">
-                🔥 {practice.streak}-day streak
-              </p>
-            )}
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <TimedStat label="answered" value={`${answered}`} />
+            <TimedStat label="correct" value={`${score}`} tone="text-term-green" />
+            <TimedStat label="accuracy" value={`${accuracy}%`} />
+            <TimedStat
+              label="hints"
+              value={hintsUsed === 0 ? "none" : `${hintsUsed}`}
+              tone={hintsUsed > 0 ? "text-term-amber" : undefined}
+            />
           </div>
 
           <p className="mt-4 text-term-bright">{runVerdict(accuracy, answered)}</p>
 
           {missed.length > 0 ? (
             <div className="mt-7">
-              <h3 className="text-xs uppercase tracking-widest text-term-amber">
+              <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-amber">
                 revisit — {missed.length} to look at again
-              </h3>
+              </p>
               <ul className="terminal-scroll mt-3 max-h-64 space-y-3 overflow-y-auto pr-2">
                 {missed.map(({ question, submitted, hintsUsed: used }) => (
                   <li
@@ -231,24 +244,9 @@ export function TimedResultPage({
         placeholder={isBlitz ? 'press enter for another blitz' : 'press enter for another sprint'}
         hint={notice ?? `enter: ${isBlitz ? "another blitz" : "another sprint"} · again · r · menu: pick a tool`}
         actions={
-          <>
-            <Button variant="ghost" onClick={onMenu}>
-              ⌂ menu
-            </Button>
-            {onSettings && (
-              <Button
-                variant="ghost"
-                onClick={onSettings}
-                aria-label="settings"
-                title="settings: font size + theme"
-              >
-                ⚙
-              </Button>
-            )}
-            <Button variant="primary" onClick={onRestart}>
-              ↻ again
-            </Button>
-          </>
+          <Button variant="primary" onClick={onRestart}>
+            ↻ again
+          </Button>
         }
       />
     </div>

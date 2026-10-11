@@ -16,10 +16,10 @@ import { getHints } from "../utils/hints";
 import { formatClock } from "../utils/timed";
 import { answerCaseMatters } from "../utils/validate";
 import { EXIT_REVIEW_KEY, isHintKey } from "../utils/shortcuts";
-import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { Feedback } from "../components/Feedback";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 import { ReviewLine } from "../components/ReviewLine";
 
 export type TimedFinishReason = "timeup" | "quit" | "done";
@@ -94,6 +94,8 @@ export function TimedQuizPage({
   timeUpRef.current = timeUp;
 
   const lvl = levelInfo(current.level);
+  /** Tool name shown next to the blitz/sprint badge in the header. */
+  const subjectLabel = categoryLabels[current.category];
   const hints = getHints(current);
   const hintsExhausted = hintCount >= hints.length;
   const lowTime = isBlitz ? remaining <= 10 : remaining <= 60;
@@ -300,35 +302,66 @@ export function TimedQuizPage({
         }
       }}
     >
+      <PageHeader
+        title={
+          <>
+            {isBlitz ? "⚡ blitz" : "⏱ sprint"}
+            {subjectLabel && <span className="text-term-dim"> · {subjectLabel}</span>}
+          </>
+        }
+        subtitle={
+          isBlitz
+            ? `per-question timer · pool of ${poolSize ?? "?"}`
+            : `session timer · pool of ${poolSize ?? "?"}`
+        }
+        onSettings={onSettings}
+        actions={
+          <>
+            {reviewing ? (
+              <Button
+                variant="ghost"
+                className="px-3 py-1 text-xs"
+                onClick={() => {
+                  setValue("");
+                  setReviewing(false);
+                }}
+              >
+                → task
+              </Button>
+            ) : (
+              attempts.length > 0 && (
+                <Button
+                  variant="ghost"
+                  className="px-3 py-1 text-xs"
+                  onClick={() => {
+                    setValue("");
+                    setReviewing(true);
+                  }}
+                  aria-label="review past answers"
+                >
+                  ‹ review
+                </Button>
+              )
+            )}
+            <Button
+              variant="ghost"
+              className="px-3 py-1 text-xs"
+              onClick={onMenu}
+              aria-label="back to the practice menu"
+            >
+              ⌂ menu
+            </Button>
+          </>
+        }
+      />
+
       <div
         ref={scrollRef}
         className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
       >
-        <div className="w-full">
-          <BootBanner tag={isBlitz ? "blitz · per-question timer" : "timed practice · session timer"}>
-            {isBlitz ? (
-              <>
-                Each question has its own countdown — when it hits zero it
-                counts as a miss and the next appears. The session ends when
-                the pool runs out, no repeats.{" "}
-                <span className="text-term-amber">:hint</span> for a clue,{" "}
-                <span className="text-term-amber">:pause</span> to freeze,
-                <span className="text-term-amber"> :quit</span> to end.
-              </>
-            ) : (
-              <>
-                Answer as many as you can before the clock runs out, weighted
-                toward what you've missed. Type{" "}
-                <span className="text-term-amber">:hint</span> for a clue,{" "}
-                <span className="text-term-amber">:back</span> to review,{" "}
-                <span className="text-term-amber">:pause</span> to freeze the
-                clock, <span className="text-term-amber">:quit</span> to end.
-              </>
-            )}
-          </BootBanner>
-
+        <div className="mx-auto w-full max-w-3xl">
           {/* Countdown row — clock, progress bar, questions completed */}
-          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-term-edge bg-term-panel/60 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-term-edge bg-term-panel/50 px-4 py-3">
             <span
               className={`text-2xl font-bold tabular-nums leading-none ${
                 paused
@@ -364,19 +397,7 @@ export function TimedQuizPage({
                   answered <b className="text-term-fg">{taskNumber - 1}</b>
                 </>
               )}
-            </span>
-            <span className="ml-auto flex items-center gap-2">
-              {onSettings && (
-                <Button
-                  variant="ghost"
-                  className="px-3 py-1 text-xs"
-                  onClick={onSettings}
-                  aria-label="settings"
-                  title="settings: font size + theme (clock auto-pauses)"
-                >
-                  ⚙
-                </Button>
-              )}
+            </span>            <span className="ml-auto flex items-center gap-2">
               {paused ? (
                 <Button
                   variant="ghost"
@@ -410,22 +431,10 @@ export function TimedQuizPage({
 
           {reviewing ? (
             /* Review panel — every past answer with explanation + hints. */
-            <div className="mt-6">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[0.625rem] uppercase tracking-widest text-term-amber">
-                  review — past answers
-                </p>
-                <Button
-                  variant="ghost"
-                  className="px-3 py-1 text-xs"
-                  onClick={() => {
-                    setValue("");
-                    setReviewing(false);
-                  }}
-                >
-                  → current task
-                </Button>
-              </div>
+            <div>
+              <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-amber">
+                review — past answers
+              </p>
               <div className="mt-4 space-y-6 border-t border-term-edge/60 pt-4">
                 {attempts.map((attempt, i) => (
                   <ReviewLine
@@ -439,31 +448,16 @@ export function TimedQuizPage({
           ) : (
             /* Current task — one question per screen. */
             <div className="mt-6 border-l-2 border-term-green pl-4">
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
-                  task {taskNumber} · {categoryLabels[current.category]} ·{" "}
-                  <span className={lvl.accent}>{lvl.name}</span>
-                  {practice.missCount(current.id) > 0 && (
-                    <span className="text-term-amber"> · 🔁 needs practice</span>
-                  )}
-                  {answerCaseMatters(current) && (
-                    <span className="text-term-amber"> · case matters</span>
-                  )}
-                </p>
-                {attempts.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    className="shrink-0 px-3 py-1 text-xs"
-                    onClick={() => {
-                      setValue("");
-                      setReviewing(true);
-                    }}
-                    aria-label="review past answers"
-                  >
-                    ‹ back · past answers
-                  </Button>
+              <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+                task {taskNumber} · {categoryLabels[current.category]} ·{" "}
+                <span className={lvl.accent}>{lvl.name}</span>
+                {practice.missCount(current.id) > 0 && (
+                  <span className="text-term-amber"> · 🔁 needs practice</span>
                 )}
-              </div>
+                {answerCaseMatters(current) && (
+                  <span className="text-term-amber"> · case matters</span>
+                )}
+              </p>
               <h2 className="mt-1.5 text-base leading-relaxed text-term-fg sm:text-lg">
                 {current.prompt}
               </h2>
@@ -544,33 +538,6 @@ export function TimedQuizPage({
         </div>
       </div>
 
-      {/* Command help bar — the same helpers the classic sessions show. */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-term-edge bg-term-bg px-4 py-2 text-xs text-term-dim sm:px-8">
-        <span
-          className={`font-semibold uppercase tracking-wider ${
-            isBlitz ? "text-term-amber" : "text-term-green"
-          }`}
-        >
-          {isBlitz ? "⚡ blitz" : "⏱ sprint"}
-        </span>
-        {paused ? (
-          <span className="text-term-amber">⏸ paused</span>
-        ) : (
-          <span className="tabular-nums">
-            {formatClock(remaining)} left
-          </span>
-        )}
-        <span className="ml-auto hidden md:inline">
-          enter: submit / next · <span className="text-term-amber">tab: hint</span> ·{" "}
-          <span className="text-term-amber">back</span>{" "}
-          {reviewing ? "current task" : "review"} ·{" "}
-          <span className="text-term-amber">:pause</span>{" "}
-          {paused ? "resume" : "freeze"} ·{" "}
-          <span className="text-term-amber">:quit</span> end ·{" "}
-          <span className="text-term-amber">:menu</span> switch
-        </span>
-      </div>
-
       <InputBar
         inputRef={inputRef}
         value={value}
@@ -587,14 +554,15 @@ export function TimedQuizPage({
         }
         readOnly={result !== null && !reviewing && !paused}
         hint={
-          <span className="sm:hidden">
-            enter: submit / next · <span className="text-term-amber">tab: hint</span> ·{" "}
-            <span className="text-term-amber">back</span>{" "}
-            {reviewing ? "current task" : "review"} ·{" "}
+          <>
+            {paused ? "⏸ paused · " : ""}
+            {formatClock(remaining)} left · enter: submit / next ·{" "}
+            <span className="text-term-amber">tab: hint</span> ·{" "}
             <span className="text-term-amber">:pause</span>{" "}
             {paused ? "resume" : "freeze"} ·{" "}
+            <span className="text-term-amber">:back</span> review ·{" "}
             <span className="text-term-amber">:quit</span> end
-          </span>
+          </>
         }
         actions={
           reviewing ? (

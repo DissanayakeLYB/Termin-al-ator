@@ -11,9 +11,9 @@ import {
   parseSeconds,
   SPRINT_PRESET_MINUTES,
 } from "../utils/timed";
-import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 
 type TimedSetupMode = "session" | "blitz";
 
@@ -98,55 +98,48 @@ export function TimedSetupPage({
     setValue("");
   };
 
-  const bannerTag = subject
+  const title = subject
     ? isBlitz
-      ? `${subject} blitz · per-question timer`
-      : `${subject} sprint · timed session`
-    : "daily practice · timed sprint";
+      ? `${subject} blitz`
+      : `${subject} sprint`
+    : "Daily practice";
 
-  const bannerCopy = subject
-    ? isBlitz
-      ? `Quick-fire ${subject}: every question gets its own countdown. When it hits zero, it counts as a miss and the next one appears — and the session ends when the question pool runs out, no repeats.`
-      : `A timed ${subject} session: questions weighted toward the commands you've missed. Pick a length or type your own.`
-    : `A short, focused session: mixed questions from every tool and every level, weighted toward the commands you've missed — so the reps land where they matter. No score pressure, just steady practice. Pick a length or type your own.`;
+  const subtitle = isBlitz
+    ? "Each question gets its own countdown — no coasting, no long gaps."
+    : "Mixed questions weighted toward the commands you've missed.";
 
   const presets = isBlitz ? BLITZ_PRESET_SECONDS : SPRINT_PRESET_MINUTES.map((m) => m * 60);
   const presetLabel = (seconds: number) =>
     isBlitz ? `${seconds}s` : `${seconds / 60} min`;
-
-  const pitchCards = isBlitz
-    ? [
-        ["⚡", "per-question pace", "each task has its own countdown — no coasting, no long gaps"],
-        ["🎯", "needs-practice first", "questions you've missed surface before new ones"],
-        ["🏁", "ends when done", "no repeats — once the pool is covered, you get the summary"],
-      ]
-    : [
-        ["⏱", "time-boxed", "a countdown that keeps the session honest — pause anytime with :pause"],
-        ["🎯", "needs-practice first", "questions you've missed surface before new ones"],
-        ["🏁", "summary after", "a quick recap of the session — no grades, just a streak"],
-      ];
 
   return (
     <div
       className="flex min-h-0 flex-1 flex-col"
       onClick={() => inputRef.current?.focus()}
     >
+      <PageHeader
+        title={title}
+        subtitle={subtitle}
+        onBack={onBack}
+        backLabel="⌂ menu"
+        onSettings={onSettings}
+        actions={
+          streak > 0 ? (
+            <span className="rounded-full border border-term-amber/30 bg-term-amber/5 px-2.5 py-1 text-[0.6875rem] text-term-amber">
+              🔥 {streak}
+            </span>
+          ) : null
+        }
+      />
+
       <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="w-full">
-          <BootBanner tag={bannerTag}>{bannerCopy}</BootBanner>
-
-          {streak > 0 && (
-            <p className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-term-amber/30 bg-term-amber/5 px-3 py-1.5 text-xs text-term-amber">
-              🔥 {streak}-day streak — keep it going
-            </p>
-          )}
-
+        <div className="mx-auto w-full max-w-3xl">
           {/* Length / pace picker */}
-          <div className="mt-6">
-            <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+          <section>
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
               {isBlitz ? "pace — seconds per question" : "session length"}
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               {presets.map((seconds) => {
                 const active = duration === seconds;
                 return (
@@ -155,7 +148,7 @@ export function TimedSetupPage({
                     type="button"
                     onClick={() => setDuration(seconds)}
                     aria-pressed={active}
-                    className={`rounded-md border px-4 py-2 text-sm tabular-nums transition-colors ${
+                    className={`cursor-pointer rounded-lg border px-4 py-2 text-sm tabular-nums transition-colors ${
                       active
                         ? "border-term-green bg-term-green/10 font-bold text-term-green"
                         : "border-term-edge2 text-term-dim hover:border-term-green/50 hover:text-term-fg"
@@ -166,7 +159,7 @@ export function TimedSetupPage({
                 );
               })}
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-term-dim">
+            <p className="mt-2.5 text-xs leading-relaxed text-term-dim">
               {isBlitz ? (
                 <>
                   type your own pace too —{" "}
@@ -175,27 +168,26 @@ export function TimedSetupPage({
                 </>
               ) : (
                 <>
-                  type your own too —{" "}
-                  <span className="text-term-amber">12</span> (minutes),{" "}
-                  <span className="text-term-amber">90s</span>, or{" "}
+                  type your own too — <span className="text-term-amber">12</span>{" "}
+                  (minutes), <span className="text-term-amber">90s</span>, or{" "}
                   <span className="text-term-amber">2:30</span>
                 </>
               )}
             </p>
-          </div>
+          </section>
 
           {/* Level filter — per-tool runs can target a single level. */}
           {tool && (
-            <div className="mt-6">
-              <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+            <section className="mt-8">
+              <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
                 level
               </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setLevel("all")}
                   aria-pressed={level === "all"}
-                  className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                  className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm transition-colors ${
                     level === "all"
                       ? "border-term-green bg-term-green/10 font-bold text-term-green"
                       : "border-term-edge2 text-term-dim hover:border-term-green/50 hover:text-term-fg"
@@ -217,7 +209,7 @@ export function TimedSetupPage({
                         type="button"
                         onClick={() => setLevel(info.id)}
                         aria-pressed={active}
-                        className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                        className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm transition-colors ${
                           active
                             ? `${info.border} ${info.accent} bg-term-panel2 font-bold`
                             : "border-term-edge2 text-term-dim hover:border-term-green/50 hover:text-term-fg"
@@ -229,29 +221,19 @@ export function TimedSetupPage({
                     );
                   })}
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-term-dim">
+              <p className="mt-2.5 text-xs leading-relaxed text-term-dim">
                 {level === "all"
                   ? "every level of this tool, shuffled together"
                   : `only ${levelName} questions — ${levelInfo(level).tagline}`}
               </p>
-            </div>
+            </section>
           )}
 
-          {/* What you get */}
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            {pitchCards.map(([icon, title, desc]) => (
-              <div
-                key={title}
-                className="rounded-md border border-term-edge bg-term-panel/50 p-3"
-              >
-                <p className="text-sm font-bold text-term-fg">
-                  <span className="mr-1.5">{icon}</span>
-                  {title}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-term-dim">{desc}</p>
-              </div>
-            ))}
-          </div>
+          <p className="mt-8 text-xs leading-relaxed text-term-dim/70">
+            {isBlitz
+              ? "needs-practice first · ends when the pool runs out · summary after"
+              : "time-boxed · needs-practice first · summary after — no grades"}
+          </p>
         </div>
       </div>
 
@@ -272,24 +254,9 @@ export function TimedSetupPage({
             : `presets: ${SPRINT_PRESET_MINUTES.join(" · ")} min — type your own (12, 90s, 2:30) · back: menu`)
         }
         actions={
-          <>
-            <Button variant="ghost" onClick={onBack}>
-              ⌂ menu
-            </Button>
-            {onSettings && (
-              <Button
-                variant="ghost"
-                onClick={onSettings}
-                aria-label="settings"
-                title="settings: font size + theme"
-              >
-                ⚙
-              </Button>
-            )}
-            <Button variant="primary" onClick={() => startWith(duration)}>
-              start →
-            </Button>
-          </>
+          <Button variant="primary" onClick={() => startWith(duration)}>
+            start →
+          </Button>
         }
       />
     </div>

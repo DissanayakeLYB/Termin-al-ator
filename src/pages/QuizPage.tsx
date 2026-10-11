@@ -12,10 +12,10 @@ import {
 import { getHints } from "../utils/hints";
 import { answerCaseMatters } from "../utils/validate";
 import { EXIT_REVIEW_KEY, isHintKey } from "../utils/shortcuts";
-import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { Feedback } from "../components/Feedback";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 import { ReviewLine } from "../components/ReviewLine";
 import { StatusBar } from "../components/StatusBar";
 
@@ -143,39 +143,80 @@ export function QuizPage({
         }
       }}
     >
-      <div
-        ref={scrollRef}
-        className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
-      >
-        <div className="w-full">
-          {/* Boot banner */}
-          <BootBanner
-            tag={`${categoryLabels[current.category]} · ${lvl.name} trainer`}
-          >
-            <span className={lvl.accent}>{totalQuestions} questions</span> ·{" "}
-            {lvl.sessionHint} — keep going until you're done. Type{" "}
-            <span className="text-term-amber">:quit</span> to end the session, or{" "}
-            <span className="text-term-amber">:menu</span> to switch practice.
-          </BootBanner>
-
-          {reviewing ? (
-            /* Review panel — every past answer with its explanation + hints. */
-            <div className="mt-6">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[0.625rem] uppercase tracking-widest text-term-amber">
-                  review — past answers
-                </p>
+      <PageHeader
+        title={
+          <>
+            {categoryLabels[current.category]}{" "}
+            <span className={lvl.accent}>· {lvl.name}</span>
+          </>
+        }
+        subtitle={
+          reviewing ? (
+            "reviewing past answers"
+          ) : (
+            <>
+              task {taskNumber} ·{" "}
+              <span className="tabular-nums">
+                {distinctSeen}/{totalQuestions} seen
+              </span>
+              {answerCaseMatters(current) && (
+                <span className="text-term-amber"> · case matters</span>
+              )}
+            </>
+          )
+        }
+        onSettings={onSettings}
+        actions={
+          <>
+            {reviewing ? (
+              <Button
+                variant="ghost"
+                className="px-3 py-1 text-xs"
+                onClick={() => {
+                  setValue("");
+                  setReviewing(false);
+                }}
+              >
+                → task
+              </Button>
+            ) : (
+              attempts.length > 0 && (
                 <Button
                   variant="ghost"
                   className="px-3 py-1 text-xs"
                   onClick={() => {
                     setValue("");
-                    setReviewing(false);
+                    setReviewing(true);
                   }}
+                  aria-label="review past answers"
                 >
-                  → current task
+                  ‹ review
                 </Button>
-              </div>
+              )
+            )}
+            <Button
+              variant="ghost"
+              className="px-3 py-1 text-xs"
+              onClick={onMenu}
+              aria-label="back to the practice menu"
+            >
+              ⌂ menu
+            </Button>
+          </>
+        }
+      />
+
+      <div
+        ref={scrollRef}
+        className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
+      >
+        <div className="mx-auto w-full max-w-3xl">
+          {reviewing ? (
+            /* Review panel — every past answer with its explanation + hints. */
+            <div>
+              <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-amber">
+                review — past answers
+              </p>
               <div className="mt-4 space-y-6 border-t border-term-edge/60 pt-4">
                 {attempts.map((attempt, i) => (
                   <ReviewLine
@@ -188,35 +229,8 @@ export function QuizPage({
             </div>
           ) : (
             /* Current task — one question per screen. */
-            <div className="mt-6 border-l-2 border-term-green pl-4">
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
-                  task {taskNumber} · {categoryLabels[current.category]} ·{" "}
-                  <span className={lvl.accent}>{lvl.name}</span> ·{" "}
-                  <span className="tabular-nums">
-                    {distinctSeen}/{totalQuestions} seen
-                  </span>
-                  {answerCaseMatters(current) && (
-                    <>
-                      {" "}· <span className="text-term-amber">case matters</span>
-                    </>
-                  )}
-                </p>
-                {attempts.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    className="shrink-0 px-3 py-1 text-xs"
-                    onClick={() => {
-                      setValue("");
-                      setReviewing(true);
-                    }}
-                    aria-label="review past answers"
-                  >
-                    ‹ back · past answers
-                  </Button>
-                )}
-              </div>
-              <h2 className="mt-1.5 text-base leading-relaxed text-term-fg sm:text-lg">
+            <div className="border-l-2 border-term-green pl-4">
+              <h2 className="text-base leading-relaxed text-term-fg sm:text-lg">
                 {current.prompt}
               </h2>
 
@@ -285,12 +299,7 @@ export function QuizPage({
         </div>
       </div>
 
-      <StatusBar
-        quiz={quiz}
-        level={level}
-        reviewing={reviewing}
-        onSettings={onSettings}
-      />
+      <StatusBar quiz={quiz} level={level} reviewing={reviewing} />
 
       <InputBar
         inputRef={inputRef}

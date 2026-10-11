@@ -24,20 +24,24 @@ export function InputBar({
   actions,
 }: InputBarProps) {
   return (
-    <div className="border-t border-term-edge bg-term-panel2 px-4 py-3 sm:px-8">
-      <div className="flex items-center gap-3">
-        <AnswerInput
-          ref={inputRef}
-          value={value}
-          onChange={onChange}
-          onSubmit={onSubmit}
-          placeholder={placeholder}
-          readOnly={readOnly}
-          className="flex-1"
-        />
-        {actions}
+    <div className="shrink-0 border-t border-term-edge/70 bg-term-bg/60 px-4 py-3 sm:px-8">
+      <div className="mx-auto w-full max-w-3xl">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <AnswerInput
+            ref={inputRef}
+            value={value}
+            onChange={onChange}
+            onSubmit={onSubmit}
+            placeholder={placeholder}
+            readOnly={readOnly}
+            className="min-w-40 flex-1"
+          />
+          {actions}
+        </div>
+        {hint && (
+          <p className="mt-2 text-[0.6875rem] leading-relaxed text-term-dim">{hint}</p>
+        )}
       </div>
-      {hint && <p className="mt-2 text-[0.6875rem] text-term-dim">{hint}</p>}
     </div>
   );
 }

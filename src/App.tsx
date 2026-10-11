@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuiz } from "./hooks/useQuiz";
+import { NavContext } from "./components/nav";
+import { Sidebar, type NavSection } from "./components/Sidebar";
 import { useSettings } from "./hooks/useSettings";
 import { usePracticeHistory, buildPracticeDeck } from "./hooks/usePracticeHistory";
 import type { Category, Level } from "./data/questions";
@@ -160,89 +162,197 @@ export default function App() {
   const [timedSetup, setTimedSetup] = useState<TimedSetupRequest | null>(null);
   /** Running timed session. */
   const [timedRun, setTimedRun] = useState<TimedRun | null>(null);
+  /** Mobile navigation drawer. */
+  const [navOpen, setNavOpen] = useState(false);
   const settings = useSettings();
   const practice = usePracticeHistory();
 
   const openSettings = () => setShowSettings(true);
 
+  // ── Rail navigation ──────────────────────────────────────────────────────
+  /** Clear every screen state so a section can take over cleanly. */
+  const resetNav = () => {
+    setActiveGuide(null);
+    setShowTutorialPicker(false);
+    setTimedSetup(null);
+    setTimedRun(null);
+    setLevel(null);
+    setCategory(null);
+  };
+
+  const goHome = () => resetNav();
+  const goTutorials = () => {
+    resetNav();
+    setShowTutorialPicker(true);
+  };
+  const goTimed = () => {
+    resetNav();
+    setTimedSetup({ mode: "session", tool: null, level: "all" });
+  };
+  const goTool = (next: Category) => {
+    resetNav();
+    setCategory(next);
+  };
+
+  /**
+   * An active session owns the whole window: the rail steps aside so nothing
+   * competes with the question, the clock, and the input line. Menu screens
+   * bring it back.
+   */
+  const sessionActive = timedRun !== null || (category !== null && level !== null);
+
+  const section: NavSection =
+    timedSetup !== null || timedRun !== null
+      ? "timed"
+      : showTutorialPicker || activeGuide !== null
+        ? "tutorials"
+        : "practice";
+  const activeTool = activeGuide ? activeGuide.category : category;
+
+  const nav = useMemo(() => ({ openNav: () => setNavOpen(true) }), []);
+
+  // Escape closes the mobile drawer.
+  useEffect(() => {
+    if (!navOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setNavOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navOpen]);
+
+  const sidebar = (
+    <Sidebar
+      section={section}
+      activeTool={activeTool}
+      streak={practice.streak}
+      onHome={goHome}
+      onTimed={goTimed}
+      onTutorials={goTutorials}
+      onTool={goTool}
+      onSettings={openSettings}
+      onNavigate={() => setNavOpen(false)}
+    />
+  );
+
   return (
-    <div className="crt-grid flex h-dvh flex-col overflow-hidden bg-term-bg text-term-fg">
-      {activeGuide ? (
-        <GuidePage
-          tool={activeGuide}
-          onBack={() => setActiveGuide(null)}
-          onPractice={() => {
-            setActiveGuide(null);
-            setCategory(activeGuide.category);
-          }}
-          onSettings={openSettings}
-        />
-      ) : showTutorialPicker ? (
-        <TutorialPickerPage
-          onSelect={(guide) => {
-            setShowTutorialPicker(false);
-            setActiveGuide(guide);
-          }}
-          onBack={() => setShowTutorialPicker(false)}
-          onSettings={openSettings}
-        />
-      ) : timedSetup ? (
-        <TimedSetupPage
-          mode={timedSetup.mode}
-          tool={timedSetup.tool}
-          streak={practice.streak}
-          onStart={(seconds, level) => {
-            setTimedRun({
-              seconds: timedSetup.mode === "blitz" ? 0 : seconds,
-              perQuestion: timedSetup.mode === "blitz" ? seconds : null,
-              tool: timedSetup.tool,
-              level,
-            });
-            setTimedSetup(null);
-          }}
-          onBack={() => setTimedSetup(null)}
-          onSettings={openSettings}
-        />
-      ) : timedRun ? (
-        <TimedSession
-          practice={practice}
-          run={timedRun}
-          settingsOpen={showSettings}
-          onMenu={() => setTimedRun(null)}
-          onSettings={openSettings}
-        />
-      ) : category === null ? (
-        <CategoryPage
-          onSelect={(c) => {
-            setCategory(c);
-            setLevel(null);
-          }}
-          onTimed={() => setTimedSetup({ mode: "session", tool: null, level: "all" })}
-          onTutorials={() => setShowTutorialPicker(true)}
-          streak={practice.streak}
-          onSettings={openSettings}
-        />
-      ) : level === null ? (
-        <LevelPage
-          category={category}
-          onSelect={setLevel}
-          onBack={() => setCategory(null)}
-          onSprint={() => setTimedSetup({ mode: "session", tool: category, level: "all" })}
-          onBlitz={() => setTimedSetup({ mode: "blitz", tool: category, level: "all" })}
-          onSettings={openSettings}
-        />
-      ) : (
-        <PracticeSession
-          key={`${category}-${level}`}
-          category={category}
-          level={level}
-          onMenu={() => setLevel(null)}
-          onSettings={openSettings}
-        />
-      )}
-      {showSettings && (
-        <SettingsPage settings={settings} onClose={() => setShowSettings(false)} />
-      )}
-    </div>
+    <NavContext.Provider value={nav}>
+      <div className="crt-grid flex h-dvh overflow-hidden bg-term-bg text-term-fg">
+        {!sessionActive && (
+          <>
+            {/* Persistent rail on desktop … */}
+            <aside className="hidden w-58 shrink-0 lg:block">{sidebar}</aside>
+
+            {/* … an off-canvas drawer on small screens. */}
+            <div
+              className={`fixed inset-0 z-40 lg:hidden ${navOpen ? "" : "pointer-events-none"}`}
+              aria-hidden={!navOpen}
+            >
+              <div
+                onClick={() => setNavOpen(false)}
+                className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ${
+                  navOpen ? "opacity-100" : "opacity-0"
+                }`}
+              />
+              <div
+                className={`absolute inset-y-0 left-0 w-64 max-w-[82vw] bg-term-bg shadow-2xl transition-transform duration-200 ease-out ${
+                  navOpen ? "translate-x-0" : "-translate-x-full"
+                }`}
+              >
+                {sidebar}
+              </div>
+            </div>
+          </>
+        )}
+
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {activeGuide ? (
+            <GuidePage
+              tool={activeGuide}
+              onBack={() => setActiveGuide(null)}
+              onPractice={() => {
+                setActiveGuide(null);
+                setCategory(activeGuide.category);
+              }}
+              onSettings={openSettings}
+            />
+          ) : showTutorialPicker ? (
+            <TutorialPickerPage
+              onSelect={(guide) => {
+                setShowTutorialPicker(false);
+                setActiveGuide(guide);
+              }}
+              onBack={() => setShowTutorialPicker(false)}
+              onSettings={openSettings}
+            />
+          ) : timedSetup ? (
+            <TimedSetupPage
+              mode={timedSetup.mode}
+              tool={timedSetup.tool}
+              streak={practice.streak}
+              onStart={(seconds, level) => {
+                setTimedRun({
+                  seconds: timedSetup.mode === "blitz" ? 0 : seconds,
+                  perQuestion: timedSetup.mode === "blitz" ? seconds : null,
+                  tool: timedSetup.tool,
+                  level,
+                });
+                setTimedSetup(null);
+              }}
+              onBack={() => setTimedSetup(null)}
+              onSettings={openSettings}
+            />
+          ) : timedRun ? (
+            <TimedSession
+              practice={practice}
+              run={timedRun}
+              settingsOpen={showSettings}
+              onMenu={() => setTimedRun(null)}
+              onSettings={openSettings}
+            />
+          ) : category === null ? (
+            <CategoryPage
+              onSelect={(c) => {
+                setCategory(c);
+                setLevel(null);
+              }}
+              onTimed={goTimed}
+              onTutorials={goTutorials}
+              streak={practice.streak}
+              onSettings={openSettings}
+            />
+          ) : level === null ? (
+            <LevelPage
+              category={category}
+              onSelect={setLevel}
+              onBack={() => setCategory(null)}
+              onSprint={() =>
+                setTimedSetup({ mode: "session", tool: category, level: "all" })
+              }
+              onBlitz={() =>
+                setTimedSetup({ mode: "blitz", tool: category, level: "all" })
+              }
+              onSettings={openSettings}
+            />
+          ) : (
+            <PracticeSession
+              key={`${category}-${level}`}
+              category={category}
+              level={level}
+              onMenu={() => setLevel(null)}
+              onSettings={openSettings}
+            />
+          )}
+        </main>
+
+        {showSettings && (
+          // Settings is a full-screen overlay; null the nav context so its own
+          // header doesn't offer a drawer for the rail hidden behind it.
+          <NavContext.Provider value={null}>
+            <SettingsPage settings={settings} onClose={() => setShowSettings(false)} />
+          </NavContext.Provider>
+        )}
+      </div>
+    </NavContext.Provider>
   );
 }

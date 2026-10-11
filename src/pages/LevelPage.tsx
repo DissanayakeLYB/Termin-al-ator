@@ -8,9 +8,9 @@ import {
   isSettingsCommand,
   isTimedCommand,
 } from "../utils/commands";
-import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 
 interface LevelPageProps {
   category: Category;
@@ -28,7 +28,14 @@ interface LevelPageProps {
  * practice* they want. Each level has a distinct purpose — never a
  * difficulty rating.
  */
-export function LevelPage({ category, onSelect, onBack, onSprint, onBlitz, onSettings }: LevelPageProps) {
+export function LevelPage({
+  category,
+  onSelect,
+  onBack,
+  onSprint,
+  onBlitz,
+  onSettings,
+}: LevelPageProps) {
   const set = questionSets[category];
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -105,68 +112,17 @@ export function LevelPage({ category, onSelect, onBack, onSprint, onBlitz, onSet
       className="flex min-h-0 flex-1 flex-col"
       onClick={() => inputRef.current?.focus()}
     >
+      <PageHeader
+        title={categoryLabels[category]}
+        subtitle="What kind of practice do you want right now?"
+        onBack={onBack}
+        backLabel="⌂ tools"
+        onSettings={onSettings}
+      />
+
       <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="w-full">
-          <BootBanner tag={`${categoryLabels[category]} — pick a level`}>
-            What kind of practice do you want right now? Levels are about{" "}
-            <span className="text-term-amber">how you practice</span>, not how
-            hard the questions are. Type a number or name, or click a row.
-            Start with <span className="text-term-green">pareto</span> if
-            you're new.
-          </BootBanner>
-
-          <div className="mt-4 flex items-center gap-2">
-            <Button variant="ghost" onClick={onBack} className="text-xs">
-              ⌂ tools
-            </Button>
-            <span className="text-[0.6875rem] text-term-dim">
-              change tool with <span className="text-term-amber">menu</span> or{" "}
-              <span className="text-term-amber">back</span>
-            </span>
-          </div>
-
-          {/* Timed practice — per-tool session timer or per-question blitz. */}
-          <div className="mt-8">
-            <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
-              timed practice
-            </p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={onSprint}
-                className="group rounded-md border border-term-amber/40 bg-term-amber/5 p-4 text-left transition-colors hover:border-term-amber/70 hover:bg-term-amber/10"
-              >
-                <span className="flex items-baseline gap-2">
-                  <span className="text-sm" aria-hidden="true">⏱</span>
-                  <span className="font-bold text-term-amber transition-colors group-hover:text-term-bright">
-                    sprint — session timer
-                  </span>
-                </span>
-                <span className="mt-1 block text-xs leading-relaxed text-term-fg/70">
-                  one countdown for the whole run: answer as many as you can
-                  before it hits zero. mixed levels, weighted to your misses.
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={onBlitz}
-                className="group rounded-md border border-term-amber/40 bg-term-amber/5 p-4 text-left transition-colors hover:border-term-amber/70 hover:bg-term-amber/10"
-              >
-                <span className="flex items-baseline gap-2">
-                  <span className="text-sm" aria-hidden="true">⚡</span>
-                  <span className="font-bold text-term-amber transition-colors group-hover:text-term-bright">
-                    blitz — per-question timer
-                  </span>
-                </span>
-                <span className="mt-1 block text-xs leading-relaxed text-term-fg/70">
-                  each question gets its own countdown — time out and it counts
-                  as a miss. ends when the pool runs out, no repeats.
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-8">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="grid gap-3 sm:grid-cols-2">
             {levelInfos.map((info, i) => {
               const count = countForLevel(set, info.id);
               const disabled = count === 0;
@@ -176,39 +132,63 @@ export function LevelPage({ category, onSelect, onBack, onSprint, onBlitz, onSet
                   type="button"
                   disabled={disabled}
                   onClick={() => handleSelect(info.id)}
-                  className={`group flex w-full items-start gap-3 border-l-2 py-4 pl-4 text-left transition-colors sm:gap-4 ${
-                    disabled ? "cursor-not-allowed opacity-40" : `hover:bg-term-panel/40 ${info.border}`
+                  className={`flex flex-col rounded-xl border p-4 text-left transition-colors ${
+                    disabled
+                      ? "cursor-not-allowed border-term-edge/60 opacity-40"
+                      : "cursor-pointer border-term-edge bg-term-panel/40 hover:border-term-edge2 hover:bg-term-panel/70"
                   }`}
                 >
-                  <span className="w-6 shrink-0 pt-0.5 text-sm text-term-dim tabular-nums">
-                    {i + 1}.
+                  <span className="flex items-baseline gap-2.5">
+                    <span className="text-[0.6875rem] tabular-nums text-term-dim">
+                      {i + 1}
+                    </span>
+                    <span className={`font-semibold ${info.accent}`}>{info.name}</span>
+                    {info.recommended && (
+                      <span className="rounded border border-term-green/40 px-1.5 py-0.5 text-[0.625rem] text-term-green">
+                        start here
+                      </span>
+                    )}
+                    <span className="ml-auto text-[0.6875rem] tabular-nums text-term-dim">
+                      {count}
+                    </span>
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span
-                        className={`font-bold ${info.accent} transition-colors group-hover:text-term-bright`}
-                      >
-                        {info.name}
-                      </span>
-                      <span className="text-xs text-term-dim">{info.tagline}</span>
-                      {info.recommended && (
-                        <span className="rounded border border-term-green/40 bg-term-green/10 px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wider text-term-green">
-                          start here
-                        </span>
-                      )}
-                      <span className="ml-auto shrink-0 text-xs text-term-dim tabular-nums">
-                        {info.id === "chaos"
-                          ? `${count} · every level mixed`
-                          : `${count} questions`}
-                      </span>
-                    </span>
-                    <span className="mt-1.5 block text-sm leading-relaxed text-term-fg/70">
-                      {info.description}
-                    </span>
+                  <span className="mt-1 text-xs text-term-dim">{info.tagline}</span>
+                  <span className="mt-2 text-xs leading-relaxed text-term-fg/60">
+                    {info.description}
                   </span>
                 </button>
               );
             })}
+          </div>
+
+          <div className="mt-8">
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
+              timed practice
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={onSprint}
+                className="cursor-pointer rounded-xl border border-term-edge bg-term-panel/40 p-4 text-left transition-colors hover:border-term-amber/50 hover:bg-term-panel/70"
+              >
+                <span className="font-semibold text-term-amber">⏱ sprint</span>
+                <span className="mt-1 block text-xs leading-relaxed text-term-dim">
+                  one countdown for the whole run — answer as many as you can
+                  before it hits zero.
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={onBlitz}
+                className="cursor-pointer rounded-xl border border-term-edge bg-term-panel/40 p-4 text-left transition-colors hover:border-term-amber/50 hover:bg-term-panel/70"
+              >
+                <span className="font-semibold text-term-amber">⚡ blitz</span>
+                <span className="mt-1 block text-xs leading-relaxed text-term-dim">
+                  each question gets its own countdown — time out and it counts
+                  as a miss.
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -224,27 +204,9 @@ export function LevelPage({ category, onSelect, onBack, onSprint, onBlitz, onSet
           `levels: ${levelInfos.map((l) => l.name).join(" · ")} — enter: start · sprint/blitz: timed · ${categoryLabels[category]} has ${set.questions.length} questions`
         }
         actions={
-          <>
-            <Button variant="ghost" onClick={onBack}>
-              ⌂ tools
-            </Button>
-            {onSettings && (
-              <Button
-                variant="ghost"
-                onClick={onSettings}
-                aria-label="settings"
-                title="settings: font size + theme"
-              >
-                ⚙
-              </Button>
-            )}
-            <Button
-              variant="primary"
-              onClick={() => handleSelect(levelInfos[0].id)}
-            >
-              start →
-            </Button>
-          </>
+          <Button variant="primary" onClick={() => handleSelect(levelInfos[0].id)}>
+            start →
+          </Button>
         }
       />
     </div>

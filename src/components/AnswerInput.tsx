@@ -23,15 +23,15 @@ export function AnswerInput({
 }: AnswerInputProps) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-md border bg-term-bg px-4 py-3 transition-colors ${
+      className={`flex items-center gap-3 rounded-lg border bg-term-bg px-3 py-2.5 transition-colors ${
         readOnly || disabled
           ? "border-term-edge opacity-70"
-          : "border-term-edge2 focus-within:border-term-green focus-within:shadow-[0_0_0_1px_rgb(var(--term-accent-rgb)/0.35)]"
+          : "border-term-edge2 focus-within:border-term-green"
       } ${className}`}
     >
       <span
         aria-hidden="true"
-        className="select-none text-lg font-bold text-term-green"
+        className="select-none text-base font-bold text-term-green"
       >
         ❯
       </span>

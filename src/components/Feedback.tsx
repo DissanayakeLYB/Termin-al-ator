@@ -28,10 +28,10 @@ export function Feedback({ result, question }: FeedbackProps) {
     <div
       role="status"
       aria-live="polite"
-      className={`rounded-md border-l-4 p-4 ${
+      className={`rounded-lg border border-l-4 p-4 ${
         correct
-          ? "animate-glow border-term-green bg-term-green/10"
-          : "border-term-red bg-term-red/10"
+          ? "border-term-edge border-l-term-green bg-term-green/10"
+          : "border-term-edge border-l-term-red bg-term-red/10"
       }`}
     >
       <p className={`font-bold ${correct ? "text-term-bright" : "text-term-red"}`}>

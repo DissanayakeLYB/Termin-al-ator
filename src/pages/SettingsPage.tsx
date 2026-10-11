@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Settings } from "../hooks/useSettings";
 import { FONT_PRESETS, FONT_SIZE_MAX, FONT_SIZE_MIN } from "../hooks/useSettings";
 import { THEMES } from "../data/themes";
-import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 
 interface SettingsPageProps {
   settings: Settings;
@@ -55,18 +55,26 @@ export function SettingsPage({ settings, onClose }: SettingsPageProps) {
 
   return (
     <div className="crt-grid fixed inset-0 z-50 flex flex-col bg-term-bg text-term-fg">
-      <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="w-full">
-          <BootBanner tag="settings — make it yours">
-            Font size and theme apply instantly and save automatically. Choose
-            like you're configuring a real terminal — type{" "}
-            <span className="text-term-amber">back</span> or press{" "}
-            <span className="text-term-amber">esc</span> to return.
-          </BootBanner>
+      <PageHeader
+        title="Settings"
+        subtitle="Font size and theme apply instantly and save automatically."
+        actions={
+          <Button
+            variant="ghost"
+            onClick={close}
+            className="px-3 py-1 text-xs"
+            aria-label="close settings"
+          >
+            esc
+          </Button>
+        }
+      />
 
+      <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+        <div className="mx-auto w-full max-w-3xl">
           {/* Font size */}
-          <section className="mt-6">
-            <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+          <section>
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
               font size
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -110,7 +118,7 @@ export function SettingsPage({ settings, onClose }: SettingsPageProps) {
 
           {/* Theme picker */}
           <section className="mt-8">
-            <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
               theme — currently {themeInfo.name}
             </p>
             <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -167,7 +175,7 @@ export function SettingsPage({ settings, onClose }: SettingsPageProps) {
 
           {/* Live preview */}
           <section className="mt-8">
-            <p className="text-[0.625rem] uppercase tracking-widest text-term-dim">
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
               live preview
             </p>
             <div className="mt-2 rounded-md border border-term-edge2 bg-term-bg p-4">

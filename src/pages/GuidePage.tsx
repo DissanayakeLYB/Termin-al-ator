@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { GuideExercise, GuideSection } from "../data/sshGuides";
 import { normalizeAnswer } from "../utils/validate";
-import { BootBanner } from "../components/BootBanner";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 import type { ToolGuide } from "../data/guideRegistry";
 
 interface GuidePageProps {
@@ -104,43 +104,38 @@ function SectionList({
       className="flex min-h-0 flex-1 flex-col"
       onClick={() => inputRef.current?.focus()}
     >
+      <PageHeader
+        title={`${toolLabel} guide`}
+        subtitle="Walkthroughs with explanations and interactive exercises."
+        onBack={onBack}
+        backLabel="⌂ tutorials"
+        onSettings={onSettings}
+      />
+
       <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="w-full">
-          <BootBanner tag={`${toolLabel.toLowerCase()} guide`}>
-            step-by-step walkthroughs that teach {toolLabel} concepts with
-            explanations and interactive exercises. pick a section to start.
-          </BootBanner>
-
-          <div className="mt-4 flex items-center gap-2">
-            <Button variant="ghost" onClick={onBack} className="text-xs">
-              ← tutorials
-            </Button>
-          </div>
-
-          <div className="mt-8">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="space-y-3">
             {sections.map((s, i) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => onSelect(s.id)}
-                className="group flex w-full items-start gap-3 border-l-2 border-term-blue/40 py-4 pl-4 text-left transition-colors hover:border-term-blue hover:bg-term-panel/40 sm:gap-4"
+                className="group flex w-full flex-col rounded-xl border border-term-edge bg-term-panel/40 p-4 text-left transition-colors hover:border-term-blue/50 hover:bg-term-panel/70"
               >
-                <span className="w-6 shrink-0 pt-0.5 text-sm text-term-dim tabular-nums">
-                  {i + 1}.
+                <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="text-[0.6875rem] tabular-nums text-term-dim">
+                    {i + 1}
+                  </span>
+                  <span className="font-semibold text-term-fg transition-colors group-hover:text-term-bright">
+                    {s.title}
+                  </span>
+                  <span className="text-xs text-term-dim">{s.tagline}</span>
+                  <span className="ml-auto shrink-0 text-[0.6875rem] text-term-dim tabular-nums">
+                    {s.subsections.length} parts
+                  </span>
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-bold text-term-blue transition-colors group-hover:text-term-bright">
-                      {s.title}
-                    </span>
-                    <span className="text-xs text-term-dim">{s.tagline}</span>
-                    <span className="ml-auto shrink-0 text-xs text-term-dim tabular-nums">
-                      {s.subsections.length} parts
-                    </span>
-                  </span>
-                  <span className="mt-1.5 block text-sm leading-relaxed text-term-fg/70">
-                    {s.description}
-                  </span>
+                <span className="mt-1.5 block text-xs leading-relaxed text-term-dim">
+                  {s.description}
                 </span>
               </button>
             ))}
@@ -159,21 +154,9 @@ function SectionList({
           `sections: ${sections.map((s) => s.title.toLowerCase()).join(" · ")} — enter: start`
         }
         actions={
-          <>
-            {onSettings && (
-              <Button
-                variant="ghost"
-                onClick={onSettings}
-                aria-label="settings"
-                title="settings: font size + theme"
-              >
-                ⚙
-              </Button>
-            )}
-            <Button variant="primary" onClick={() => onSelect(sections[0].id)}>
-              start →
-            </Button>
-          </>
+          <Button variant="primary" onClick={() => onSelect(sections[0].id)}>
+            start →
+          </Button>
         }
       />
     </div>
@@ -197,35 +180,32 @@ function SectionDetail({
 }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="w-full">
-          <BootBanner tag={`${toolLabel.toLowerCase()} guide · ${section.title.toLowerCase()}`}>
-            {section.description}
-          </BootBanner>
-
-          <div className="mt-4 flex items-center gap-2">
-            <Button variant="ghost" onClick={onBack} className="text-xs">
-              ← sections
+      <PageHeader
+        title={
+          <>
+            {toolLabel} · <span className="text-term-blue">{section.title}</span>
+          </>
+        }
+        subtitle={section.description}
+        onBack={onBack}
+        backLabel="‹ sections"
+        onSettings={onSettings}
+        actions={
+          onPractice && (
+            <Button
+              variant="ghost"
+              onClick={onPractice}
+              className="px-3 py-1 text-xs"
+            >
+              practice →
             </Button>
-            {onPractice && (
-              <Button variant="ghost" onClick={onPractice} className="text-xs">
-                practice quiz →
-              </Button>
-            )}
-            {onSettings && (
-              <Button
-                variant="ghost"
-                onClick={onSettings}
-                className="text-xs"
-                aria-label="settings"
-                title="settings: font size + theme"
-              >
-                ⚙
-              </Button>
-            )}
-          </div>
+          )
+        }
+      />
 
-          <div className="mt-8 space-y-10">
+      <div className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="space-y-10">
             {section.subsections.map((sub, i) => (
               <Subsection key={i} subsection={sub} index={i} />
             ))}

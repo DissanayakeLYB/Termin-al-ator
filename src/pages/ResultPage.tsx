@@ -5,6 +5,7 @@ import { levelInfo } from "../data/levels";
 import { isMenuCommand, isRestartCommand, isSettingsCommand } from "../utils/commands";
 import { Button } from "../components/Button";
 import { InputBar } from "../components/InputBar";
+import { PageHeader } from "../components/PageHeader";
 
 function getVerdict(accuracy: number): string {
   if (accuracy === 100) return "Flawless — a true terminal wizard. 🧙";
@@ -23,14 +24,16 @@ function latestMissed(attempts: QuizApi["attempts"]) {
   return [...byId.values()];
 }
 
-function StatRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
+function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <p className="text-sm leading-relaxed">
-      <span className="inline-block w-24 uppercase tracking-widest text-term-dim">
+    <div className="rounded-xl border border-term-edge bg-term-panel/40 px-3.5 py-3">
+      <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-dim/70">
         {label}
-      </span>
-      <span className={`font-semibold tabular-nums ${tone ?? "text-term-fg"}`}>{value}</span>
-    </p>
+      </p>
+      <p className={`mt-1 text-base font-bold tabular-nums ${tone ?? "text-term-fg"}`}>
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -89,44 +92,48 @@ export function ResultPage({
     setNotice(`unknown command: ${cmd} — type restart, r, menu, or settings`);
     setValue("");
   };
+
   return (
-    <div
-      className="flex min-h-0 flex-1 flex-col"
-      onClick={() => inputRef.current?.focus()}
-    >
+    <div className="flex min-h-0 flex-1 flex-col" onClick={() => inputRef.current?.focus()}>
+      <PageHeader
+        title="Session complete"
+        subtitle={
+          <>
+            {label} · <span className={lvl.accent}>{lvl.name}</span>
+          </>
+        }
+        onBack={onMenu}
+        backLabel="⌂ menu"
+        onSettings={onSettings}
+      />
+
       <div
         ref={scrollRef}
         className="terminal-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8"
       >
-        <div className="w-full">
-          <p className="text-sm uppercase tracking-[0.3em] text-term-amber">
-            — {label} · <span className={lvl.accent}>{lvl.name}</span> session
-            complete —
+        <div className="mx-auto w-full max-w-3xl">
+          <p className="text-base leading-relaxed text-term-bright">
+            {getVerdict(accuracy)}
           </p>
 
-          <div className="mt-6 space-y-2">
-            <StatRow label="score" value={`${score}`} tone="text-term-green" />
-            <StatRow label="answered" value={`${answered}`} />
-            <StatRow label="accuracy" value={`${accuracy}%`} />
-            <StatRow
-              label="covered"
-              value={`${distinctSeen}/${totalQuestions} questions`}
-            />
-            <StatRow label="level" value={lvl.name} tone={lvl.accent} />
-            <StatRow
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Stat label="score" value={`${score}`} tone="text-term-green" />
+            <Stat label="answered" value={`${answered}`} />
+            <Stat label="accuracy" value={`${accuracy}%`} />
+            <Stat label="covered" value={`${distinctSeen}/${totalQuestions}`} />
+            <Stat label="level" value={lvl.name} tone={lvl.accent} />
+            <Stat
               label="hints"
               value={hintsUsed === 0 ? "none" : `${hintsUsed} used`}
               tone={hintsUsed > 0 ? "text-term-amber" : undefined}
             />
           </div>
 
-          <p className="mt-5 text-term-bright">{getVerdict(accuracy)}</p>
-
-          {missed.length > 0 && (
+          {missed.length > 0 ? (
             <div className="mt-8">
-              <h3 className="text-xs uppercase tracking-widest text-term-amber">
+              <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-term-amber">
                 review — {missed.length} to revisit
-              </h3>
+              </p>
               <ul className="terminal-scroll mt-4 max-h-72 space-y-4 overflow-y-auto pr-2">
                 {missed.map(({ question, submitted, hintsUsed }) => (
                   <li
@@ -154,9 +161,7 @@ export function ResultPage({
                 ))}
               </ul>
             </div>
-          )}
-
-          {missed.length === 0 && (
+          ) : (
             <p className="mt-8 text-sm text-term-dim">
               nothing to review — every question was answered correctly.
             </p>
@@ -172,24 +177,9 @@ export function ResultPage({
         placeholder='press enter to restart, or type "menu"'
         hint={notice ?? "enter: restart · restart · r · again · menu: another practice"}
         actions={
-          <>
-            <Button variant="ghost" onClick={onMenu}>
-              ⌂ menu
-            </Button>
-            {onSettings && (
-              <Button
-                variant="ghost"
-                onClick={onSettings}
-                aria-label="settings"
-                title="settings: font size + theme"
-              >
-                ⚙
-              </Button>
-            )}
-            <Button variant="primary" onClick={restart}>
-              ↻ restart
-            </Button>
-          </>
+          <Button variant="primary" onClick={restart}>
+            ↻ restart
+          </Button>
         }
       />
     </div>

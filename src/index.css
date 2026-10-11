@@ -101,16 +101,17 @@
   }
 }
 
-/* Faint CRT grid + accent glow, terminal vibe — tinted by the theme. */
+/*
+ * A single soft accent wash at the top of the screen, tinted by the theme.
+ * (No grid lines and no repeating texture — the flat, quiet surface keeps the
+ * content readable and the interface calm.)
+ */
 .crt-grid {
-  background-image:
-    radial-gradient(900px 420px at 50% -8%, rgb(var(--term-accent-rgb) / 0.09), transparent 70%),
-    linear-gradient(rgb(var(--term-accent-rgb) / 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--term-accent-rgb) / 0.035) 1px, transparent 1px);
-  background-size:
-    100% 100%,
-    34px 34px,
-    34px 34px;
+  background-image: radial-gradient(
+    1100px 520px at 50% -13%,
+    rgb(var(--term-accent-rgb) / 0.055),
+    transparent 72%
+  );
 }
 
 @keyframes rise {
@@ -141,20 +142,19 @@
   animation: blink 1.1s steps(1) infinite;
 }
 
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgb(var(--term-accent-rgb) / 0.35);
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
-  50% {
-    box-shadow: 0 0 0 5px rgb(var(--term-accent-rgb) / 0);
+  to {
+    opacity: 1;
   }
 }
-.animate-glow {
-  animation: pulse-glow 1.4s ease-in-out infinite;
+.animate-fade-in {
+  animation: fade-in 0.18s ease-out both;
 }
 
-/* Slim scrollbar for the review list */
+/* Slim scrollbar for scrolling panels (review lists, the nav rail). */
 .terminal-scroll {
   scrollbar-width: thin;
   scrollbar-color: var(--color-term-edge2) transparent;
@@ -169,3 +169,4 @@
 .terminal-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
